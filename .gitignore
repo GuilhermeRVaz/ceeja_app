@@ -1,0 +1,45 @@
+# Arquivos e pastas gerados pelo Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Arquivos de configuração do IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+
+# Arquivos de log
+*.log
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de dependências locais (se houver)
+# pubspec.lock # Geralmente é versionado, mas pode ser ignorado em alguns fluxos
+
+# Arquivos de ambiente (NÃO ADICIONAR AO GIT)
+.env
+
+# Outros arquivos específicos do projeto que não devem ser versionados
+# /ios/Pods/
+# /ios/Flutter/App.framework
+# /ios/Flutter/engine.xcframework
+# /ios/Flutter/flutter_assets/
+# /ios/Runner.xcworkspace/xcshareddata/swiftpm/Package.resolved
+# /ios/Runner/GeneratedPluginRegistrant.h
+# /ios/Runner/GeneratedPluginRegistrant.m
+# /android/app/build/
+# /android/.gradle/
+# /android/gradle/
+# /android/local.properties
+# /android/key.properties
+
+# Arquivos de teste de cobertura
+coverage/
+
