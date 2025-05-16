@@ -20,7 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String email,
     String password,
     String? fullName,
-    bool isLogin,
+    bool isLogin, // Não usado diretamente aqui, pois é sempre cadastro
   ) async {
     setState(() {
       _isLoading = true;
@@ -33,14 +33,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final response = await authProvider.signUp(
         email,
         password,
-        data: {
-          'full_name': fullName ?? '',
-          // Adicione outros campos aqui se necessário, como 'user_type': 'aluno'
-        },
+        data: {'full_name': fullName ?? ''},
       );
 
       if (response?.user != null) {
-        // Sucesso
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -50,19 +46,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          context.go('/login');
+          // Usar goNamed é uma boa prática se você nomeou suas rotas.
+          context.goNamed('login');
         }
       } else {
-        // Isso não deveria acontecer se a exceção não for lançada, mas é uma segurança
         errorMessage = 'Falha no cadastro. Resposta inesperada.';
       }
     } on AuthException catch (e) {
       errorMessage = e.message;
     } catch (e) {
       errorMessage = 'Ocorreu um erro inesperado. Tente novamente.';
-      print(
-        'Erro não AuthException no cadastro: $e',
-      ); // Mantendo para depuração
+      print('Erro não AuthException no cadastro: $e');
     }
 
     if (mounted) {
@@ -73,8 +67,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
-          ), // Correção: removido '!' desnecessário
+            backgroundColor:
+                Colors.red, // Corrigido: removido '!' desnecessário
+          ),
         );
       }
     }
@@ -115,7 +110,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () {
-                  context.go('/login');
+                  // Usar goNamed é uma boa prática se você nomeou suas rotas.
+                  context.goNamed('login');
                 },
                 child: const Text(
                   'Já tem uma conta? Faça login',

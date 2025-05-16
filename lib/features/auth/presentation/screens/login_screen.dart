@@ -19,7 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submitAuthForm(
     String email,
     String password,
-    String? fullName,
+    String?
+    fullName, // Não usado no login, mas mantido pela assinatura do AuthForm
     bool isLogin,
   ) async {
     setState(() {
@@ -32,7 +33,6 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final response = await authProvider.signInWithPassword(email, password);
       if (response?.user != null) {
-        // Sucesso
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -41,20 +41,18 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
           // Navegar para a tela principal após login bem-sucedido
-          // context.go('/home'); // Descomente quando a rota /home existir
-          print(
-            "Login bem-sucedido, usuário: ${response?.user?.id}",
-          ); // Mantendo para depuração
+          // Usar goNamed é uma boa prática se você nomeou suas rotas.
+          context.goNamed('home');
+          print("Login bem-sucedido, usuário: ${response?.user?.id}");
         }
       } else {
-        // Isso não deveria acontecer se a exceção não for lançada, mas é uma segurança
         errorMessage = 'Falha no login. Resposta inesperada.';
       }
     } on AuthException catch (e) {
       errorMessage = e.message;
     } catch (e) {
       errorMessage = 'Ocorreu um erro inesperado. Tente novamente.';
-      print('Erro não AuthException no login: $e'); // Mantendo para depuração
+      print('Erro não AuthException no login: $e');
     }
 
     if (mounted) {
@@ -65,8 +63,9 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
-          ), // Correção: removido '!' desnecessário
+            backgroundColor:
+                Colors.red, // Corrigido: removido '!' desnecessário
+          ),
         );
       }
     }
@@ -107,7 +106,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () {
-                  context.go('/register');
+                  // Usar goNamed é uma boa prática se você nomeou suas rotas.
+                  context.goNamed('register');
                 },
                 child: const Text(
                   'Não tem uma conta? Cadastre-se',
