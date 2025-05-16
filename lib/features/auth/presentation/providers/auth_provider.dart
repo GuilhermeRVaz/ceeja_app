@@ -4,23 +4,48 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthProvider with ChangeNotifier {
   final SupabaseClient _supabaseClient;
 
-  AuthProvider({required SupabaseClient supabaseClient}) : _supabaseClient = supabaseClient;
+  AuthProvider({required SupabaseClient supabaseClient})
+    : _supabaseClient = supabaseClient;
 
   User? get currentUser => _supabaseClient.auth.currentUser;
   bool get isLoggedIn => currentUser != null;
 
   // Retorna a resposta para que a UI possa verificar user/session ou null em caso de exceção não tratada aqui
   // As exceções específicas de autenticação (AuthException) devem ser tratadas na UI para feedback ao usuário
-  Future<AuthResponse?> signUp(String email, String password, {Map<String, dynamic>? data}) async {
+  Future<AuthResponse?> signUp(
+    String email,
+    String password, {
+    Map<String, dynamic>? data,
+  }) async {
     try {
       final response = await _supabaseClient.auth.signUp(
         email: email,
         password: password,
         data: data,
       );
-      // Não notifica listeners aqui, a UI pode querer esperar a confirmação por e-mail
-      // ou o onAuthStateChange fará isso se o login for automático.
-      // notifyListeners(); 
+
+      if (response.user != null) {
+        // INSERÇÃO NA TABELA PROFILES
+        final userId = response.user!.id;
+        final String? fullName = data?["full_name"];
+
+        try {
+          await _supabaseClient.from("profiles").insert({
+            "user_id": userId,
+            "email": email,
+            "full_name": fullName ?? "Nome não informado",
+            "role": "aluno",
+          });
+          print("✅ Perfil criado com sucesso!");
+        } catch (profileError) {
+          print("❌ Erro ao criar perfil: $profileError");
+          // Opcional: desfazer cadastro no auth.users se desejar
+          await _supabaseClient.auth.admin.deleteUser(userId);
+          rethrow;
+        }
+      }
+
+      notifyListeners(); // Atualiza a UI após mudanças
       return response;
     } on AuthException catch (e) {
       print('AuthException no signUp: ${e.message}');
@@ -31,14 +56,17 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<AuthResponse?> signInWithPassword(String email, String password) async {
+  Future<AuthResponse?> signInWithPassword(
+    String email,
+    String password,
+  ) async {
     try {
       final response = await _supabaseClient.auth.signInWithPassword(
         email: email,
         password: password,
       );
       // onAuthStateChange cuidará de notificar os listeners se o estado mudar
-      // notifyListeners(); 
+      // notifyListeners();
       return response;
     } on AuthException catch (e) {
       print('AuthException no signIn: ${e.message}');
@@ -66,7 +94,9 @@ class AuthProvider with ChangeNotifier {
     _supabaseClient.auth.onAuthStateChange.listen((data) {
       // final AuthChangeEvent event = data.event;
       // final Session? session = data.session;
-      print("AuthProvider: onAuthStateChange - Event: ${data.event}, Session: ${data.session?.toJson()}");
+      print(
+        "AuthProvider: onAuthStateChange - Event: ${data.event}, Session: ${data.session?.toJson()}",
+      );
       notifyListeners(); // Notifica sobre qualquer mudança de autenticação
     });
   }
@@ -75,7 +105,7 @@ class AuthProvider with ChangeNotifier {
   // AuthProvider({required SupabaseClient supabaseClient}) : _supabaseClient = supabaseClient {
   //   listenToAuthChanges();
   // }
-  // Ou, melhor ainda, chame no main.dart após inicializar o provider se necessário, 
+  // Ou, melhor ainda, chame no main.dart após inicializar o provider se necessário,
   // ou garanta que o provider seja instanciado cedo o suficiente.
   // Para este exemplo, o listener será chamado quando o provider for criado.
 
@@ -92,4 +122,3 @@ class AuthProvider with ChangeNotifier {
   // O onAuthStateChange é mais para reações globais ou atualizações de sessão.
   // O notifyListeners() no onAuthStateChange é bom para atualizar a UI que depende do estado de login.
 }
-
