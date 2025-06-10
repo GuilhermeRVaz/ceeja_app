@@ -1,6 +1,5 @@
 import 'package:ceeja_app/core/widgets/custom_text_field.dart';
 import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_provider.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
