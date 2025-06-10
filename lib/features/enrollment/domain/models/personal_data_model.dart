@@ -137,4 +137,80 @@ class PersonalDataModel {
       deficiencia: deficiencia ?? this.deficiencia,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'nomeCompleto': nomeCompleto,
+      'temNomeSocial': temNomeSocial,
+      'nomeSocial': nomeSocial,
+      'temNomeAfetivo': temNomeAfetivo,
+      'nomeAfetivo': nomeAfetivo,
+      'sexo': sexo,
+      'rg': rg,
+      'rgDigito': rgDigito,
+      'rgUf': rgUf,
+      'rgDataEmissao': rgDataEmissao?.toIso8601String(),
+      'cpf': cpf,
+      'racaCor': racaCor,
+      'dataNascimento': dataNascimento?.toIso8601String(),
+      'nomeMae': nomeMae,
+      'nomePai': nomePai,
+      'nacionalidade': nacionalidade,
+      'nascimentoUf': nascimentoUf,
+      'nascimentoCidade': nascimentoCidade,
+      'paisOrigem': paisOrigem,
+      'possuiInternet': possuiInternet,
+      'possuiDevice': possuiDevice,
+      'telefone': telefone,
+      'email': email,
+      'isGemeo': isGemeo,
+      'nomeGemeo': nomeGemeo,
+      'trabalha': trabalha,
+      'profissao': profissao,
+      'empresa': empresa,
+      'isPCD': isPCD,
+      'deficiencia': deficiencia,
+    };
+  }
+
+  factory PersonalDataModel.fromJson(Map<String, dynamic> json) {
+    return PersonalDataModel(
+      nomeCompleto: json['nomeCompleto'],
+      temNomeSocial: json['temNomeSocial'],
+      nomeSocial: json['nomeSocial'],
+      temNomeAfetivo: json['temNomeAfetivo'],
+      nomeAfetivo: json['nomeAfetivo'],
+      sexo: json['sexo'],
+      rg: json['rg'],
+      rgDigito: json['rgDigito'],
+      rgUf: json['rgUf'],
+      rgDataEmissao:
+          json['rgDataEmissao'] != null
+              ? DateTime.parse(json['rgDataEmissao'])
+              : null,
+      cpf: json['cpf'],
+      racaCor: json['racaCor'],
+      dataNascimento:
+          json['dataNascimento'] != null
+              ? DateTime.parse(json['dataNascimento'])
+              : null,
+      nomeMae: json['nomeMae'],
+      nomePai: json['nomePai'],
+      nacionalidade: json['nacionalidade'],
+      nascimentoUf: json['nascimentoUf'],
+      nascimentoCidade: json['nascimentoCidade'],
+      paisOrigem: json['paisOrigem'],
+      possuiInternet: json['possuiInternet'],
+      possuiDevice: json['possuiDevice'],
+      telefone: json['telefone'],
+      email: json['email'],
+      isGemeo: json['isGemeo'],
+      nomeGemeo: json['nomeGemeo'],
+      trabalha: json['trabalha'],
+      profissao: json['profissao'],
+      empresa: json['empresa'],
+      isPCD: json['isPCD'],
+      deficiencia: json['deficiencia'],
+    );
+  }
 }

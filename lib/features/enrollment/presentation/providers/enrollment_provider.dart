@@ -60,6 +60,79 @@ class EnrollmentProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void updateRgFrentePath(String? path) {
+    _documentsData = _documentsData.copyWith(rgFrentePath: path);
+    notifyListeners();
+  }
+
+  void updateRgVersoPath(String? path) {
+    _documentsData = _documentsData.copyWith(rgVersoPath: path);
+    notifyListeners();
+  }
+
+  void updateCpfDocPath(String? path) {
+    _documentsData = _documentsData.copyWith(cpfDocPath: path);
+    notifyListeners();
+  }
+
+  void updateFoto3x4Path(String? path) {
+    _documentsData = _documentsData.copyWith(foto3x4Path: path);
+    notifyListeners();
+  }
+
+  void updateHistoricoEscolarFundamentalPath(String? path) {
+    _documentsData = _documentsData.copyWith(
+      historicoEscolarFundamentalPath: path,
+    );
+    notifyListeners();
+  }
+
+  void updateHistoricoEscolarMedioPath(String? path) {
+    _documentsData = _documentsData.copyWith(historicoEscolarMedioPath: path);
+    notifyListeners();
+  }
+
+  void updateComprovanteResidenciaPath(String? path) {
+    _documentsData = _documentsData.copyWith(comprovanteResidenciaPath: path);
+    notifyListeners();
+  }
+
+  void updateCertidaoNascimentoCasamentoPath(String? path) {
+    _documentsData = _documentsData.copyWith(
+      certidaoNascimentoCasamentoPath: path,
+    );
+    notifyListeners();
+  }
+
+  void updateReservistaPath(String? path) {
+    _documentsData = _documentsData.copyWith(reservistaPath: path);
+    notifyListeners();
+  }
+
+  void updateTituloEleitorPath(String? path) {
+    _documentsData = _documentsData.copyWith(tituloEleitorPath: path);
+    notifyListeners();
+  }
+
+  void updateCarteiraVacinacaoPath(String? path) {
+    _documentsData = _documentsData.copyWith(carteiraVacinacaoPath: path);
+    notifyListeners();
+  }
+
+  void updateAtestadoEliminacaoDisciplinaPath(String? path) {
+    _documentsData = _documentsData.copyWith(
+      atestadoEliminacaoDisciplinaPath: path,
+    );
+    notifyListeners();
+  }
+
+  void updateDeclaracaoTransferenciaEscolaridadePath(String? path) {
+    _documentsData = _documentsData.copyWith(
+      declaracaoTransferenciaEscolaridadePath: path,
+    );
+    notifyListeners();
+  }
+
   Future<void> submitEnrollment() async {
     try {
       await _repository.addEnrollment(
