@@ -55,35 +55,8 @@ class EnrollmentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateDocumentsData(
-    DocumentsModel data, {
-    String? rg,
-    String? cpfDoc,
-    String? foto3x4,
-    String? historicoEscolarFundamental,
-    String? historicoEscolarMedio,
-    String? comprovanteResidencia,
-    String? certidaoNascimentoCasamento,
-    String? reservista,
-    String? tituloEleitor,
-    String? carteiraVacinacao,
-    String? atestadoEliminacaoDisciplina,
-    String? declaracaoTransferenciaEscolaridade,
-  }) {
-    _documentsData = data.copyWith(
-      rg: rg,
-      cpfDoc: cpfDoc,
-      foto3x4: foto3x4,
-      historicoEscolarFundamental: historicoEscolarFundamental,
-      historicoEscolarMedio: historicoEscolarMedio,
-      comprovanteResidencia: comprovanteResidencia,
-      certidaoNascimentoCasamento: certidaoNascimentoCasamento,
-      reservista: reservista,
-      tituloEleitor: tituloEleitor,
-      carteiraVacinacao: carteiraVacinacao,
-      atestadoEliminacaoDisciplina: atestadoEliminacaoDisciplina,
-      declaracaoTransferenciaEscolaridade: declaracaoTransferenciaEscolaridade,
-    );
+  void updateDocumentsData(DocumentsModel data) {
+    _documentsData = data;
     notifyListeners();
   }
 
