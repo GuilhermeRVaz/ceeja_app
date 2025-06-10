@@ -1,0 +1,654 @@
+---
+openapi: 3.0.3
+info:
+  title: seduc-inscricoes API
+  version: 1.0.0
+servers:
+- url: https://seduc-inscricoes.api-hml.rota.sp.gov.br
+  description: Homologação
+security:
+- IdpSP: []
+paths:
+  /comprovantes:
+    get:
+      tags:
+      - Comprovante
+      summary: Consulta o comprovante de inscrição do aluno
+      parameters:
+      - name: X-TraceId-SP
+        in: header
+        description: Trace ID
+        required: false
+        schema:
+          type: string
+      - name: numeroRA
+        in: query
+        required: true
+        schema:
+          type: string
+          example: "105212037"
+      - name: digitoRA
+        in: query
+        required: false
+        schema:
+          type: string
+          example: "4"
+      - name: siglaUfRA
+        in: query
+        required: false
+        schema:
+          type: string
+          example: SP
+      - name: anoLetivo
+        in: query
+        required: true
+        schema:
+          type: integer
+          example: 2018
+      - name: tipoInscricao
+        in: query
+        required: true
+        schema:
+          type: string
+          example: "7"
+      responses:
+        "200":
+          description: Executado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComprovanteInscricaoAlunoResponse'
+        "204":
+          $ref: '#/components/responses/NotFound'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-inscricoes.consultas
+  /inscricoes:
+    get:
+      tags:
+      - Inscrição
+      summary: Consulta inscrições de alunos
+      parameters:
+      - name: X-TraceId-SP
+        in: header
+        description: Trace ID
+        required: false
+        schema:
+          type: string
+      - name: numeroRA
+        in: query
+        description: "Número do RA do aluno, sem o digito"
+        required: true
+        schema:
+          type: string
+          example: "55690038"
+      - name: digitoRA
+        in: query
+        required: false
+        schema:
+          type: string
+          example: "4"
+      - name: siglaUFRA
+        in: query
+        required: true
+        schema:
+          type: string
+          example: SP
+      - name: anoLetivo
+        in: query
+        required: true
+        schema:
+          type: string
+          example: "2018"
+      responses:
+        "200":
+          description: Executado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaInscricaoResponse'
+        "204":
+          $ref: '#/components/responses/NotFound'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-inscricoes.consultas
+    put:
+      tags:
+      - Inscrição
+      summary: Altera inscrição de aluno
+      parameters:
+      - name: X-TraceId-SP
+        in: header
+        description: Trace ID
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscricaoAlteracaoRequest'
+        required: true
+      responses:
+        "200":
+          description: Executado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscricaoAlteracaoResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-inscricoes.atualizacoes
+    post:
+      tags:
+      - Inscrição
+      summary: Cria inscrição de aluno
+      parameters:
+      - name: X-TraceId-SP
+        in: header
+        description: Trace ID
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscricaoRequest'
+        required: true
+      responses:
+        "201":
+          description: Executado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscricaoResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-inscricoes.atualizacoes
+    delete:
+      tags:
+      - Inscrição
+      summary: Exclui inscrição de aluno
+      parameters:
+      - name: X-TraceId-SP
+        in: header
+        description: Trace ID
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscricaoDeleteRequest'
+        required: true
+      responses:
+        "200":
+          description: Executado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscricaoDeleteResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-inscricoes.atualizacoes
+  /transferencias:
+    post:
+      tags:
+      - Transferencias
+      summary: Realizar a transferencia de aluno
+      parameters:
+      - name: X-TraceId-SP
+        in: header
+        description: Trace ID
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferenciaRequest'
+        required: true
+      responses:
+        "200":
+          description: Executado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferenciaResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-inscricoes.atualizacoes
+components:
+  schemas:
+    ComprovanteInscricaoAlunoResponse:
+      type: object
+      properties:
+        processoId:
+          type: string
+          example: "784987654"
+        urlArquivoPdf:
+          type: string
+          example: https://arquivos.api-hml.rota.sp.gov.br/ds/35/123
+    ConsultaInscricaoResponse:
+      type: object
+      properties:
+        inscricoes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Inscricao'
+        processoId:
+          type: string
+          example: "49174061"
+    Inscricao:
+      type: object
+      properties:
+        codigoEscola:
+          type: string
+          example: "4"
+        nomeEscola:
+          type: string
+          example: VERA CAMPAGNANI PROFA
+        codigoTipoEnsino:
+          type: string
+          example: "1"
+        codigoSerieAno:
+          type: string
+          example: "1"
+        tipo:
+          type: string
+          example: "1"
+        descricaoTipo:
+          type: string
+          example: Fase 7 - Inscrição E.M.
+        data:
+          type: string
+          example: 2023-02-28
+        codigoEscolaAlocacao:
+          type: string
+          example: "25501"
+        nomeEscolaAlocacao:
+          type: string
+          example: VERA CAMPAGNANI PROFA
+        numeroClasseAlocacao:
+          type: string
+          example: "15"
+        dataAlocacao:
+          type: string
+          example: 2023-02-28
+        redeEnsino:
+          type: string
+          example: ESTADUAL - SE
+        redeEnsinoEscolaAlocacao:
+          type: string
+          example: ESTADUAL - SE
+        municipioEscola:
+          type: string
+          example: BAURU
+        municipioEscolaAlocacao:
+          type: string
+          example: BAURU
+        situacao:
+          type: string
+          example: Ativo
+    DadosAlunoRequest:
+      type: object
+      properties:
+        numeroRA:
+          type: string
+          example: "41214091"
+        digitoRA:
+          type: string
+          example: "3"
+        siglaUFRA:
+          type: string
+          example: SP
+    DadosInscricaoRequest:
+      type: object
+      properties:
+        anoLetivo:
+          type: string
+          example: "2012"
+        codigoEscola:
+          type: string
+          example: "1971"
+        codigoUnidade:
+          type: string
+          example: "4"
+        fase:
+          type: string
+          example: "1"
+        interesseIntegral:
+          type: boolean
+        interesseEspanhol:
+          type: boolean
+        atendimentoNoturno:
+          type: boolean
+        codigoObservacaoOpcaoNoturno:
+          type: string
+          example: "10"
+        interesseNovoTec:
+          type: boolean
+        codigoEixoNovotecOpcao1:
+          type: string
+          example: "13"
+        codigoEscolaNovotecOpcao1:
+          type: string
+          example: "1971"
+        codigoUnidadeNovotecOpcao1:
+          type: string
+          example: "10"
+        interesseCentroIdiomas:
+          type: boolean
+        aceiteEscolaPEIDistante:
+          type: boolean
+        codigoEixoCELOpcao1:
+          type: string
+          example: "1202"
+        codigoEscolaCELOpcao1:
+          type: string
+          example: "1202"
+        codigoUnidadeCELOpcao1:
+          type: string
+          example: "1202"
+        codigoEixoNovotecOpcao2:
+          type: string
+          example: "15"
+        codigoEixoNovotecOpcao3:
+          type: string
+          example: "15"
+    DadosNivelEnsinoRequest:
+      type: object
+      properties:
+        codigoTipoEnsino:
+          type: string
+          example: "10"
+        codigoSerieAno:
+          type: string
+          example: "10"
+    DadosAlteracaoInscricaoRequest:
+      type: object
+      properties:
+        anoLetivo:
+          type: string
+          example: "2012"
+        codigoEscola:
+          type: string
+          example: "1971"
+        fase:
+          type: string
+          example: "1"
+        interesseIntegral:
+          type: boolean
+        aceiteEscolaPEIDistante:
+          type: boolean
+        interesseEspanhol:
+          type: boolean
+        atendimentoNoturno:
+          type: boolean
+        codigoObservacaoOpcaoNoturno:
+          type: string
+          example: "10"
+        interesseNovoTec:
+          type: boolean
+        codigoEixoNovotecOpcao1:
+          type: string
+          example: "13"
+        codigoEixoNovotecOpcao2:
+          type: string
+          example: "15"
+        codigoEixoNovotecOpcao3:
+          type: string
+          example: "15"
+    InscricaoRequest:
+      type: object
+      properties:
+        aluno:
+          $ref: '#/components/schemas/DadosAlunoRequest'
+        inscricao:
+          $ref: '#/components/schemas/DadosInscricaoRequest'
+        nivelEnsino:
+          $ref: '#/components/schemas/DadosNivelEnsinoRequest'
+    InscricaoResponse:
+      type: object
+      properties:
+        processoId:
+          type: string
+          example: "123554"
+        mensagem:
+          type: string
+          example: Inscrição efetuada com sucesso
+    InscricaoAlteracaoRequest:
+      type: object
+      properties:
+        aluno:
+          $ref: '#/components/schemas/DadosAlunoRequest'
+        inscricao:
+          $ref: '#/components/schemas/DadosAlteracaoInscricaoRequest'
+        nivelEnsino:
+          $ref: '#/components/schemas/DadosNivelEnsinoRequest'
+    InscricaoAlteracaoResponse:
+      type: object
+      properties:
+        processoId:
+          type: string
+          example: "123554"
+        mensagem:
+          type: string
+          example: Inscrição alterada com sucesso
+    InscricaoDeleteRequest:
+      type: object
+      properties:
+        aluno:
+          $ref: '#/components/schemas/DadosAlunoRequest'
+        anoLetivo:
+          type: string
+          example: "2012"
+        codigoEscola:
+          type: string
+          example: "1971"
+        tipoInscricao:
+          type: string
+          example: "4"
+    InscricaoDeleteResponse:
+      type: object
+      properties:
+        processoId:
+          type: string
+          example: "123554"
+        mensagem:
+          type: string
+          example: Inscrição excluída com sucesso
+    TransferenciaRequest:
+      type: object
+      properties:
+        aluno:
+          required:
+          - numeroRA
+          - siglaUFRA
+          type: object
+          properties:
+            numeroRA:
+              type: string
+              example: "12345678"
+            digitoRA:
+              type: string
+              example: A
+            siglaUFRA:
+              type: string
+              example: SP
+        transferencia:
+          required:
+          - anoLetivo
+          - codigoEscola
+          - fase
+          - codigoMotivo
+          type: object
+          properties:
+            anoLetivo:
+              type: string
+              example: "2024"
+            codigoEscola:
+              type: string
+              example: "12345"
+            fase:
+              type: string
+              example: Ensino Médio
+            interesseIntegral:
+              type: boolean
+              example: true
+            interesseEspanhol:
+              type: boolean
+              example: true
+            necessidadeAtendimentoNoturno:
+              type: boolean
+              example: true
+            codigoMotivo:
+              type: string
+              example: "1"
+            numClasseMatriculaAtual:
+              type: string
+              example: "280203662"
+        nivelEnsino:
+          required:
+          - codigoTipoEnsino
+          - codigoSerieAno
+          type: object
+          properties:
+            codigoTipoEnsino:
+              type: string
+              example: "1"
+            codigoSerieAno:
+              type: string
+              example: "9"
+    TransferenciaResponse:
+      type: object
+      properties:
+        processoId:
+          type: string
+          example: "0"
+        mensagem:
+          type: string
+  responses:
+    NotFound:
+      description: Nenhum recurso encontrado
+    Forbidden:
+      description: Cliente não tem permissão de acesso ao recurso solicitado
+    UnauthorizedError:
+      description: Access token é invalido ou expirado
+    InternalServerError:
+      description: Erro interno.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                enum:
+                - "500"
+                type: string
+              trace:
+                description: Trace ID
+                type: string
+                example: f2fa5f28-9621-4683-8b93-5bf039ee9471
+              messages:
+                type: array
+                items:
+                  description: "Mensagens de erro, (mensagem será dinâmica de acordo\
+                    \ com erro)"
+                  type: string
+                  example: Ocorreu um erro ao tentar acessar o recurso
+    ValidationError:
+      description: Erro de validação
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                enum:
+                - 400
+                type: string
+              trace:
+                description: Trace ID
+                type: string
+                example: f2fa5f28-9621-4683-8b93-5bf039ee9470
+              messages:
+                type: array
+                items:
+                  description: Mensagens de erro
+                  type: string
+                  example: Dados informado é inválido
+  securitySchemes:
+    IdpSP:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://rhsso.idp-hml.sp.gov.br/auth/realms/idpsp/protocol/openid-connect/token
+          scopes:
+            api:integrador.seduc-inscricoes.consultas: Scope utilizado para as operações
+              de consultas
+            api:integrador.seduc-inscricoes.atualizacoes: Scope utilizado para as
+              operações de atualização
+        authorizationCode:
+          authorizationUrl: https://rhsso.idp-hml.sp.gov.br/auth/realms/idpsp/protocol/openid-connect/auth
+          tokenUrl: https://rhsso.idp-hml.sp.gov.br/auth/realms/idpsp/protocol/openid-connect/token
+          scopes:
+            api:integrador.seduc-inscricoes.consultas: Scope utilizado para as operações
+              de consultas
+            api:integrador.seduc-inscricoes.atualizacoes: Scope utilizado para as
+              operações de atualização
+    SecurityScheme:
+      type: http
+      description: Authentication
+      scheme: basic

@@ -1,0 +1,673 @@
+/* style.css - Otimizado e Unificado */
+
+/* Variáveis CSS */
+:root {
+    --primary-color: #FF8C00; /* Laranja/Tangerina CEEJA */
+    --primary-light: #FFA733; /* Um tom mais claro para hover/detalhes */
+    --primary-dark: #CC7000;  /* Um tom mais escuro para hover/ativos */
+    --secondary-color: #4A90E2; /* Um azul para contraste ou ações secundárias */
+    
+    --white: #FFFFFF;
+    --gray-lightest: #F9F9F9; /* Para fundos de seção muito sutis */
+    --gray-light: #F0F0F0;    /* Fundo geral do body */
+    --gray-medium: #E0E0E0;   /* Bordas de inputs */
+    --gray-dark: #757575;     /* Texto de ajuda, placeholders */
+    --gray-darker: #555555;   /* Texto secundário */
+
+    --text-color: #333333;    /* Texto principal */
+    --text-color-light: #FFFFFF;
+
+    --success-color: #28a745; /* Verde sucesso (já usado no btn-print) */
+    --error-color: #dc3545;   /* Vermelho erro */
+    --warning-color: #ffc107; /* Amarelo aviso */
+    --info-color: #17a2b8;    /* Azul informação */
+
+    --border-radius-small: 4px;
+    --border-radius-medium: 8px;
+    --border-radius-card: 12px; /* Mantido */
+
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-medium: 0 5px 15px rgba(0, 0, 0, 0.08); /* Mantido e bom */
+    --shadow-strong: 0 8px 25px rgba(0, 0, 0, 0.1);
+
+    --font-main: 'Roboto', 'Segoe UI', Arial, sans-serif; /* Mantido */
+}
+
+/* Reset Básico e Estilos Globais */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--gray-light);
+    color: var(--text-color);
+    line-height: 1.65; /* Ligeiramente aumentado para melhor legibilidade */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-size: 16px; /* Base para rem/em */
+}
+
+.container {
+    width: 100%;
+    max-width: 840px; /* Um pouco mais largo para conforto */
+    margin: 0 auto;
+    padding: 20px 25px; /* Ajuste no padding lateral */
+    flex-grow: 1;
+}
+
+/* Header */
+header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--text-color-light);
+    padding: 30px 20px; /* Aumentado o padding vertical */
+    text-align: center;
+    box-shadow: var(--shadow-medium);
+    margin-bottom: 30px;
+}
+
+.logo-container {
+    margin-bottom: 15px;
+}
+
+.logo {
+    max-width: 100px; /* Reduzido um pouco se for muito grande */
+    height: auto;
+    border-radius: 50%; /* Para logos redondos, opcional */
+    background-color: var(--white);
+    padding: 5px; /* Pequeno padding se o logo não tiver margem interna */
+    box-shadow: var(--shadow-soft);
+}
+
+header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem); /* Tamanho responsivo */
+    margin-bottom: 8px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+header p {
+    font-size: clamp(1rem, 2.5vw, 1.15rem); /* Tamanho responsivo */
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+/* Card */
+.card {
+    background-color: var(--white);
+    padding: clamp(20px, 5vw, 40px); /* Padding responsivo */
+    border-radius: var(--border-radius-card);
+    box-shadow: var(--shadow-medium);
+    margin-bottom: 30px;
+    animation: fadeIn 0.6s ease-out forwards;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-strong);
+}
+
+.card h2 {
+    color: var(--primary-dark);
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem); /* Tamanho responsivo */
+    margin-bottom: 25px;
+    border-bottom: 3px solid var(--primary-light);
+    padding-bottom: 12px;
+    font-weight: 500;
+}
+
+/* Estilos de Formulário */
+.form-group {
+    margin-bottom: 22px; /* Ligeiro ajuste */
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500; /* Era 500, mantido, bom */
+    color: var(--gray-darker); /* Tom mais escuro para contraste */
+    font-size: 0.95rem; /* Ligeiramente menor que o texto do input */
+}
+
+.form-group label .required {
+    color: var(--error-color);
+    margin-left: 4px;
+    font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="date"], /* Estilo para input date se for usado */
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px; /* Aumentado padding horizontal */
+    border: 1px solid var(--gray-medium);
+    border-radius: var(--border-radius-medium); /* Borda média */
+    font-size: 1rem;
+    color: var(--text-color);
+    background-color: var(--white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: var(--gray-dark);
+    opacity: 0.8;
+}
+
+.form-group input[readonly] {
+    background-color: var(--gray-lightest);
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="tel"]:focus,
+.form-group input[type="date"]:focus,
+.form-group input[type="number"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.25); /* Sombra do foco mais visível */
+    outline: none;
+}
+
+.form-group select {
+    appearance: none; /* Remove estilo padrão do select */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 20px;
+    padding-right: 40px; /* Espaço para a seta */
+}
+
+/* Checkbox e Radio Groups (Estilos do seu formulario7.html e style.css) */
+.checkbox-group, /* Para compatibilidade com formulario7.html */
+.radio-group {
+    display: flex;
+    flex-direction: column; /* Empilha verticalmente para melhor leitura */
+    gap: 12px; /* Espaçamento entre cada opção */
+    margin-top: 8px;
+}
+
+.checkbox-group > div, /* Se cada checkbox/radio estiver em uma div */
+.radio-group > div {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-group label, /* Para compatibilidade com formulario7.html */
+.radio-group label {
+    display: flex; /* Mantido */
+    align-items: center; /* Mantido */
+    cursor: pointer; /* Mantido */
+    font-weight: 400; /* Mantido */
+    margin-left: 0; /* Remove margem se o input está dentro */
+    position: relative; /* Para posicionamento customizado do input */
+    padding-left: 28px; /* Espaço para o input customizado */
+    line-height: 1.5;
+}
+
+.checkbox-group input[type="checkbox"], /* Para compatibilidade com formulario7.html */
+.radio-group input[type="radio"] {
+    position: absolute; /* Esconde o input original */
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Customizando a aparência do radio/checkbox */
+.radio-group label::before,
+.checkbox-group label::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--gray-medium);
+    background-color: var(--white);
+    transition: all 0.2s ease;
+}
+.radio-group label::before {
+    border-radius: 50%; /* Círculo para radio */
+}
+.checkbox-group label::before {
+    border-radius: var(--border-radius-small); /* Quadrado para checkbox */
+}
+
+.radio-group input[type="radio"]:checked + label::before,
+.checkbox-group input[type="checkbox"]:checked + label::before {
+    background-color: var(--primary-color);
+    border-color: var(--primary-dark);
+}
+
+.radio-group input[type="radio"]:focus-visible + label::before,
+.checkbox-group input[type="checkbox"]:focus-visible + label::before {
+     box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.25);
+}
+
+/* Marquinha interna (✓ para checkbox, bolinha para radio) */
+.radio-group input[type="radio"]:checked + label::after {
+    content: '';
+    position: absolute;
+    left: 5px; /* Ajuste para centralizar a bolinha */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--white);
+}
+.checkbox-group input[type="checkbox"]:checked + label::after {
+    content: '✓';
+    position: absolute;
+    left: 3px; /* Ajuste para centralizar o check */
+    top: 50%;
+    transform: translateY(-50%) scale(0.9); /* Escala para caber melhor */
+    font-size: 16px;
+    color: var(--white);
+    font-weight: bold;
+    line-height: 1;
+}
+
+
+/* Layout de Grid (para organizar campos lado a lado) */
+.grid-container { /* Classe genérica para grids */
+    display: grid;
+    gap: 20px; /* Espaçamento padrão */
+    margin-bottom: 20px; /* Para espaçar de outros grupos */
+}
+.grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsivo */
+}
+.grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsivo */
+}
+
+
+/* Botões */
+.buttons-container {
+    display: flex;
+    justify-content: space-between; /* Alinha "Anterior" à esquerda e "Próximo" à direita */
+    margin-top: 35px;
+    gap: 15px;
+}
+
+.btn {
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: 500; /* Ajustado para um peso mais comum */
+    text-align: center;
+    text-decoration: none;
+    border-radius: var(--border-radius-medium);
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    border: none; /* Removido borda padrão, será adicionada seletivamente */
+    display: inline-flex; /* Para alinhar ícones com texto */
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Espaço entre texto e ícone */
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+}
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.btn-secondary {
+    background-color: var(--gray-medium);
+    color: var(--text-color);
+    border: 1px solid var(--gray-dark); /* Borda sutil para definição */
+}
+.btn-secondary:hover {
+    background-color: var(--gray-dark);
+    color: var(--text-color-light);
+    border-color: var(--gray-darker);
+    transform: translateY(-2px);
+}
+
+.btn-print { /* Estilo para botão de imprimir */
+    background-color: var(--success-color);
+    color: var(--text-color-light);
+}
+.btn-print:hover {
+    background-color: #218838; /* Verde mais escuro */
+    transform: translateY(-2px);
+}
+
+
+/* Rodapé */
+footer {
+    text-align: center;
+    padding: 25px 20px;
+    margin-top: auto; /* Garante que o rodapé fique no fim, mesmo com pouco conteúdo */
+    background-color: var(--gray-darker);
+    color: var(--gray-light);
+    font-size: 0.9rem;
+}
+footer p {
+    margin-bottom: 5px;
+}
+footer p:last-child {
+    margin-bottom: 0;
+}
+
+/* Indicador de Progresso */
+.progress-container {
+    width: 100%;
+    margin: 30px auto 50px;
+    padding: 0 10px; /* Pequeno padding para não colar nas bordas em telas pequenas */
+}
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    list-style-type: none; /* Remove marcadores de lista */
+}
+.progress-steps::before { /* Linha de fundo */
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 4px;
+    width: 100%;
+    background-color: var(--gray-medium);
+    z-index: 1;
+}
+.progress-indicator { /* Linha de progresso colorida */
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 4px;
+    background-color: var(--primary-color); /* Ou success-color para completas */
+    z-index: 2;
+    width: 0%; /* Será atualizado via JS */
+    transition: width 0.4s ease;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 3; /* Acima das linhas */
+    flex: 1; /* Distribui o espaço */
+}
+.step span { /* Círculo do número */
+    width: 36px;
+    height: 36px;
+    line-height: 32px; /* Ajuste para alinhar o texto do número */
+    border-radius: 50%;
+    background-color: var(--white);
+    color: var(--gray-dark);
+    font-weight: 500;
+    font-size: 1rem;
+    border: 2px solid var(--gray-medium);
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.step-label {
+    font-size: 0.8rem; /* Menor para não poluir */
+    color: var(--gray-dark);
+    font-weight: 400;
+    transition: color 0.3s ease, font-weight 0.3s ease;
+    max-width: 90px; /* Evita quebra de linha feia */
+}
+
+.step.active span {
+    border-color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+.step.active .step-label {
+    color: var(--primary-dark);
+    font-weight: 500;
+}
+
+.step.completed span {
+    border-color: var(--success-color);
+    background-color: var(--success-color);
+    color: var(--white);
+}
+.step.completed .step-label {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+
+/* Classes Utilitárias */
+.hidden {
+    display: none !important; /* Garante que vai esconder */
+}
+.text-center {
+    text-align: center;
+}
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+
+/* Estilo para campos inválidos (feedback visual) */
+.form-group input:invalid:not(:placeholder-shown),
+.form-group select:invalid:not(:placeholder-shown),
+.form-group textarea:invalid:not(:placeholder-shown) {
+    border-color: var(--error-color);
+    background-color: #fff7f7;
+}
+.form-group input:invalid:not(:placeholder-shown):focus,
+.form-group select:invalid:not(:placeholder-shown):focus,
+.form-group textarea:invalid:not(:placeholder-shown):focus {
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+.error-message { /* Para mensagens de erro JS */
+    color: var(--error-color);
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+
+/* Loading Spinner */
+.loading {
+    display: none; /* Começa escondido */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.85); /* Fundo semi-transparente */
+    display: flex; /* Será alterado por JS */
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; /* Muito alto para ficar por cima de tudo */
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.loading.show { /* Classe para mostrar o loading */
+    display: flex;
+    opacity: 1;
+}
+
+.loading .spinner {
+    border: 6px solid var(--gray-light); /* Borda mais clara */
+    border-top: 6px solid var(--primary-color); /* Cor primária no topo */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 20px;
+}
+
+.loading p {
+    font-size: 1.1rem;
+    color: var(--primary-dark);
+    font-weight: 500;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Upload de Arquivos (para documentos.html) */
+.file-upload-group {
+    margin-bottom: 25px;
+    border: 1px solid var(--gray-medium);
+    border-radius: var(--border-radius-medium);
+    padding: 20px;
+    background-color: var(--gray-lightest);
+}
+.file-upload-group label { /* A label principal do grupo */
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+.file-upload-group small {
+    font-size: 0.85rem;
+    color: var(--gray-darker);
+    display: block;
+    margin-top: 5px;
+}
+.file-upload-area {
+    border: 2px dashed var(--gray-medium);
+    border-radius: var(--border-radius-medium);
+    padding: 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    background-color: var(--white);
+}
+.file-upload-area:hover {
+    background-color: #fffaf0; /* Laranja bem clarinho */
+    border-color: var(--primary-light);
+}
+.file-upload-area i { /* Para ícone de upload */
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+.file-upload-area p {
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+.file-upload-area input[type="file"] {
+    display: none; /* O input original fica escondido */
+}
+.file-preview {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--primary-dark);
+    font-style: italic;
+}
+
+
+/* Melhorias de Responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    header {
+        padding: 20px 15px;
+    }
+    header h1 {
+        font-size: clamp(1.4rem, 5vw, 1.8rem);
+    }
+    header p {
+        font-size: clamp(0.9rem, 3vw, 1rem);
+    }
+    .card {
+        padding: 20px;
+    }
+    .card h2 {
+        font-size: clamp(1.2rem, 4vw, 1.5rem);
+        margin-bottom: 20px;
+    }
+
+    .grid-2, .grid-3, .grid-container {
+        grid-template-columns: 1fr; /* Coluna única em telas menores */
+        gap: 18px;
+    }
+
+    .buttons-container {
+        flex-direction: column-reverse; /* Botão de "Próximo" aparece primeiro */
+        gap: 12px;
+    }
+    .btn {
+        width: 100%;
+        padding: 14px 20px; /* Botões maiores para toque */
+    }
+
+    .progress-container {
+        margin: 25px auto 40px;
+    }
+    .progress-steps::before { /* Ajuste para a linha não ultrapassar os círculos */
+        left: 18px;
+        right: 18px;
+        width: auto; 
+    }
+    .step span {
+        width: 32px;
+        height: 32px;
+        line-height: 28px;
+        font-size: 0.9rem;
+    }
+    .step-label {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 15px;
+    }
+    .form-group label {
+        font-size: 0.9rem;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="tel"],
+    .form-group input[type="date"],
+    .form-group input[type="number"],
+    .form-group select,
+    .form-group textarea {
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+     .file-upload-area p {
+        font-size: 0.9rem;
+    }
+    .file-upload-area i {
+        font-size: 2rem;
+    }
+}

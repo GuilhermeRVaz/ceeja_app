@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ceeja_app/core/navigation/app_router.dart';
 import 'package:ceeja_app/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,13 +33,20 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AuthProvider(supabaseClient: Supabase.instance.client),
         ),
-        // Outros providers podem ser adicionados aqui
+        ChangeNotifierProvider(create: (_) => EnrollmentProvider()),
       ],
       child: MaterialApp.router(
         title: 'CEEJA de Lins App',
         theme: AppTheme.lightTheme,
         routerConfig: AppRouter.router,
         debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('pt', 'BR')],
+        locale: const Locale('pt', 'BR'),
       ),
     );
   }

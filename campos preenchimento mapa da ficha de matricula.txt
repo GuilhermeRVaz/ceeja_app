@@ -1,0 +1,282 @@
+def clear_form(ws):
+    # Limpar campos específicos
+    ws['C6'] = ''
+    ws['B7'] = ''
+    ws['F7'] = ''
+    ws['M7'] = ''
+    ws['C8'] = ''
+    ws['C9'] = ''
+
+    # Gêmeos
+    ws['O9'] = 'Sim( )'
+    ws['P9'] = 'Não( )'
+
+    # Limpar cor/raça
+    ws['G8'] = '( )'
+    ws['I8'] = '( )'
+    ws['K8'] = '( )'
+    ws['M8'] = '( )'
+    ws['O8'] = '( )'
+    ws['Q8'] = '( )'
+    ws['I23']= ' '
+    ws['N23']= ' '
+
+    ws['G9'] = ''
+    ws['C9'] = ''
+    ws['C10'] = ''
+    ws['G10'] = ''
+    ws['O10'] = ''
+    ws['Q10'] = ''
+
+    ws['J14'] = ''
+    ws['K13'] = '( )'
+    ws['Q13'] = '( )'
+
+    ws['B19'] = ''
+    ws['O19'] = ''
+    ws['C20'] = ''
+    ws['M20'] = '( )'
+    ws['O20'] = '( )'
+
+    ws['B21'] = ''
+    ws['F21'] = ''
+    ws['M21'] = ''
+    ws['F22'] = ''
+    ws['M22'] = ''
+    ws['C23'] = ''
+
+    ws['I25'] = ' '
+    ws['K25'] = '( )'
+    ws['M25'] = '( )'
+    ws['O25'] = '( )'
+    ws['Q25'] = '( )'
+
+    ws["Q11"] = '( )'
+    ws['Q12'] = '( )'
+    ws['I26'] = ' '
+    ws['K26'] = '( )'
+    ws['M26'] = '( )'
+    ws['O26'] = '( )'
+
+    ws['J30'] = '( )'
+    ws['L30'] = '( )'
+
+    ws['K15'] = '( )'
+    ws['M15'] = '( )'
+    ws['M16'] = '( )'
+    ws['K17'] = '( )'
+    ws['M17'] = '( )'
+
+    ws['I31'] = 'Não( )'
+    ws['I32'] = 'Sim( )'
+    ws['I33'] = '( )'
+    ws['I34'] = '( )'
+    ws['I35'] = '( )'
+    ws['I37'] = '( )'
+    ws['I38'] = '( )'
+
+    # Limpar campos de documentos entregues
+    ws['A40'] = '( )'
+    ws['A41'] = '( )'
+    ws['A42'] = '( )'
+    ws['A43'] = '( )'
+    ws['D40'] = '( )'
+    ws['D41'] = '( )'
+    ws['D42'] = '( )'
+    ws['D43'] = '( )'
+    ws['I40'] = '( )'
+    ws['I41'] = '( )'
+    ws['I42'] = '( )'
+    ws['M40'] = '( )'
+    ws['M41'] = '( )'
+    ws['M42'] = '( )'
+    ws['A45'] = '( )'
+
+def calcular_idade(data_nascimento):
+    # Converte a string em um objeto de data
+    data_nasc = datetime.strptime(data_nascimento, "%d/%m/%Y")
+    hoje = datetime.now()
+    idade = hoje.year - data_nasc.year - ((hoje.month, hoje.day) < (data_nasc.month, data_nasc.day))
+    return idade
+def populate_form(form_data):
+    wb = load_workbook('FICHA_DE_MATRÍCULA_2024.xlsx')
+    ws = wb.active
+    clear_form(ws)
+
+    ws['C6'] = form_data.get('Nome', '') # type: ignore
+    ws['B7'] = form_data.get('RG', '')
+    ws['F7'] = form_data.get('CPF', '')
+    ws['M7'] = form_data.get('RA', '')
+    ws['C8'] = form_data.get('Estado Civil', '')
+
+    data_nascimento = form_data.get('Nascimento', '')  # Certifique-se de que esta chave está no form_data
+    if data_nascimento:
+        try:
+            idade = calcular_idade(data_nascimento)
+            ws['C9'] = idade  # Preenche a idade na célula
+        except Exception as e:
+            print(f"Erro ao calcular a idade: {e}")
+            ws['C9'] = "Erro"
+    else:
+        ws['C9'] = "Data Nasc. Inválida"
+        
+    ws['I23'] = form_data.get('Profissão', '')
+    ws['N23'] = form_data.get('local trabalho', '')
+
+    # Cor/raça
+    cor_raca = form_data.get('Cor/raça', '')
+    ws['G8'] = '(X)' if cor_raca == 'Branco' else '( )'
+    ws['I8'] = '(X)' if cor_raca == 'Preto' else '( )'
+    ws['K8'] = '(X)' if cor_raca == 'Pardo' else '( )'
+    ws['M8'] = '(X)' if cor_raca == 'Amarelo' else '( )'
+    ws['O8'] = '(X)' if cor_raca == 'Indígena' else '( )'
+    ws['Q8'] = '(X)' if cor_raca == 'Outra' else '( )'
+
+    # Outras informações do formulário
+    ws['G9'] = form_data.get('Nome da Mãe', '')
+
+    # Gêmeo
+    gemeo_sim = form_data.get('Gêmeo', '( )')
+    ws['O9'] = '(X)' if gemeo_sim == "Sim" else '( )'
+    ws['P9'] = '(X)' if gemeo_sim == "Não" else '( )'
+
+    ws['C10'] = form_data.get('Nascimento', '')
+    ws['G10'] = form_data.get('Município', '')
+    ws['O10'] = form_data.get('UF', '')
+    ws['Q10'] = form_data.get('País', '')
+
+    # Opção de Itinerário
+    if form_data.get('Opção de Itinerário') == 'Ciências Naturais/Matemática':
+        ws['K13'] = '(X)'
+        ws['Q13'] = '( )'
+    else:
+        ws['Q13'] = '(X)'
+        ws['K13'] = '( )'
+
+    # Outros campos preenchidos
+    ws['B19'] = form_data.get('Endereço', '')
+    ws['O19'] = form_data.get('Número', '')
+    ws['C20'] = form_data.get('Bairro', '')
+
+    # Zona Urbana ou Rural
+    if form_data.get('Urbana/Rural') == 'Urbana':
+        ws['M20'] = '( X )'
+        ws['O20'] = '(  )'
+    elif form_data.get('Urbana/Rural') == 'Rural':
+        ws['M20'] = '(  )'
+        ws['O20'] = '( X )'
+    else:
+        ws['M20'] = '(  )'
+        ws['O20'] = '(  )'
+
+    ws['B21'] = form_data.get('CEP', '')
+    ws['F21'] = form_data.get('Cidade', '')
+    ws['M21'] = form_data.get('UF_Cidade', '')
+    ws['F22'] = form_data.get('Telefone Celular', '')
+    ws['M22'] = form_data.get('Telefone Recado', '')
+    ws['C23'] = form_data.get('Email', '')
+
+    # Preenchimento adicional baseado no nível de ensino e série/termo
+    nivel_ensino = form_data.get('Requer Matrícula no', '')
+
+    if nivel_ensino == 'Ensino Fundamental':
+        ws['Q11'] = '(X)'
+        ws['Q12'] = '( )'
+        ws['K26'] = '( )'
+        ws['M26'] = '( )'
+        ws['O26'] = '( )'
+
+        termo = form_data.get('Termo/Série', '')
+        if termo == '1º Termo':
+            ws['K25'] = '(X)'
+        elif termo == '2º Termo':
+            ws['M25'] = '(X)'
+        elif termo == '3º Termo':
+            ws['O25'] = '(X)'
+        elif termo == '4º Termo':
+            ws['Q25'] = '(X)'
+
+    elif nivel_ensino == 'Ensino Médio':
+        ws['Q12'] = '(X)'  # Marca "Ensino Médio"
+        ws['Q11'] = '( )'  # Desmarca "Ensino Fundamental"
+        ws['K25'] = '( )'  # Desmarca "1º Termo"
+        ws['M25'] = '( )'  # Desmarca "2º Termo"
+        ws['O25'] = '( )'  # Desmarca "3º Termo"
+
+        serie = form_data.get('Termo/Série', '')
+        if serie == '1ª Série':
+            ws['K26'] = '(X)'
+        elif serie == '2ª Série':
+            ws['M26'] = '(X)'
+        elif serie == '3ª Série':
+            ws['O26'] = '(X)'
+
+    if form_data.get('Ensino Religioso') == 'Sim':
+        ws['J30'] = '(X)'
+        ws['L30'] = '( )'
+    else:
+        ws['L30'] = '(X)'
+        ws['J30'] = '( )'
+
+    # Já estudou nesta Unidade?
+    if form_data.get('Estudou nesta U.E.') == 'Sim':
+        ws['K15'] = '(X)'
+        ws['M15'] = '( )'
+    else:
+        ws['M15'] = '(X)'
+        ws['K15'] = '( )'
+
+    # Aproveitamento de Estudos
+    if form_data.get('Aproveitamento de Estudos') == 'Sim':
+        ws['K16'] = '(X)'
+        ws['M16'] = '( )'
+    else:
+        ws['M16'] = '(X)'
+        ws['K16'] = '( )'
+
+    # Portador de necessidades ou PCD
+    if form_data.get('Portador de necessidades ou PCD') == 'Sim':
+        ws['K17'] = '(X)'
+        ws['M17'] = '( )'
+    else:
+        ws['M17'] = '(X)'
+        ws['K17'] = '( )'
+
+    # Necessidade Especial
+    ws['J14'] = form_data.get('Se sim, qual', '')
+
+    # Preencher os campos de documentos entregues
+    if form_data['Doc_RG']:
+        ws['A40'] = '(X)'
+    if form_data['Doc_CPF']:
+        ws['A41'] = '(X)'
+    if form_data['Foto']:
+        ws['A42'] = '(X)'
+    if form_data['Requerimento de Matrícula']:
+        ws['A43'] = '(X)'
+    if form_data['Histórico Escolar']:
+        ws['D40'] = '(X)'
+    if form_data['Comprovante de Endereço']:
+        ws['D41'] = '(X)'
+    if form_data['Carteira de Vacinação']:
+        ws['D42'] = '(X)'
+    if form_data['Certidão de Nascimento']:
+        ws['D43'] = '(X)'
+    if form_data['Ficha de Aproveitamento de Estudos']:
+        ws['I40'] = '(X)'
+    if form_data['Relatório Médico']:
+        ws['I41'] = '(X)'
+    if form_data['Declaração de Transferência']:
+        ws['I42'] = '(X)'
+    if form_data['Requerimento de Transferência']:
+        ws['M40'] = '(X)'
+    if form_data['Declaração de Matrícula']:
+        ws['M41'] = '(X)'
+    if form_data['Boletim Escolar']:
+        ws['M42'] = '(X)'
+    if form_data['Certificado de Conclusão']:
+        ws['A45'] = datetime.now().strftime("%d/%m/%Y")
+
+    # Salvar a planilha Excel
+    wb.save('FICHA_DE_MATRÍCULA_2024.xlsx')
+  

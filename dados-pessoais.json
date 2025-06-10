@@ -1,0 +1,72 @@
+{
+  "name": "CEEJA - Formulário de Dados Pessoais",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ceeja-dados-pessoais",
+        "options": {}
+      },
+      "name": "Webhook Dados Pessoais",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "id": "webhook-dados-pessoais"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Converter os dados recebidos para formato Excel\nconst data = $input.item.json;\n\nconst formattedData = {\n  user_id:      data.user_id,\n  nome_completo: data.nome_completo,\n  nome_social:   data.nome_social || '',\n  sexo:          data.sexo,\n  data_nascimento: data.data_nascimento,\n  idade:         data.idade,\n  nacionalidade: data.nacionalidade,\n  nacionalidade_detalhe: data.nacionalidade_detalhe || '',\n  nome_mae:      data.nome_mae,\n  nome_pai:      data.nome_pai || '',\n  rg:            data.rg,\n  data_emissao_rg: data.data_emissao_rg,\n  estado_emissao_rg: data.estado_emissao_rg,\n  cpf:           data.cpf,\n  telefone:      data.telefone,\n  email:         data.email\n};\n\nreturn [{ json: formattedData }];"
+      },
+      "name": "Preparar Dados para Excel",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "id": "function-preparar-excel"
+    },
+    {
+      "parameters": {
+        "operation": "toFile",
+        "binaryPropertyName": "data",
+        "fileName": "={{$json.user_id}}_dados_pessoais.xlsx",
+        "options": {
+          "sheetName": "Dados Pessoais"
+        }
+      },
+      "name": "Converter para Excel",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "id": "spreadsheet-dados-pessoais"
+    },
+    {
+      "parameters": {
+        
+        "fileName": "={{ $items('Converter para Excel')[0].binary.data.fileName }}",
+        "directory": "files/formularios/excel",
+        "binaryPropertyName": "data" 
+      },
+      "name": "Salvar Arquivo Excel",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "id": "write-binary-dados-pessoais"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Dados pessoais recebidos com sucesso\",\n  \"user_id\": $input.item.json.user_id\n}"
+      },
+      "name": "Responder ao Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "id": "response-dados-pessoais"
+    }
+  ],
+  "connections": {
+    "webhook-dados-pessoais": { "main": [[{ "node": "function-preparar-excel", "type": "main", "index": 0 }]] },
+    "function-preparar-excel": { "main": [[{ "node": "spreadsheet-dados-pessoais", "type": "main", "index": 0 }]] },
+    "spreadsheet-dados-pessoais": { "main": [[{ "node": "write-binary-dados-pessoais", "type": "main", "index": 0 }]] },
+    "write-binary-dados-pessoais": { "main": [[{ "node": "response-dados-pessoais", "type": "main", "index": 0 }]] }
+  }
+}

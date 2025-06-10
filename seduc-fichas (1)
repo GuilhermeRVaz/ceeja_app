@@ -1,0 +1,1050 @@
+---
+openapi: 3.0.3
+info:
+  title: seduc-fichas API
+  version: 1.0.0
+servers:
+- url: https://seduc-fichas.api-hml.rota.sp.gov.br
+  description: Homologação
+security:
+- IdpSP:
+  - api:integrador.seduc-fichas.consultas
+  - api:integrador.seduc-fichas.atualizacoes
+paths:
+  /fichas:
+    get:
+      tags:
+      - Ficha
+      summary: Exibir ficha de aluno
+      parameters:
+      - name: X-TraceId-SP
+        in: header
+        description: Trace ID
+        required: false
+        schema:
+          type: string
+      - name: numeroRA
+        in: query
+        description: Número do RA
+        required: true
+        schema:
+          type: string
+          example: 109644132
+      - name: digitoRA
+        in: query
+        description: Digito do RA
+        required: false
+        schema:
+          type: string
+          example: 9
+      - name: siglaUFRA
+        in: query
+        description: Sigla UF do RA
+        required: true
+        schema:
+          type: string
+          example: SP
+      responses:
+        "200":
+          description: Quando a consulta retorna um objeto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuscaFichaAlunoResponse'
+        "204":
+          $ref: '#/components/responses/NoContent'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/ForbiddenError'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-fichas.consultas
+    put:
+      tags:
+      - Ficha
+      summary: Editar ficha de aluno
+      parameters:
+      - name: X-TraceId-SP
+        in: header
+        description: Trace ID
+        required: false
+        schema:
+          type: string
+      requestBody:
+        description: Objeto para editar a ficha do aluno
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditaFichaAlunoRequest'
+        required: true
+      responses:
+        "200":
+          description: Ficha de aluno editada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditaFichaAlunoResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/ForbiddenError'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-fichas.atualizacoes
+    post:
+      tags:
+      - Ficha
+      summary: Cadastrar ficha de aluno
+      parameters:
+      - name: X-TraceId-SP
+        in: header
+        description: Trace ID
+        required: false
+        schema:
+          type: string
+      requestBody:
+        description: Objeto para cadastrar a ficha do aluno
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CadastraFichaAlunoRequest'
+        required: true
+      responses:
+        "201":
+          description: Ficha de aluno criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CadastroFichaAlunoResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/ForbiddenError'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-fichas.atualizacoes
+components:
+  schemas:
+    CadastroFichaAlunoResponse:
+      type: object
+      properties:
+        sucesso:
+          type: string
+          example: Ficha do aluno criada com sucesso
+        processoId:
+          type: string
+          example: "523770816"
+        aluno:
+          type: object
+          properties:
+            numRA:
+              type: string
+              example: "000125352760"
+            digitoRA:
+              type: string
+              example: X
+            siglaUFRA:
+              type: string
+              example: SP
+    EditaFichaAlunoResponse:
+      type: object
+      properties:
+        sucesso:
+          type: string
+          example: OK
+        processoId:
+          type: string
+          example: "523745699"
+    BuscaFichaAlunoResponse:
+      type: object
+      properties:
+        sucesso:
+          type: string
+          example: OK
+        processoId:
+          type: string
+          example: "520922530"
+        dataAlteracaoFicha:
+          type: string
+          example: 2023-08-09
+        operador:
+          type: string
+          example: script_53583
+        aluno:
+          type: object
+          properties:
+            numRA:
+              type: string
+              example: "000109644132"
+            digitoRA:
+              type: string
+              example: "9"
+            siglaUFRA:
+              type: string
+              example: SP
+        dadosPessoais:
+          $ref: '#/components/schemas/DadosPessoais'
+        irmaos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Irmao'
+        documentos:
+          $ref: '#/components/schemas/Documentos'
+        justificativaDocumentos:
+          type: string
+          example: A Escola não dispõe ou não recebeu os documentos pessoais do (a)
+            aluno (a)
+        certidaoNova:
+          $ref: '#/components/schemas/CertidaoNova'
+        certidaoAntiga:
+          $ref: '#/components/schemas/CertidaoAntiga'
+        enderecoResidencial:
+          $ref: '#/components/schemas/EnderecoResidencial'
+        enderecoIndicativo:
+          $ref: '#/components/schemas/EnderecoIndicativo'
+        telefones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Telefone'
+        deficiencia:
+          $ref: '#/components/schemas/Deficiencia'
+        listaNecessidadesEspeciais:
+          type: array
+          items:
+            $ref: '#/components/schemas/NecessidadeEspecial'
+        recursoAvaliacao:
+          $ref: '#/components/schemas/RecursoAvaliacao'
+    CadastraFichaAlunoRequest:
+      type: object
+      properties:
+        dadosPessoais:
+          $ref: '#/components/schemas/DadosPessoaisRequest'
+        documentos:
+          $ref: '#/components/schemas/DocumentosRequest'
+        certidaoNova:
+          $ref: '#/components/schemas/CertidaoNovaRequest'
+        certidaoAntiga:
+          $ref: '#/components/schemas/CertidaoAntigaRequest'
+        enderecoResidencial:
+          $ref: '#/components/schemas/EnderecoResidencialRequest'
+        deficiencia:
+          $ref: '#/components/schemas/DeficienciaRequest'
+        recursoAvaliacao:
+          $ref: '#/components/schemas/RecursoAvaliacaoRequest'
+        rastreio:
+          $ref: '#/components/schemas/Rastreio'
+    EditaFichaAlunoRequest:
+      type: object
+      properties:
+        aluno:
+          type: object
+          properties:
+            numRA:
+              type: string
+              example: "000109644132"
+            digitoRA:
+              type: string
+              example: "9"
+            siglaUFRA:
+              type: string
+              example: SP
+        dadosPessoais:
+          $ref: '#/components/schemas/DadosPessoaisRequest'
+        documentos:
+          $ref: '#/components/schemas/DocumentosRequest'
+        certidaoNova:
+          $ref: '#/components/schemas/CertidaoNovaRequest'
+        certidaoAntiga:
+          $ref: '#/components/schemas/CertidaoAntigaRequest'
+        enderecoResidencial:
+          $ref: '#/components/schemas/EnderecoResidencialRequest'
+        telefones:
+          type: array
+          items:
+            $ref: '#/components/schemas/TelefoneRequest'
+        deficiencia:
+          $ref: '#/components/schemas/DeficienciaRequest'
+        recursoAvaliacao:
+          $ref: '#/components/schemas/RecursoAvaliacaoRequest'
+        rastreio:
+          $ref: '#/components/schemas/Rastreio'
+    DadosPessoaisRequest:
+      type: object
+      properties:
+        nomeAluno:
+          type: string
+          example: João da Silva
+        dataNascimento:
+          type: string
+          example: 2010-01-01
+        codCorRaca:
+          type: string
+          example: "1"
+        codSexo:
+          type: string
+          example: "1"
+        nomeMae:
+          type: string
+          example: Maria da Silva
+        nomePai:
+          type: string
+          example: José da Silva
+        nomeSocial:
+          type: string
+          example: Joana da Silva
+        nomeAfetivo:
+          type: string
+          example: Joãozinho
+        email:
+          type: string
+          example: joao.silva@gmail.com
+        codNacionalidade:
+          type: string
+          example: "1"
+        codPaisOrigem:
+          type: string
+          example: "76"
+        paisOrigem:
+          type: string
+          example: BRASIL
+        dataEntradaPais:
+          type: string
+          example: 2020-01-01
+        bolsaFamilia:
+          type: boolean
+          example: true
+        quilombola:
+          type: boolean
+          example: true
+        possuiInternet:
+          type: boolean
+          example: true
+        possuiNotebookSmartphoneTablet:
+          type: boolean
+          example: true
+        nomeMunicipioNascimento:
+          type: string
+          example: SAO PAULO
+        ufMunicipioNascimento:
+          type: string
+          example: SP
+        codMunicipioNascimentoDNE:
+          type: string
+          example: "3550308"
+        doadorOrgaos:
+          type: boolean
+          example: true
+        tipoSanguineo:
+          type: string
+          example: A+
+    DadosPessoais:
+      type: object
+      properties:
+        nomeAluno:
+          type: string
+          example: João da Silva
+        dataNascimento:
+          type: string
+          example: 2010-01-01
+        codCorRaca:
+          type: string
+          example: "1"
+        corRaca:
+          type: string
+          example: BRANCA
+        codSexo:
+          type: string
+          example: "1"
+        sexo:
+          type: string
+          example: MASCULINO
+        nomeMae:
+          type: string
+          example: Maria da Silva
+        nomePai:
+          type: string
+          example: José da Silva
+        nomeSocial:
+          type: string
+          example: Joana da Silva
+        nomeAfetivo:
+          type: string
+          example: Joãozinho
+        email:
+          type: string
+          example: joao.silva@gmail.com
+        emailGoogle:
+          type: string
+          example: joao.silva@google.com
+        emailMicrosoft:
+          type: string
+          example: joao.silva@microsoft.com
+        codNacionalidade:
+          type: string
+          example: "1"
+        nacionalidade:
+          type: string
+          example: BRASILEIRA
+        codPaisOrigem:
+          type: string
+          example: "76"
+        paisOrigem:
+          type: string
+          example: BRASIL
+        dataEntradaPais:
+          type: string
+          example: 2020-01-01
+        bolsaFamilia:
+          type: boolean
+          example: true
+        quilombola:
+          type: boolean
+          example: true
+        possuiInternet:
+          type: boolean
+          example: true
+        possuiNotebookSmartphoneTablet:
+          type: boolean
+          example: true
+        gemeo:
+          type: boolean
+          example: false
+        nomeMunicipioNascimento:
+          type: string
+          example: SAO PAULO
+        ufMunicipioNascimento:
+          type: string
+          example: SP
+        codMunicipioNascimentoDNE:
+          type: string
+          example: "3550308"
+        alunoFalecido:
+          type: boolean
+          example: false
+        dataFalecimento:
+          type: string
+          example: ""
+        doadorOrgaos:
+          type: boolean
+          example: true
+        tipoSanguineo:
+          type: string
+          example: A+
+    Documentos:
+      type: object
+      properties:
+        codigoINEP:
+          type: string
+          example: "987654321"
+        cpf:
+          type: string
+          example: "12345678909"
+        numDocumentoCivil:
+          type: string
+          example: "123456789"
+        digitoDocumentoCivil:
+          type: string
+          example: "0"
+        ufDocumentoCivil:
+          type: string
+          example: SP
+        dataEmissaoDocumentoCivil:
+          type: string
+          example: 2015-01-01
+        dataEmissaoCertidao:
+          type: string
+          example: 2015-03-05
+        codJustificativa:
+          type: string
+          example: "1"
+        numeroCns:
+          type: string
+          example: "987654321"
+        numeroNis:
+          type: string
+          example: "12345679"
+    DocumentosRequest:
+      type: object
+      properties:
+        codigoINEP:
+          type: string
+          example: "987654321"
+        cpf:
+          type: string
+          example: "12345678909"
+        numDocumentoCivil:
+          type: string
+          example: "123456789"
+        digitoDocumentoCivil:
+          type: string
+          example: "0"
+        ufDocumentoCivil:
+          type: string
+          example: SP
+        dataEmissaoDocumentoCivil:
+          type: string
+          example: 2015-01-01
+        codJustificativa:
+          type: string
+          example: "1"
+        numeroCns:
+          type: string
+          example: "987654321"
+        numeroNis:
+          type: string
+          example: "12345679"
+    CertidaoAntiga:
+      type: object
+      properties:
+        numCertidao:
+          type: string
+          example: "10"
+        livro:
+          type: string
+          example: A10
+        folha:
+          type: string
+          example: "17"
+        municipioComarca:
+          type: string
+          example: SAO PAULO
+        ufComarca:
+          type: string
+          example: SP
+        distritoCertidao:
+          type: string
+          example: Centro
+    CertidaoAntigaRequest:
+      type: object
+      properties:
+        numCertidao:
+          type: string
+          example: "10"
+        livro:
+          type: string
+          example: A10
+        folha:
+          type: string
+          example: "17"
+        municipioComarca:
+          type: string
+          example: SAO PAULO
+        ufComarca:
+          type: string
+          example: SP
+        distritoCertidao:
+          type: string
+          example: Centro
+        dataEmissaoCertidao:
+          type: string
+          example: 2004-28-07
+        codMunicComarcaDNE:
+          type: string
+          example: "82"
+    CertidaoNova:
+      type: object
+      properties:
+        certMatr01:
+          type: string
+          example: "123456"
+        certMatr02:
+          type: string
+          example: "654321"
+        certMatr03:
+          type: string
+          example: "789012"
+        certMatr04:
+          type: string
+          example: "210987"
+        certMatr05:
+          type: string
+          example: "345678"
+        certMatr06:
+          type: string
+          example: "876543"
+        certMatr07:
+          type: string
+          example: "112233"
+        certMatr08:
+          type: string
+          example: "445566"
+        certMatr09:
+          type: string
+          example: "778899"
+    CertidaoNovaRequest:
+      type: object
+      properties:
+        certMatr01:
+          type: string
+          example: "123456"
+        certMatr02:
+          type: string
+          example: "654321"
+        certMatr03:
+          type: string
+          example: "789012"
+        certMatr04:
+          type: string
+          example: "210987"
+        certMatr05:
+          type: string
+          example: "345678"
+        certMatr06:
+          type: string
+          example: "876543"
+        certMatr07:
+          type: string
+          example: "112233"
+        certMatr08:
+          type: string
+          example: "445566"
+        certMatr09:
+          type: string
+          example: "778899"
+        dataEmissaoCertidao:
+          type: string
+          example: 2004-28-07
+    EnderecoResidencial:
+      type: object
+      properties:
+        logradouro:
+          type: string
+          example: Rua das Flores
+        numero:
+          type: string
+          example: "123"
+        codAreaLogradouro:
+          type: string
+          example: "0"
+        areaLogradouro:
+          type: string
+          example: Urbana
+        complemento:
+          type: string
+          example: Apto 101
+        bairro:
+          type: string
+          example: Centro
+        cep:
+          type: string
+          example: 01000-000
+        nomeCidade:
+          type: string
+          example: SAO PAULO
+        ufCidade:
+          type: string
+          example: SP
+        codMunicipioDNE:
+          type: string
+          example: "3550308"
+        latitude:
+          type: string
+          example: "-23.550520"
+        longitude:
+          type: string
+          example: "-46.633308"
+        codLocalizacaoDiferenciada:
+          type: string
+          example: "7"
+        localizacaoDiferenciada:
+          type: string
+          example: Não está em área de localização diferenciada
+    EnderecoResidencialRequest:
+      type: object
+      properties:
+        logradouro:
+          type: string
+          example: Rua das Flores
+        numero:
+          type: string
+          example: "123"
+        codAreaLogradouro:
+          type: string
+          example: "0"
+        complemento:
+          type: string
+          example: Apto 101
+        bairro:
+          type: string
+          example: Centro
+        cep:
+          type: string
+          example: 01000-000
+        nomeCidade:
+          type: string
+          example: SAO PAULO
+        ufCidade:
+          type: string
+          example: SP
+        codMunicipioDNE:
+          type: string
+          example: "3550308"
+        latitude:
+          type: string
+          example: "-23.550520"
+        longitude:
+          type: string
+          example: "-46.633308"
+        codLocalizacaoDiferenciada:
+          type: string
+          example: "1"
+    EnderecoIndicativo:
+      type: object
+      properties:
+        logradouro:
+          type: string
+          example: ""
+        numero:
+          type: string
+          example: ""
+        bairro:
+          type: string
+          example: ""
+        nomeCidade:
+          type: string
+          example: ""
+        ufCidade:
+          type: string
+          example: ""
+        latitude:
+          type: string
+          example: ""
+        longitude:
+          type: string
+          example: ""
+        cep:
+          type: string
+          example: ""
+    Deficiencia:
+      type: object
+      properties:
+        mobilidadeReduzida:
+          type: boolean
+          example: false
+        tipoMobilidadeReduzida:
+          type: string
+          example: F
+        dataInicioMobilidadeReduzida:
+          type: string
+          example: 2022-01-01
+        dataFimMobilidadeReduzida:
+          type: string
+          example: 2026-01-01
+        codigoNivelSuporte:
+          description: "0 : Não possui<br/>1 : Nível 1<br/>2 : Nível 2<br/>3 : Ní\
+            vel 3"
+          type: string
+          example: "0"
+        profissionalApoioEscolarVO:
+          $ref: '#/components/schemas/ProfissionalApoioEscolar'
+    DeficienciaRequest:
+      type: object
+      properties:
+        codigoNecessidade:
+          type: string
+          example: 1;8;10
+        mobilidadeReduzida:
+          type: boolean
+          example: false
+        tipoMobilidadeReduzida:
+          type: string
+          example: F
+        dataInicioMobilidadeReduzida:
+          type: string
+          example: 2022-01-01
+        dataFimMobilidadeReduzida:
+          type: string
+          example: 2026-01-01
+        codigoNivelSuporte:
+          description: "Obrigatório se informado alguma necessidade em codigoNecessidade.\
+            \ <br/>1 : Nível 1<br/>2 : Nível 2<br/>3 : Nível 3"
+          type: string
+          example: "1"
+        profissionalApoioEscolarVO:
+          $ref: '#/components/schemas/ProfissionalApoioEscolar'
+    ProfissionalApoioEscolar:
+      type: object
+      properties:
+        profissionalApoioEscolar:
+          type: boolean
+          example: false
+        atividadeDiaria:
+          type: boolean
+          example: false
+        atividadeEscolar:
+          type: boolean
+          example: false
+        apoioHigiene:
+          type: boolean
+          example: false
+        apoioLocomocao:
+          type: boolean
+          example: false
+        apoioAlimentacao:
+          type: boolean
+          example: false
+        apoioBanheiro:
+          type: boolean
+          example: false
+        apoioMedicamento:
+          type: boolean
+          example: false
+        dataInicioVigenciaAtividadeDiaria:
+          type: string
+          example: 2022-01-01
+        dataFimVigenciaAtividadeDiaria:
+          type: string
+          example: 2023-01-01
+        dataInicioVigenciaAtividadeEscolar:
+          type: string
+          example: 2022-01-01
+        dataFimVigenciaAtividadeEscolar:
+          type: string
+          example: 2023-01-01
+    Telefone:
+      type: object
+      properties:
+        dddNumero:
+          type: string
+          example: "12"
+        numero:
+          type: string
+          example: "91040984"
+        tipoTelefone:
+          type: string
+          example: "3"
+        descTipoTelefone:
+          type: string
+          example: Residencial
+        complemento:
+          type: string
+          example: ""
+        sms:
+          type: boolean
+          example: false
+    TelefoneRequest:
+      type: object
+      properties:
+        dddNumero:
+          type: string
+          example: "12"
+        numero:
+          type: string
+          example: "91040984"
+        tipoTelefone:
+          type: string
+          example: "3"
+        complemento:
+          type: string
+          example: ""
+        sms:
+          type: boolean
+          example: false
+    Irmao:
+      type: object
+      properties:
+        nomeAluno:
+          type: string
+          example: Nome do Irmão Teste
+        dataNascimento:
+          type: string
+          example: 2003-03-01
+        numeroRA:
+          type: string
+          example: "001273631"
+        digitoRA:
+          type: string
+          example: "06"
+        siglaUFRA:
+          type: string
+          example: SP
+        gemeo:
+          type: boolean
+          example: false
+    NecessidadeEspecial:
+      type: object
+      properties:
+        codigoNecessidadeEspecial:
+          type: string
+          example: "12"
+        nomeNecessidadeEspecial:
+          type: string
+          example: Necessidade Teste
+    RecursoAvaliacao:
+      type: object
+      properties:
+        guiaInterprete:
+          type: boolean
+          example: false
+        interpreteLibras:
+          type: boolean
+          example: false
+        leituraLabial:
+          type: boolean
+          example: false
+        nenhum:
+          type: boolean
+          example: false
+        provaAmpliada:
+          type: boolean
+          example: false
+        tamanhoFonte:
+          type: string
+          example: "18"
+        provaBraile:
+          type: boolean
+          example: false
+        auxilioTranscricao:
+          type: boolean
+          example: false
+        auxilioLeitor:
+          type: boolean
+          example: false
+        provaVideoLibras:
+          type: boolean
+          example: false
+        cdAudioDefVisual:
+          type: boolean
+          example: false
+        provaLinguaPortuguesa:
+          type: boolean
+          example: false
+    RecursoAvaliacaoRequest:
+      type: object
+      properties:
+        guiaInterprete:
+          type: boolean
+          example: false
+        interpreteLibras:
+          type: boolean
+          example: false
+        leituraLabial:
+          type: boolean
+          example: false
+        nenhum:
+          type: boolean
+          example: false
+        provaAmpliada:
+          type: boolean
+          example: false
+        fonteProva:
+          type: string
+          example: "0"
+        fonteProva18:
+          type: boolean
+          example: false
+        fonteProva20:
+          type: boolean
+          example: false
+        provaBraile:
+          type: boolean
+          example: false
+        auxilioTranscricao:
+          type: boolean
+          example: false
+        auxilioLeitor:
+          type: boolean
+          example: false
+        provaVideoLibras:
+          type: boolean
+          example: false
+        cdAudioDefVisual:
+          type: boolean
+          example: false
+        provaLinguaPortuguesa:
+          type: boolean
+          example: false
+    Rastreio:
+      type: object
+      properties:
+        usuarioRemoto:
+          type: string
+          example: "123456"
+        nomeUsuario:
+          type: string
+          example: Admin
+        numCPF:
+          type: string
+          example: "12345678909"
+        localPerfilAcesso:
+          type: string
+          example: SAO PAULO
+  responses:
+    NoContent:
+      description: Consulta realizada com sucesso. Nenhum objeto encontrado com os
+        dados informados.
+    ValidationError:
+      description: Erro de validação
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                enum:
+                - "400"
+                type: string
+              trace:
+                description: Trace ID
+                type: string
+              messages:
+                type: array
+                items:
+                  description: Mensagens de erro
+                  type: string
+    UnauthorizedError:
+      description: Token inválido ou expirado.
+    ForbiddenError:
+      description: Em requisições que o cliente não tem permissão de acesso ao recurso
+        solicitado.
+    InternalServerError:
+      description: Erro interno.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                enum:
+                - "500"
+                type: string
+              trace:
+                description: Trace ID
+                type: string
+              messages:
+                type: array
+                items:
+                  description: Mensagens de erro
+                  type: string
+  securitySchemes:
+    IdpSP:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://rhsso.idp-hml.sp.gov.br/auth/realms/idpsp/protocol/openid-connect/token
+          scopes:
+            api:integrador.seduc-fichas.consultas: Scope utilizado para todas as consultas
+            api:integrador.seduc-fichas.atualizacoes: Scope utilizado para atualizações
+        authorizationCode:
+          authorizationUrl: https://rhsso.idp-hml.sp.gov.br/auth/realms/idpsp/protocol/openid-connect/auth
+          tokenUrl: https://rhsso.idp-hml.sp.gov.br/auth/realms/idpsp/protocol/openid-connect/token
+          scopes:
+            api:integrador.seduc-fichas.consultas: Scope utilizado para todas as consultas
+            api:integrador.seduc-fichas.atualizacoes: Scope utilizado para atualizações
+    SecurityScheme:
+      type: http
+      description: Authentication
+      scheme: basic

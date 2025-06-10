@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ceeja_app/core/theme/app_theme.dart'; 
+import 'package:ceeja_app/core/theme/app_theme.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -13,6 +13,8 @@ class CustomTextField extends StatelessWidget {
   final Function(String)? onChanged;
   final Function(String)? onSubmitted;
   final bool enabled;
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   const CustomTextField({
     super.key, // Correção aqui
@@ -27,6 +29,8 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.onSubmitted,
     this.enabled = true,
+    this.readOnly = false,
+    this.onTap,
   }); // Correção aqui
 
   @override
@@ -40,13 +44,20 @@ class CustomTextField extends StatelessWidget {
       onChanged: onChanged,
       onFieldSubmitted: onSubmitted,
       enabled: enabled,
-      style: const TextStyle(color: AppTheme.blackColor), // Cor do texto digitado
+      readOnly: readOnly,
+      onTap: onTap,
+      style: const TextStyle(
+        color: AppTheme.blackColor,
+      ), // Cor do texto digitado
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,
         labelStyle: TextStyle(color: Colors.grey.shade700),
         hintStyle: TextStyle(color: Colors.grey.shade500),
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Colors.grey.shade600) : null,
+        prefixIcon:
+            prefixIcon != null
+                ? Icon(prefixIcon, color: Colors.grey.shade600)
+                : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
           borderSide: BorderSide(color: Colors.grey.shade400),
@@ -57,7 +68,10 @@ class CustomTextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
-          borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2.0),
+          borderSide: const BorderSide(
+            color: AppTheme.primaryColor,
+            width: 2.0,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
@@ -69,9 +83,11 @@ class CustomTextField extends StatelessWidget {
         ),
         filled: true,
         fillColor: AppTheme.whiteColor, // Fundo do campo de texto
-        contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16.0,
+          horizontal: 12.0,
+        ),
       ),
     );
   }
 }
-

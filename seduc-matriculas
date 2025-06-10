@@ -1,0 +1,828 @@
+---
+openapi: 3.0.3
+info:
+  title: seduc-matriculas API
+  version: 1.0.0
+servers:
+- url: https://seduc-matriculas.api-hml.rota.sp.gov.br
+  description: Homologação
+security:
+- IdpSP: []
+paths:
+  /concluintes:
+    get:
+      tags:
+      - Educação
+      summary: Consulta Pública de Concluintes
+      parameters:
+      - name: numeroRG
+        in: query
+        description: "Número do RG do aluno, sem o digito"
+        required: false
+        schema:
+          type: string
+          example: "34844729"
+      - name: siglaUFRG
+        in: query
+        required: false
+        schema:
+          type: string
+          example: SP
+      - name: numeroRne
+        in: query
+        description: "Número o RNE do aluno, caso de nacionalidade estrangeira"
+        required: false
+        schema:
+          type: string
+          example: F129474U
+      - name: numeroRA
+        in: query
+        description: "Número do RA do aluno, sem o digito"
+        required: false
+        schema:
+          type: string
+          example: "55690038"
+      - name: numeroVistoConfere
+        in: query
+        description: Identificação do ato de publicação
+        required: false
+        schema:
+          type: string
+          example: "2288689859"
+      responses:
+        "200":
+          description: Executado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaConcluinteResponse'
+        "204":
+          description: Nenhum concluinte encontrado.
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-matriculas.consultas
+  /declaracoes:
+    get:
+      tags:
+      - Educação
+      summary: Consultar declaração de matricula
+      parameters:
+      - name: numeroRA
+        in: query
+        required: true
+        schema:
+          type: string
+          example: "33753183"
+      - name: digitoRA
+        in: query
+        required: false
+        schema:
+          type: string
+          example: "3"
+      - name: siglaUFRA
+        in: query
+        required: true
+        schema:
+          type: string
+          example: SP
+      - name: dataNascimento
+        in: query
+        required: true
+        schema:
+          format: YYYY-MM-DD
+          type: string
+          example: 1981-03-25
+      responses:
+        "200":
+          description: Executado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaDeclaracaoMatriculaResponse'
+        "204":
+          description: Matrícula não localizada.
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-matriculas.consultas
+  /matriculas:
+    get:
+      tags:
+      - Educação
+      summary: Consulta de matriculas
+      parameters:
+      - name: tipo
+        in: query
+        required: true
+        schema:
+          enum:
+          - PUBLICA
+          type: string
+          example: PUBLICA
+      - name: numeroRA
+        in: query
+        required: true
+        schema:
+          type: string
+          example: "000107760359"
+      - name: digitoRA
+        in: query
+        required: false
+        schema:
+          type: string
+          example: "9"
+      - name: siglaUFRA
+        in: query
+        required: true
+        schema:
+          type: string
+          example: SP
+      - name: dataNascimento
+        in: query
+        required: true
+        schema:
+          format: YYYY-MM-DD
+          type: string
+          example: 2007-12-06
+      responses:
+        "200":
+          description: Executado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaMatriculaPubResponse'
+        "204":
+          description: Nenhuma matrícula encontrada.
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      deprecated: true
+      security:
+      - IdpSP:
+        - api:integrador.seduc-matriculas.consultas
+  /v2/matriculas:
+    get:
+      tags:
+      - Educação
+      summary: Consulta de matriculas
+      parameters:
+      - name: tipo
+        in: query
+        required: true
+        schema:
+          enum:
+          - PUBLICA
+          - RA
+          type: string
+      - name: numeroRA
+        in: query
+        required: true
+        schema:
+          type: string
+          example: "000107760359"
+      - name: digitoRA
+        in: query
+        required: false
+        schema:
+          type: string
+          example: "9"
+      - name: siglaUFRA
+        in: query
+        required: true
+        schema:
+          enum:
+          - AC
+          - AL
+          - AM
+          - AP
+          - BA
+          - CE
+          - DF
+          - ES
+          - GO
+          - MA
+          - MG
+          - MS
+          - MT
+          - PA
+          - PB
+          - PE
+          - PI
+          - PR
+          - RJ
+          - RN
+          - RO
+          - RR
+          - RS
+          - SC
+          - SE
+          - SP
+          - TO
+          type: string
+          example: SP
+      - name: dataNascimento
+        in: query
+        description: "Campo obrigatório para consulta tipo: <b>PUBLICA</b>"
+        schema:
+          format: YYYY-MM-DD
+          type: string
+          example: 2007-12-06
+      responses:
+        "200":
+          description: Executado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaMatriculaV2Response'
+              examples:
+                PUBLICA:
+                  value:
+                    processoId: 15151515
+                    aluno:
+                      nome: LORENA AYRES PEREIRA DOMINGUES
+                      nomeSocial: NÃO INFORMADO
+                      dataNascimento: 2007-04-05
+                      matriculas:
+                      - anoLetivo: "2024"
+                        codigoEscola: "428917"
+                        descricaoNomeAbreviadoEscola: ETEC DE PIEDADE
+                        descricaoTipoEnsino: ENSINO MÉDIO COM HABILITAÇÃO TÉCNICA
+                          PRO
+                        descricaoTurma: 1016 - MEIO AMBIENTE - 2ª SERIE 2A INTEGRAL
+                          ANUAL
+                        descricaoSituacaoTransporteEscolar: Não Informado
+                        enderecoEscola: RUA BENTO XAVIER DE OLIVEIRA
+                        telefoneEscola: "1532441367"
+                    urlArquivoPdf: https://arquivos.api-dev.rota.sp.gov.br/ds/56/931e6dca-5636-409c-bf83-158b43c83285
+                RA:
+                  value:
+                    processoId: 573226476
+                    aluno:
+                      numeroRA: "000109644132"
+                      digitoRA: "9"
+                      siglaUFRA: SP
+                      nome: CRISTHIAN TOBIAS GONÇALVES CARLOS
+                      nomeMae: TANIA DA SILVA TOBIAS GONCALVES
+                      dataNascimento: 2007-09-30
+                      nomePai: EVERSON HENRIQUE DA SILVA GONCALVES CARLOS
+                      matriculas:
+                      - anoLetivo: "2025"
+                        municipio: GUARATINGUETA
+                        redeEnsino: ESTADUAL - SE
+                        codigoEscola: "12634"
+                        codigoUnidade: "320"
+                        descricaoNomeAbreviadoEscola: CLOTILDE AYELLO ROCHA PROFA
+                        numeroClasse: "291477172"
+                        numeroAluno: "35"
+                        codigoTurno: "5"
+                        descricaoTurno: NOITE
+                        codigoTipoEnsino: "101"
+                        descricaoTipoEnsino: NOVO ENSINO MÉDIO
+                        codigoSerieAno: "2"
+                        descricaoSerieAno: 2ª SERIE
+                        grauNivel: "0"
+                        serieNivel: "0"
+                        turma: b
+                        descricaoTurma: 2ª SERIE B NOITE ANUAL
+                        dataInicioMatricula: 2025-02-03
+                        dataFimMatricula: 2025-12-09
+                        dataInclusaoMatricula: 2024-09-22T16:18:43
+                        codigoSituacaoMatricula: "0"
+                        descricaoSituacaoMatricula: ATIVO
+                        descricaoSituacaoTransporteEscolar: NÃO INFORMADO
+        "204":
+          description: Nenhuma matrícula encontrada.
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/UnauthorizedError'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - IdpSP:
+        - api:integrador.seduc-matriculas.consultas
+components:
+  schemas:
+    ConsultaConcluinteResponse:
+      type: object
+      properties:
+        concluintes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Concluinte'
+        concluintesCsu:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConcluinteCsu'
+        urlArquivoPdf:
+          type: string
+          example: https://arquivos.api-hml.rota.sp.gov.br/ds/35/123
+        processoId:
+          type: string
+          example: "491740614"
+        mensagem:
+          type: string
+          example: OK
+    Concluinte:
+      type: object
+      properties:
+        nomeAluno:
+          type: string
+          example: ABIMAEL DA SILVA LOPES
+        anoLetivo:
+          type: string
+          example: "2001"
+        nomeDiretoria:
+          type: string
+          example: GUARULHOS NORTE
+        nomeCompletoEscola:
+          type: string
+          example: JOSE LEME LOPES DOUTOR
+        nomeEscola:
+          type: string
+          example: JOSE LEME LOPES DOUTOR
+        descricaoMunicipio:
+          type: string
+          example: GUARULHOS
+        descricaoArea:
+          type: string
+        descricaoModalidade:
+          type: string
+          example: REGULAR
+        nomeCursoProfissional:
+          type: string
+        atoLegal:
+          type: string
+          example: AUTORIZAÇÃO DE ESCOLA CONFORME RESOLUCAO SE 67 DE 16/03/1990 PUBLICADO(A)
+            EM 16/03/1990
+        atoLegalEscola:
+          type: string
+          example: CRIACAO CONFORME DECRETO DE 05/02/1990
+        nomeSocial:
+          type: string
+        numeroRG:
+          type: string
+          example: "34844729"
+        numeroRNE:
+          type: string
+        numeroRA:
+          type: string
+        digitoRGRNE:
+          type: string
+          example: "2"
+        siglaUFRG:
+          type: string
+          example: SP
+        codigoRedeEnsino:
+          type: string
+          example: "1"
+        nivelEnsinoPublico:
+          type: string
+          example: FUNDAMENTAL
+        numeroAtoLegalEscola:
+          type: string
+          example: "31184"
+        dataPublicacaoAtoLegalEscola:
+          format: YYYY-MM-DD
+          type: string
+          example: 1990-02-06
+        numeroVistoConfere:
+          type: string
+          example: "00310407001"
+        dataPublicacaoConcluinte:
+          format: YYYY-MM-DD
+          type: string
+          example: 2003-05-05
+        semEfeito:
+          format: int32
+          type: integer
+          example: 0
+    ConcluinteCsu:
+      type: object
+      properties:
+        nomeAluno:
+          type: string
+          example: ABIMAEL DA SILVA LOPES
+        numeroRG:
+          type: string
+          example: "34844729"
+        digitoRGRNE:
+          type: string
+          example: "2"
+        numeroRNE:
+          type: string
+        siglaUFRG:
+          type: string
+          example: SP
+        anoExpedicao:
+          type: string
+          example: "2020"
+        anoConclusao:
+          type: string
+          example: "2019"
+        numeroVistoConfere:
+          type: string
+          example: "2065744442"
+        atoLegal:
+          type: string
+          example: "Decreto N. 57.141/2011 / Resolução SE 49, de 10/5/2012"
+        orgao:
+          type: string
+          example: Centro de Aplicação de Avaliações / Centro de Educação de Jovens
+            e Adultos
+        grau:
+          type: string
+          example: Médio
+        situacao:
+          type: string
+        obs:
+          type: string
+        dataPublicacao:
+          format: YYYY-MM-DD
+          type: string
+          example: 2020-02-26
+        semEfeito:
+          format: int32
+          type: integer
+          example: 0
+    ConsultaDeclaracaoMatriculaResponse:
+      type: object
+      properties:
+        codigoAluno:
+          format: int32
+          type: integer
+          example: 758637
+        numeroRA:
+          type: string
+          example: "000033753183"
+        digitoRA:
+          type: string
+          example: "3"
+        siglaUFRA:
+          type: string
+          example: SP
+        numeroRG:
+          type: string
+          example: "00000033753183"
+        digitoRG:
+          type: string
+          example: "3"
+        siglaUFRG:
+          type: string
+          example: SP
+        numeroRNE:
+          type: string
+        dataNascimento:
+          format: YYYY-MM-DD
+          type: string
+          example: 1981-03-25
+        nomeAluno:
+          type: string
+          example: ALEXANDRE SOUZA DE OLIVEIRA
+        anoLetivo:
+          type: string
+          example: "2024"
+        nomeDiretoria:
+          type: string
+          example: CENTRO SUL
+        codigoEscola:
+          format: int32
+          type: integer
+          example: 3827
+        nomeEscola:
+          type: string
+          example: RODRIGUES ALVES
+        nomeMunicipio:
+          type: string
+          example: SAO PAULO
+        descricaoTurno:
+          type: string
+          example: NOITE
+        horaInicial:
+          type: string
+          example: 2023-01-01T19:46:00
+        horaFinal:
+          type: string
+          example: 2023-01-01T23:01:00
+        descricaoTipoEnsino:
+          type: string
+          example: EJA ENSINO MEDIO
+        codigoTurma:
+          format: int32
+          type: integer
+          example: 39378914
+        turma:
+          type: string
+          example: 3° TERMO A NOITE 1° SEMESTRE
+        codigoSerieAno:
+          format: int32
+          type: integer
+          example: 3
+        codigoMatricula:
+          format: int64
+          type: integer
+          example: 900114293504
+        situacaoAluno:
+          type: string
+          example: Ativo
+        texto:
+          type: string
+          example: "ALEXANDRE SOUZA DE OLIVEIRA, RA: 000033753183-3, RG/RNM: 00000033753183-3-SP,\
+            \ nascido(a) em 25/03/1981, está regularmente matriculado no(a) 3° TERMO\
+            \ A NOITE 1° SEMESTRE, do EJA ENSINO MEDIO, neste estabelecimento."
+        dataIncialMatricula:
+          type: string
+          example: 2024-02-15T00:00:00
+        dataFinalMatricula:
+          type: string
+          example: 2024-07-08T00:00:00
+        nomeResponsavelPelaAssinatura:
+          type: string
+          example: TESTE TESTE
+        rgResponsavelPelaAssinatura:
+          type: string
+          example: 11144456-0/SP
+        urlArquivoPdf:
+          type: string
+          example: https://arquivos.api-hml.rota.sp.gov.br/ds/35/123
+        urlArquivo:
+          type: string
+          example: https://ftpseesp.blob.core.windows.net/cofiprod/00003375318332024393789149001142935048a43d4c1-0c94-4831-b498-9b502b7068b5.pdf
+        urlImagemBrasaoSP:
+          type: string
+          example: https://arquivos.api-hml.rota.sp.gov.br/ds/35/123
+        urlImagemQrCode:
+          type: string
+          example: https://arquivos.api-hml.rota.sp.gov.br/ds/35/123
+        urlImagemAssinatura:
+          type: string
+          example: https://arquivos.api-hml.rota.sp.gov.br/ds/35/123
+        processoId:
+          type: string
+          example: "491740614"
+        mensagem:
+          type: string
+          example: OK
+    ConsultaMatriculaPubResponse:
+      type: object
+      properties:
+        aluno:
+          $ref: '#/components/schemas/Aluno'
+        urlArquivoPdf:
+          type: string
+          example: https://arquivos.api-hml.rota.sp.gov.br/ds/35/123
+        processoId:
+          type: string
+          example: "491740614"
+        mensagem:
+          type: string
+          example: OK
+    Aluno:
+      type: object
+      properties:
+        nome:
+          type: string
+        nomeSocial:
+          type: string
+        dataNascimento:
+          type: string
+        matriculas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Matricula'
+    Matricula:
+      type: object
+      properties:
+        anoLetivo:
+          type: string
+        codigoEscola:
+          type: string
+        descricaoNomeAbreviadoEscola:
+          type: string
+        descricaoTipoEnsino:
+          type: string
+        descricaoTurma:
+          type: string
+        descricaoSituacaoTransporteEscolar:
+          type: string
+        enderecoEscola:
+          type: string
+        telefoneEscola:
+          type: string
+    ConsultaMatriculaV2Response:
+      type: object
+      properties:
+        aluno:
+          $ref: '#/components/schemas/AlunoV2'
+        urlArquivoPdf:
+          type: string
+          example: https://arquivos.api-hml.rota.sp.gov.br/ds/35/123
+        processoId:
+          type: string
+          example: "491740614"
+        mensagem:
+          type: string
+          example: OK
+    AlunoV2:
+      type: object
+      properties:
+        nome:
+          type: string
+        numeroRA:
+          type: string
+        digitoRA:
+          type: string
+        siglaUFRA:
+          enum:
+          - AC
+          - AL
+          - AM
+          - AP
+          - BA
+          - CE
+          - DF
+          - ES
+          - GO
+          - MA
+          - MG
+          - MS
+          - MT
+          - PA
+          - PB
+          - PE
+          - PI
+          - PR
+          - RJ
+          - RN
+          - RO
+          - RR
+          - RS
+          - SC
+          - SE
+          - SP
+          - TO
+          type: string
+        nomeSocial:
+          type: string
+        dataNascimento:
+          type: string
+          example: 2024-07-08T00:00:00
+        nomeMae:
+          type: string
+        nomePai:
+          type: string
+        matriculas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatriculaV2'
+    MatriculaV2:
+      type: object
+      properties:
+        anoLetivo:
+          type: string
+        municipio:
+          type: string
+        redeEnsino:
+          type: string
+        codigoUnidade:
+          type: string
+        descricaoNomeAbreviadoEscola:
+          type: string
+        numeroClasse:
+          type: string
+        numeroAluno:
+          type: string
+        codigoEscola:
+          type: string
+        codigoTurno:
+          type: string
+        descricaoTurno:
+          type: string
+        codigoTipoEnsino:
+          type: string
+        codigoSerieAno:
+          type: string
+        descricaoSerieAno:
+          type: string
+        grauNivel:
+          type: string
+        serieNivel:
+          type: string
+        turma:
+          type: string
+        dataInicioMatricula:
+          type: string
+          example: 2024-07-08T00:00:00
+        dataFimMatricula:
+          type: string
+          example: 2024-07-08T00:00:00
+        dataInclusaoMatricula:
+          type: string
+          example: 2024-07-08T00:00:00
+        codigoSituacaoMatricula:
+          type: string
+        descricaoSituacaoMatricula:
+          type: string
+        descricaoTipoEnsino:
+          type: string
+        descricaoTurma:
+          type: string
+        codigoSituacaoTransporteEscolar:
+          type: string
+        descricaoSituacaoTransporteEscolar:
+          type: string
+        codigoHabilitacao:
+          type: string
+        descricaoHabilitacao:
+          type: string
+        enderecoEscola:
+          type: string
+        telefoneEscola:
+          type: string
+  responses:
+    Forbidden:
+      description: Cliente não tem permissão de acesso ao recurso solicitado
+    UnauthorizedError:
+      description: Access token é invalido ou expirado
+    ValidationError:
+      description: Erro de validação
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                enum:
+                - 400
+                type: string
+              trace:
+                description: Trace ID
+                type: string
+              messages:
+                type: array
+                items:
+                  description: Mensagens de erro
+                  type: string
+    InternalServerError:
+      description: Erro interno.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                enum:
+                - "500"
+                type: string
+              trace:
+                description: Trace ID
+                type: string
+                example: f2fa5f28-9621-4683-8b93-5bf039ee9471
+              messages:
+                type: array
+                items:
+                  description: "Mensagens de erro, (mensagem será dinâmica de acordo\
+                    \ com erro)"
+                  type: string
+                  example: Ocorreu um erro ao tentar acessar o recurso
+  securitySchemes:
+    IdpSP:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://rhsso.idp-hml.sp.gov.br/auth/realms/idpsp/protocol/openid-connect/token
+          scopes:
+            api:integrador.seduc-matriculas.consultas: Scope utilizado para as operações
+              de consultas
+        authorizationCode:
+          authorizationUrl: https://rhsso.idp-hml.sp.gov.br/auth/realms/idpsp/protocol/openid-connect/auth
+          tokenUrl: https://rhsso.idp-hml.sp.gov.br/auth/realms/idpsp/protocol/openid-connect/token
+          scopes:
+            api:integrador.seduc-matriculas.consultas: Scope utilizado para as operações
+              de consultas
+    SecurityScheme:
+      type: http
+      description: Authentication
+      scheme: basic

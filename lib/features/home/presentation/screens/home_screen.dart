@@ -1,3 +1,4 @@
+import 'package:ceeja_app/features/enrollment/presentation/screens/enrollment_stepper_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart'; // Verifique se este caminho está correto
@@ -30,16 +31,21 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Image.asset('assets/LOGOTIPO_CEEJA.png', height: 150),
+            const SizedBox(height: 20),
             const Text('Bem-vindo(a)!'),
             if (authProvider.currentUser != null)
               Text('Logado como: ${authProvider.currentUser!.email}'),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Adicione navegação para outras funcionalidades aqui
-                // Exemplo: context.go('/matriculas');
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const EnrollmentStepperScreen(),
+                  ),
+                );
               },
-              child: const Text('Ir para Matrículas (Exemplo)'),
+              child: const Text('Requerimento de Matrícula'),
             ),
           ],
         ),

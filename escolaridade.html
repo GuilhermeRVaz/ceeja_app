@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEEJA Lins - Escolaridade</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="images/logo-ceeja.png" alt="Logo CEEJA Lins" class="logo">
+        </div>
+        <h1>Centro Estadual de Educação de Jovens e Adultos de Lins</h1>
+        <p>Formulário de Matrícula - Escolaridade</p>
+    </header>
+
+    <div class="container">
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="step completed">
+                    <span>1</span>
+                    <div class="step-label">Dados Pessoais</div>
+                </div>
+                <div class="step completed">
+                    <span>2</span>
+                    <div class="step-label">Endereço</div>
+                </div>
+                <div class="step active">
+                    <span>3</span>
+                    <div class="step-label">Escolaridade</div>
+                </div>
+                <div class="step">
+                    <span>4</span>
+                    <div class="step-label">Documentos</div>
+                </div>
+            </div>
+            <div class="progress-line">
+                <div class="progress-indicator"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Escolaridade</h2>
+            <p>Preencha os dados sobre sua escolaridade abaixo. Os campos marcados com <span class="required">*</span> são obrigatórios.</p>
+            
+            <form id="form-escolaridade" 
+                  action="http://localhost:5678/webhook/ceeja-escolaridade" 
+                  method="POST" 
+                  data-form-name="escolaridade" 
+                  data-next-page="documentos.html">
+                
+                <div class="form-group">
+                    <label for="serie_requerida" class="required">Requer matrícula no <span class="required">*</span></label>
+                    <select id="serie_requerida" name="serie_requerida" required autocomplete="off">
+                        <option value="">Selecione</option>
+                        <option value="F">Ensino Fundamental</option>
+                        <option value="M">Ensino Médio</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="itinerario-container" style="display: none;">
+                    <label for="itinerario" class="required">Itinerário <span class="required">*</span></label>
+                    <select id="itinerario" name="itinerario" autocomplete="off">
+                        <option value="">Selecione</option>
+                        <option value="Ciências Humanas com Linguagens">Ciências Humanas com Linguagens</option>
+                        <option value="Ciências da Natureza com Matemática">Ciências da Natureza com Matemática</option>
+                    </select>
+                </div>
+                
+                <fieldset class="form-group">
+                    <legend>Já estudou no CEEJA?</legend>
+                    <div class="radio-group">
+                        <label for="estudouCeejaSim" class="radio-item">
+                            <input type="radio" name="estudou_ceeja" value="Sim" id="estudouCeejaSim">
+                            Sim
+                        </label>
+                        <label for="estudouCeejaNao" class="radio-item">
+                            <input type="radio" name="estudou_ceeja" value="Não" id="estudouCeejaNao" checked>
+                            Não
+                        </label>
+                    </div>
+                </fieldset>
+                
+                <fieldset class="form-group">
+                    <legend>Fez ENEM, Encceja, Telecurso ou Eliminou Matérias?</legend>
+                    <div class="checkbox-group">
+                        <label for="eliminouMateriasSim" class="checkbox-item">
+                            <input type="checkbox" name="eliminou_materias_status" value="Sim" id="eliminouMateriasSim">
+                            Sim
+                        </label>
+                    </div>
+                </fieldset>
+                
+                <div id="disciplinas-eliminadas-container" style="display: none;">
+                    <fieldset class="form-group">
+                        <legend>Disciplinas Eliminadas</legend>
+                        <div class="checkbox-group grid grid-3">
+                            <label for="elim_portugues" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Português" id="elim_portugues">
+                                Português
+                            </label>
+                            <label for="elim_arte" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Arte" id="elim_arte">
+                                Arte
+                            </label>
+                            <label for="elim_ingles" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Inglês" id="elim_ingles">
+                                Inglês
+                            </label>
+                            <label for="elim_matematica" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Matemática" id="elim_matematica">
+                                Matemática
+                            </label>
+                            <label for="elim_historia" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="História" id="elim_historia">
+                                História
+                            </label>
+                            <label for="elim_geografia" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Geografia" id="elim_geografia">
+                                Geografia
+                            </label>
+                            <label for="elim_sociologia" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Sociologia" id="elim_sociologia">
+                                Sociologia
+                            </label>
+                            <label for="elim_filosofia" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Filosofia" id="elim_filosofia">
+                                Filosofia
+                            </label>
+                            <label for="elim_fisica" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Física" id="elim_fisica">
+                                Física
+                            </label>
+                            <label for="elim_quimica" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Química" id="elim_quimica">
+                                Química
+                            </label>
+                            <label for="elim_biologia" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Biologia" id="elim_biologia">
+                                Biologia
+                            </label>
+                            <label for="elim_ciencias" class="checkbox-item">
+                                <input type="checkbox" name="disciplinas_eliminadas[]" value="Ciências" id="elim_ciencias">
+                                Ciências
+                            </label>
+                        </div>
+                    </fieldset>
+                </div>
+                
+                <fieldset class="form-group">
+                    <legend>Possui DP?</legend>
+                    <div class="radio-group">
+                        <label for="possuiDpSim" class="radio-item">
+                            <input type="radio" name="dp_status" value="Sim" id="possuiDpSim">
+                            Sim
+                        </label>
+                        <label for="possuiDpNao" class="radio-item">
+                            <input type="radio" name="dp_status" value="Não" id="possuiDpNao" checked>
+                            Não
+                        </label>
+                    </div>
+                </fieldset>
+                
+                <div id="series-dp-container" style="display: none;">
+                    <fieldset class="form-group">
+                        <legend>Séries com DP</legend>
+                        <div class="checkbox-group grid grid-2">
+                            <label for="dp_8" class="checkbox-item">
+                                <input type="checkbox" name="dp_series[]" value="8ª" id="dp_8">
+                                8ª
+                            </label>
+                            <label for="dp_1em" class="checkbox-item">
+                                <input type="checkbox" name="dp_series[]" value="1º Ensino Médio" id="dp_1em">
+                                1º Ensino Médio
+                            </label>
+                            <label for="dp_2em" class="checkbox-item">
+                                <input type="checkbox" name="dp_series[]" value="2º Ensino Médio" id="dp_2em">
+                                2º Ensino Médio
+                            </label>
+                            <label for="dp_3em" class="checkbox-item">
+                                <input type="checkbox" name="dp_series[]" value="3º Ensino Médio" id="dp_3em">
+                                3º Ensino Médio
+                            </label>
+                        </div>
+                    </fieldset>
+                    <div id="disciplinas-dp-container" style="display: none;">
+                        <fieldset class="form-group">
+                            <legend>Disciplinas com DP</legend>
+                            <div class="checkbox-group grid grid-3" id="disciplinas-dp-checkboxes">
+                                <!-- Checkboxes serão adicionados dinamicamente aqui -->
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ultima_serie_concluida" class="required">Última série concluída <span class="required">*</span></label>
+                    <select id="ultima_serie_concluida" name="ultima_serie_concluida" required autocomplete="off">
+                        <option value="">Selecione</option>
+                        <option value="4ª série">4ª série</option>
+                        <option value="5ª série">5ª série</option>
+                        <option value="6ª série">6ª série</option>
+                        <option value="7ª série">7ª série</option>
+                        <option value="8ª série">8ª série</option>
+                        <option value="1º Ensino Médio">1º Ensino Médio</option>
+                        <option value="2º Ensino Médio">2º Ensino Médio</option>
+                        <option value="3º Ensino Médio">3º Ensino Médio</option>
+                    </select>
+                </div>
+                
+                <fieldset class="form-group">
+                    <legend>Educação Física?</legend>
+                    <div class="radio-group">
+                        <label for="educacaoFisicaSim" class="radio-item">
+                            <input type="radio" name="educacao_fisica" value="Sim" id="educacaoFisicaSim">
+                            Sim
+                        </label>
+                        <label for="educacaoFisicaNao" class="radio-item">
+                            <input type="radio" name="educacao_fisica" value="Não" id="educacaoFisicaNao" checked>
+                            Não
+                        </label>
+                    </div>
+                    <div class="info-text">
+                        <i class="fas fa-info-circle"></i> A Educação Física é facultativa para alunos que trabalham, têm mais de 30 anos, filhos ou problemas de saúde.
+                    </div>
+                </fieldset>
+                
+                <div class="buttons-container">
+                    <a href="endereco.html" class="btn btn-secondary">Anterior</a>
+                    <button type="submit" class="btn">Próximo</button>
+                </div>
+            </form>
+            
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Processando, aguarde...</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 CEEJA Lins - Centro Estadual de Educação de Jovens e Adultos de Lins</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            setupEscolaridadeLogic();
+            FormLoader.loadFormDataAndFillFields("escolaridade", document.getElementById("form-escolaridade"));
+            updateProgressBar();
+        });
+    </script>
+</body>
+</html>
