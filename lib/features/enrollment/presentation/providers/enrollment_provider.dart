@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:ceeja_app/features/enrollment/data/repositories/enrollment_repository.dart';
 import 'package:ceeja_app/features/enrollment/data/services/cep_service.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/address_model.dart';
@@ -30,9 +32,75 @@ class EnrollmentProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> savePersonalData() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Usuário não autenticado.');
+      }
+      _personalData = _personalData.copyWith(userId: userId);
+      await _repository.savePersonalData(_personalData);
+      // TODO: Adicionar feedback de sucesso para o usuário
+    } catch (e) {
+      // TODO: Adicionar feedback de erro para o usuário
+      print('Erro no provider ao salvar dados pessoais: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> loadPersonalData() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Usuário não autenticado.');
+      }
+      final data = await _repository.getPersonalData(userId);
+      if (data != null) {
+        _personalData = data;
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Erro no provider ao carregar dados pessoais: $e');
+      // Não rethrow aqui, pois pode ser que o usuário ainda não tenha dados
+    }
+  }
+
   void updateAddressData(AddressModel data) {
     _addressData = data;
     notifyListeners();
+  }
+
+  Future<void> saveAddressData() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Usuário não autenticado.');
+      }
+      _addressData = _addressData.copyWith(userId: userId);
+      await _repository.saveAddressData(_addressData);
+      // TODO: Adicionar feedback de sucesso para o usuário
+    } catch (e) {
+      // TODO: Adicionar feedback de erro para o usuário
+      print('Erro no provider ao salvar dados de endereço: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> loadAddressData() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Usuário não autenticado.');
+      }
+      final data = await _repository.getAddressData(userId);
+      if (data != null) {
+        _addressData = data;
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Erro no provider ao carregar dados de endereço: $e');
+      // Não rethrow aqui, pois pode ser que o usuário ainda não tenha dados
+    }
   }
 
   Future<void> fetchAddressByCep(String cep) async {
@@ -55,80 +123,185 @@ class EnrollmentProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> saveSchoolingData() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Usuário não autenticado.');
+      }
+      _schoolingData = _schoolingData.copyWith(userId: userId);
+      await _repository.saveSchoolingData(_schoolingData);
+      // TODO: Adicionar feedback de sucesso para o usuário
+    } catch (e) {
+      // TODO: Adicionar feedback de erro para o usuário
+      print('Erro no provider ao salvar dados acadêmicos: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> loadSchoolingData() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Usuário não autenticado.');
+      }
+      final data = await _repository.getSchoolingData(userId);
+      if (data != null) {
+        _schoolingData = data;
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Erro no provider ao carregar dados acadêmicos: $e');
+      // Não rethrow aqui, pois pode ser que o usuário ainda não tenha dados
+    }
+  }
+
   void updateDocumentsData(DocumentsModel data) {
     _documentsData = data;
     notifyListeners();
   }
 
-  void updateRgFrentePath(String? path) {
-    _documentsData = _documentsData.copyWith(rgFrentePath: path);
+  void updateRgFrente({String? path, Uint8List? bytes, String? fileName}) {
+    _documentsData = _documentsData.copyWith(
+      rgFrentePath: path,
+      rgFrenteBytes: bytes,
+      rgFrenteFileName: fileName,
+    );
     notifyListeners();
   }
 
-  void updateRgVersoPath(String? path) {
-    _documentsData = _documentsData.copyWith(rgVersoPath: path);
+  void updateRgVerso({String? path, Uint8List? bytes, String? fileName}) {
+    _documentsData = _documentsData.copyWith(
+      rgVersoPath: path,
+      rgVersoBytes: bytes,
+      rgVersoFileName: fileName,
+    );
     notifyListeners();
   }
 
-  void updateCpfDocPath(String? path) {
-    _documentsData = _documentsData.copyWith(cpfDocPath: path);
+  void updateCpfDoc({String? path, Uint8List? bytes, String? fileName}) {
+    _documentsData = _documentsData.copyWith(
+      cpfDocPath: path,
+      cpfDocBytes: bytes,
+      cpfDocFileName: fileName,
+    );
     notifyListeners();
   }
 
-  void updateFoto3x4Path(String? path) {
-    _documentsData = _documentsData.copyWith(foto3x4Path: path);
+  void updateFoto3x4({String? path, Uint8List? bytes, String? fileName}) {
+    _documentsData = _documentsData.copyWith(
+      foto3x4Path: path,
+      foto3x4Bytes: bytes,
+      foto3x4FileName: fileName,
+    );
     notifyListeners();
   }
 
-  void updateHistoricoEscolarFundamentalPath(String? path) {
+  void updateHistoricoEscolarFundamental({
+    String? path,
+    Uint8List? bytes,
+    String? fileName,
+  }) {
     _documentsData = _documentsData.copyWith(
       historicoEscolarFundamentalPath: path,
+      historicoEscolarFundamentalBytes: bytes,
+      historicoEscolarFundamentalFileName: fileName,
     );
     notifyListeners();
   }
 
-  void updateHistoricoEscolarMedioPath(String? path) {
-    _documentsData = _documentsData.copyWith(historicoEscolarMedioPath: path);
+  void updateHistoricoEscolarMedio({
+    String? path,
+    Uint8List? bytes,
+    String? fileName,
+  }) {
+    _documentsData = _documentsData.copyWith(
+      historicoEscolarMedioPath: path,
+      historicoEscolarMedioBytes: bytes,
+      historicoEscolarMedioFileName: fileName,
+    );
     notifyListeners();
   }
 
-  void updateComprovanteResidenciaPath(String? path) {
-    _documentsData = _documentsData.copyWith(comprovanteResidenciaPath: path);
+  void updateComprovanteResidencia({
+    String? path,
+    Uint8List? bytes,
+    String? fileName,
+  }) {
+    _documentsData = _documentsData.copyWith(
+      comprovanteResidenciaPath: path,
+      comprovanteResidenciaBytes: bytes,
+      comprovanteResidenciaFileName: fileName,
+    );
     notifyListeners();
   }
 
-  void updateCertidaoNascimentoCasamentoPath(String? path) {
+  void updateCertidaoNascimentoCasamento({
+    String? path,
+    Uint8List? bytes,
+    String? fileName,
+  }) {
     _documentsData = _documentsData.copyWith(
       certidaoNascimentoCasamentoPath: path,
+      certidaoNascimentoCasamentoBytes: bytes,
+      certidaoNascimentoCasamentoFileName: fileName,
     );
     notifyListeners();
   }
 
-  void updateReservistaPath(String? path) {
-    _documentsData = _documentsData.copyWith(reservistaPath: path);
+  void updateReservista({String? path, Uint8List? bytes, String? fileName}) {
+    _documentsData = _documentsData.copyWith(
+      reservistaPath: path,
+      reservistaBytes: bytes,
+      reservistaFileName: fileName,
+    );
     notifyListeners();
   }
 
-  void updateTituloEleitorPath(String? path) {
-    _documentsData = _documentsData.copyWith(tituloEleitorPath: path);
+  void updateTituloEleitor({String? path, Uint8List? bytes, String? fileName}) {
+    _documentsData = _documentsData.copyWith(
+      tituloEleitorPath: path,
+      tituloEleitorBytes: bytes,
+      tituloEleitorFileName: fileName,
+    );
     notifyListeners();
   }
 
-  void updateCarteiraVacinacaoPath(String? path) {
-    _documentsData = _documentsData.copyWith(carteiraVacinacaoPath: path);
+  void updateCarteiraVacinacao({
+    String? path,
+    Uint8List? bytes,
+    String? fileName,
+  }) {
+    _documentsData = _documentsData.copyWith(
+      carteiraVacinacaoPath: path,
+      carteiraVacinacaoBytes: bytes,
+      carteiraVacinacaoFileName: fileName,
+    );
     notifyListeners();
   }
 
-  void updateAtestadoEliminacaoDisciplinaPath(String? path) {
+  void updateAtestadoEliminacaoDisciplina({
+    String? path,
+    Uint8List? bytes,
+    String? fileName,
+  }) {
     _documentsData = _documentsData.copyWith(
       atestadoEliminacaoDisciplinaPath: path,
+      atestadoEliminacaoDisciplinaBytes: bytes,
+      atestadoEliminacaoDisciplinaFileName: fileName,
     );
     notifyListeners();
   }
 
-  void updateDeclaracaoTransferenciaEscolaridadePath(String? path) {
+  void updateDeclaracaoTransferenciaEscolaridade({
+    String? path,
+    Uint8List? bytes,
+    String? fileName,
+  }) {
     _documentsData = _documentsData.copyWith(
       declaracaoTransferenciaEscolaridadePath: path,
+      declaracaoTransferenciaEscolaridadeBytes: bytes,
+      declaracaoTransferenciaEscolaridadeFileName: fileName,
     );
     notifyListeners();
   }

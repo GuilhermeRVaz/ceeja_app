@@ -23,7 +23,7 @@ class _EnrollmentStepperScreenState extends State<EnrollmentStepperScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Image.asset('assets/LOGOTIPO_CEEJA.png', height: 40),
+            Image.asset('assets/LOGOTIPO_CEEJA.png', height: 46),
             const SizedBox(width: 10),
             const Text('Requerimento de Matrícula'),
           ],

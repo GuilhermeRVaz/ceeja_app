@@ -31,7 +31,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/LOGOTIPO_CEEJA.png', height: 150),
+            Image.asset('assets/LOGOTIPO_CEEJA.png', height: 172.5),
             const SizedBox(height: 20),
             const Text('Bem-vindo(a)!'),
             if (authProvider.currentUser != null)

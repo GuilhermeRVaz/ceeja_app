@@ -13,6 +13,7 @@ class PersonalDataModel {
   String? cpf;
   String? racaCor;
   DateTime? dataNascimento;
+  int? idade; // Adicionado para armazenar a idade
 
   // Filiação
   String? nomeMae;
@@ -38,6 +39,7 @@ class PersonalDataModel {
   String? empresa;
   bool? isPCD;
   String? deficiencia;
+  String? userId; // Adicionado para associar ao usuário do Supabase
 
   PersonalDataModel({
     this.nomeCompleto,
@@ -53,6 +55,7 @@ class PersonalDataModel {
     this.cpf,
     this.racaCor,
     this.dataNascimento,
+    this.idade, // Adicionado ao construtor
     this.nomeMae,
     this.nomePai,
     this.nacionalidade,
@@ -70,6 +73,7 @@ class PersonalDataModel {
     this.empresa,
     this.isPCD,
     this.deficiencia,
+    this.userId, // Adicionado ao construtor
   });
 
   PersonalDataModel copyWith({
@@ -86,6 +90,7 @@ class PersonalDataModel {
     String? cpf,
     String? racaCor,
     DateTime? dataNascimento,
+    int? idade, // Adicionado ao copyWith
     String? nomeMae,
     String? nomePai,
     String? nacionalidade,
@@ -103,6 +108,7 @@ class PersonalDataModel {
     String? empresa,
     bool? isPCD,
     String? deficiencia,
+    String? userId, // Adicionado ao copyWith
   }) {
     return PersonalDataModel(
       nomeCompleto: nomeCompleto ?? this.nomeCompleto,
@@ -118,6 +124,7 @@ class PersonalDataModel {
       cpf: cpf ?? this.cpf,
       racaCor: racaCor ?? this.racaCor,
       dataNascimento: dataNascimento ?? this.dataNascimento,
+      idade: idade ?? this.idade, // Adicionado ao retorno do copyWith
       nomeMae: nomeMae ?? this.nomeMae,
       nomePai: nomePai ?? this.nomePai,
       nacionalidade: nacionalidade ?? this.nacionalidade,
@@ -135,82 +142,87 @@ class PersonalDataModel {
       empresa: empresa ?? this.empresa,
       isPCD: isPCD ?? this.isPCD,
       deficiencia: deficiencia ?? this.deficiencia,
+      userId: userId ?? this.userId, // Adicionado ao retorno do copyWith
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'nomeCompleto': nomeCompleto,
-      'temNomeSocial': temNomeSocial,
-      'nomeSocial': nomeSocial,
-      'temNomeAfetivo': temNomeAfetivo,
-      'nomeAfetivo': nomeAfetivo,
+      'nome_completo': nomeCompleto,
+      'tem_nome_social': temNomeSocial,
+      'nome_social': nomeSocial,
+      'tem_nome_afetivo': temNomeAfetivo,
+      'nome_afetivo': nomeAfetivo,
       'sexo': sexo,
       'rg': rg,
-      'rgDigito': rgDigito,
-      'rgUf': rgUf,
-      'rgDataEmissao': rgDataEmissao?.toIso8601String(),
+      'rg_digito': rgDigito,
+      'rg_uf': rgUf,
+      'rg_data_emissao': rgDataEmissao?.toIso8601String(),
       'cpf': cpf,
-      'racaCor': racaCor,
-      'dataNascimento': dataNascimento?.toIso8601String(),
-      'nomeMae': nomeMae,
-      'nomePai': nomePai,
+      'raca_cor': racaCor,
+      'data_nascimento': dataNascimento?.toIso8601String(),
+      'idade': idade, // Adicionado ao toJson
+      'nome_mae': nomeMae,
+      'nome_pai': nomePai,
       'nacionalidade': nacionalidade,
-      'nascimentoUf': nascimentoUf,
-      'nascimentoCidade': nascimentoCidade,
-      'paisOrigem': paisOrigem,
-      'possuiInternet': possuiInternet,
-      'possuiDevice': possuiDevice,
+      'nascimento_uf': nascimentoUf,
+      'nascimento_cidade': nascimentoCidade,
+      'pais_origem': paisOrigem,
+      'possui_internet': possuiInternet,
+      'possui_device': possuiDevice,
       'telefone': telefone,
       'email': email,
-      'isGemeo': isGemeo,
-      'nomeGemeo': nomeGemeo,
+      'is_gemeo': isGemeo,
+      'nome_gemeo': nomeGemeo,
       'trabalha': trabalha,
       'profissao': profissao,
       'empresa': empresa,
-      'isPCD': isPCD,
+      'is_pcd': isPCD,
       'deficiencia': deficiencia,
+      'user_id': userId,
     };
   }
 
   factory PersonalDataModel.fromJson(Map<String, dynamic> json) {
     return PersonalDataModel(
-      nomeCompleto: json['nomeCompleto'],
-      temNomeSocial: json['temNomeSocial'],
-      nomeSocial: json['nomeSocial'],
-      temNomeAfetivo: json['temNomeAfetivo'],
-      nomeAfetivo: json['nomeAfetivo'],
+      nomeCompleto: json['nome_completo'],
+      temNomeSocial: json['tem_nome_social'],
+      nomeSocial: json['nome_social'],
+      temNomeAfetivo: json['tem_nome_afetivo'],
+      nomeAfetivo: json['nome_afetivo'],
       sexo: json['sexo'],
       rg: json['rg'],
-      rgDigito: json['rgDigito'],
-      rgUf: json['rgUf'],
+      rgDigito: json['rg_digito'],
+      rgUf: json['rg_uf'],
       rgDataEmissao:
-          json['rgDataEmissao'] != null
-              ? DateTime.parse(json['rgDataEmissao'])
+          json['rg_data_emissao'] != null
+              ? DateTime.parse(json['rg_data_emissao'])
               : null,
       cpf: json['cpf'],
-      racaCor: json['racaCor'],
+      racaCor: json['raca_cor'],
       dataNascimento:
-          json['dataNascimento'] != null
-              ? DateTime.parse(json['dataNascimento'])
+          json['data_nascimento'] != null
+              ? DateTime.parse(json['data_nascimento'])
               : null,
-      nomeMae: json['nomeMae'],
-      nomePai: json['nomePai'],
+      idade: json['idade'], // Adicionado ao fromJson
+      nomeMae: json['nome_mae'],
+      nomePai: json['nome_pai'],
       nacionalidade: json['nacionalidade'],
-      nascimentoUf: json['nascimentoUf'],
-      nascimentoCidade: json['nascimentoCidade'],
-      paisOrigem: json['paisOrigem'],
-      possuiInternet: json['possuiInternet'],
-      possuiDevice: json['possuiDevice'],
+      nascimentoUf: json['nascimento_uf'],
+      nascimentoCidade: json['nascimento_cidade'],
+      paisOrigem: json['pais_origem'],
+      possuiInternet: json['possui_internet'],
+      possuiDevice: json['possui_device'],
       telefone: json['telefone'],
       email: json['email'],
-      isGemeo: json['isGemeo'],
-      nomeGemeo: json['nomeGemeo'],
+      isGemeo: json['is_gemeo'],
+      nomeGemeo: json['nome_gemeo'],
       trabalha: json['trabalha'],
       profissao: json['profissao'],
       empresa: json['empresa'],
-      isPCD: json['isPCD'],
+      isPCD: json['is_pcd'],
       deficiencia: json['deficiencia'],
+      userId: json['user_id'],
     );
   }
 }

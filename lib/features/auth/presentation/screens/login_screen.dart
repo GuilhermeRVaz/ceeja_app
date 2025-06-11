@@ -81,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              Image.asset('assets/LOGOTIPO_CEEJA.png', height: 172.5),
               const SizedBox(height: 20),
               Text(
                 'Bem-vindo ao CEEJA de Lins',

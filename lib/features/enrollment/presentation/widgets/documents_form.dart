@@ -4,7 +4,6 @@ import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:path/path.dart' as path;
 
 class DocumentsForm extends StatefulWidget {
   const DocumentsForm({super.key});
@@ -15,18 +14,44 @@ class DocumentsForm extends StatefulWidget {
 
 class _DocumentsFormState extends State<DocumentsForm> {
   String? _rgFrentePath;
+  Uint8List? _rgFrenteBytes;
+  String? _rgFrenteFileName;
   String? _rgVersoPath;
+  Uint8List? _rgVersoBytes;
+  String? _rgVersoFileName;
   String? _cpfDocPath;
+  Uint8List? _cpfDocBytes;
+  String? _cpfDocFileName;
   String? _foto3x4Path;
+  Uint8List? _foto3x4Bytes;
+  String? _foto3x4FileName;
   String? _historicoEscolarFundamentalPath;
+  Uint8List? _historicoEscolarFundamentalBytes;
+  String? _historicoEscolarFundamentalFileName;
   String? _historicoEscolarMedioPath;
+  Uint8List? _historicoEscolarMedioBytes;
+  String? _historicoEscolarMedioFileName;
   String? _comprovanteResidenciaPath;
+  Uint8List? _comprovanteResidenciaBytes;
+  String? _comprovanteResidenciaFileName;
   String? _certidaoNascimentoCasamentoPath;
+  Uint8List? _certidaoNascimentoCasamentoBytes;
+  String? _certidaoNascimentoCasamentoFileName;
   String? _reservistaPath;
+  Uint8List? _reservistaBytes;
+  String? _reservistaFileName;
   String? _tituloEleitorPath;
+  Uint8List? _tituloEleitorBytes;
+  String? _tituloEleitorFileName;
   String? _carteiraVacinacaoPath;
+  Uint8List? _carteiraVacinacaoBytes;
+  String? _carteiraVacinacaoFileName;
   String? _atestadoEliminacaoDisciplinaPath;
+  Uint8List? _atestadoEliminacaoDisciplinaBytes;
+  String? _atestadoEliminacaoDisciplinaFileName;
   String? _declaracaoTransferenciaEscolaridadePath;
+  Uint8List? _declaracaoTransferenciaEscolaridadeBytes;
+  String? _declaracaoTransferenciaEscolaridadeFileName;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +59,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
       children: [
         const SizedBox(height: 16),
         Text(
-          'RG Frente: ${_rgFrentePath != null ? path.basename(_rgFrentePath!) : 'Nenhum arquivo selecionado'}',
+          'RG Frente: ${_rgFrenteFileName != null ? _rgFrenteFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('rgFrente'),
@@ -42,7 +67,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'RG Verso: ${_rgVersoPath != null ? path.basename(_rgVersoPath!) : 'Nenhum arquivo selecionado'}',
+          'RG Verso: ${_rgVersoFileName != null ? _rgVersoFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('rgVerso'),
@@ -50,7 +75,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'CPF: ${_cpfDocPath != null ? path.basename(_cpfDocPath!) : 'Nenhum arquivo selecionado'}',
+          'CPF: ${_cpfDocFileName != null ? _cpfDocFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('cpfDoc'),
@@ -58,7 +83,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Foto 3x4: ${_foto3x4Path != null ? path.basename(_foto3x4Path!) : 'Nenhum arquivo selecionado'}',
+          'Foto 3x4: ${_foto3x4FileName != null ? _foto3x4FileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('foto3x4'),
@@ -66,7 +91,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Histórico Escolar Ensino Fundamental: ${_historicoEscolarFundamentalPath != null ? path.basename(_historicoEscolarFundamentalPath!) : 'Nenhum arquivo selecionado'}',
+          'Histórico Escolar Ensino Fundamental: ${_historicoEscolarFundamentalFileName != null ? _historicoEscolarFundamentalFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('historicoEscolarFundamental'),
@@ -74,7 +99,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Histórico Escolar Ensino Médio: ${_historicoEscolarMedioPath != null ? path.basename(_historicoEscolarMedioPath!) : 'Nenhum arquivo selecionado'}',
+          'Histórico Escolar Ensino Médio: ${_historicoEscolarMedioFileName != null ? _historicoEscolarMedioFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('historicoEscolarMedio'),
@@ -82,7 +107,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Comprovante de residência: ${_comprovanteResidenciaPath != null ? path.basename(_comprovanteResidenciaPath!) : 'Nenhum arquivo selecionado'}',
+          'Comprovante de residência: ${_comprovanteResidenciaFileName != null ? _comprovanteResidenciaFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('comprovanteResidencia'),
@@ -90,7 +115,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Certidão de nascimento ou de casamento: ${_certidaoNascimentoCasamentoPath != null ? path.basename(_certidaoNascimentoCasamentoPath!) : 'Nenhum arquivo selecionado'}',
+          'Certidão de nascimento ou de casamento: ${_certidaoNascimentoCasamentoFileName != null ? _certidaoNascimentoCasamentoFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('certidaoNascimentoCasamento'),
@@ -100,7 +125,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Reservista (se masculino): ${_reservistaPath != null ? path.basename(_reservistaPath!) : 'Nenhum arquivo selecionado'}',
+          'Reservista (se masculino): ${_reservistaFileName != null ? _reservistaFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('reservista'),
@@ -108,7 +133,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Título de eleitor: ${_tituloEleitorPath != null ? path.basename(_tituloEleitorPath!) : 'Nenhum arquivo selecionado'}',
+          'Título de eleitor: ${_tituloEleitorFileName != null ? _tituloEleitorFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('tituloEleitor'),
@@ -116,7 +141,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Carteira de vacinação: ${_carteiraVacinacaoPath != null ? path.basename(_carteiraVacinacaoPath!) : 'Nenhum arquivo selecionado'}',
+          'Carteira de vacinação: ${_carteiraVacinacaoFileName != null ? _carteiraVacinacaoFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('carteiraVacinacao'),
@@ -124,7 +149,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Atestado de eliminação de disciplina: ${_atestadoEliminacaoDisciplinaPath != null ? path.basename(_atestadoEliminacaoDisciplinaPath!) : 'Nenhum arquivo selecionado'}',
+          'Atestado de eliminação de disciplina: ${_atestadoEliminacaoDisciplinaFileName != null ? _atestadoEliminacaoDisciplinaFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('atestadoEliminacaoDisciplina'),
@@ -132,7 +157,7 @@ class _DocumentsFormState extends State<DocumentsForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Declaração de Transferência ou de escolaridade: ${_declaracaoTransferenciaEscolaridadePath != null ? path.basename(_declaracaoTransferenciaEscolaridadePath!) : 'Nenhum arquivo selecionado'}',
+          'Declaração de Transferência ou de escolaridade: ${_declaracaoTransferenciaEscolaridadeFileName != null ? _declaracaoTransferenciaEscolaridadeFileName! : 'Nenhum arquivo selecionado'}',
         ),
         ElevatedButton(
           onPressed: () => _pickFile('declaracaoTransferenciaEscolaridade'),
@@ -149,110 +174,179 @@ class _DocumentsFormState extends State<DocumentsForm> {
 
     if (result != null) {
       final PlatformFile file = result.files.first;
-      String? filePath = file.path;
-      String fileName = file.name;
-      Uint8List? bytes = file.bytes;
+      final PlatformFile pickedFile = result.files.first;
+      String fileName = pickedFile.name;
+      Uint8List? bytes = pickedFile.bytes;
+      String? filePath;
 
+      // Prioriza o uso de bytes para ambientes web e fallback para path em outros
       if (bytes != null) {
-        // Web environment
-        // Use bytes instead of path
-        // final bytes = file.bytes;
-        // final fileName = file.name;
-
-        // Here, you'll need to handle the file upload differently.
-        // You can't directly pass a file path to Supabase on the web.
-        // Instead, you'll likely want to upload the bytes to Supabase storage.
-
-        // For now, let's just set the file name.
-        filePath = fileName;
+        filePath = fileName; // Em web, o "path" é o nome do arquivo
       } else {
-        filePath = file.path;
+        filePath = pickedFile.path;
       }
 
-      final path = filePath;
       setState(() {
         switch (documentType) {
           case 'rgFrente':
-            _rgFrentePath = path;
+            _rgFrentePath = filePath;
+            _rgFrenteBytes = bytes;
+            _rgFrenteFileName = fileName;
             break;
           case 'rgVerso':
-            _rgVersoPath = path;
+            _rgVersoPath = filePath;
+            _rgVersoBytes = bytes;
+            _rgVersoFileName = fileName;
             break;
           case 'cpfDoc':
-            _cpfDocPath = path;
+            _cpfDocPath = filePath;
+            _cpfDocBytes = bytes;
+            _cpfDocFileName = fileName;
             break;
           case 'foto3x4':
-            _foto3x4Path = path;
+            _foto3x4Path = filePath;
+            _foto3x4Bytes = bytes;
+            _foto3x4FileName = fileName;
             break;
           case 'historicoEscolarFundamental':
-            _historicoEscolarFundamentalPath = path;
+            _historicoEscolarFundamentalPath = filePath;
+            _historicoEscolarFundamentalBytes = bytes;
+            _historicoEscolarFundamentalFileName = fileName;
             break;
           case 'historicoEscolarMedio':
-            _historicoEscolarMedioPath = path;
+            _historicoEscolarMedioPath = filePath;
+            _historicoEscolarMedioBytes = bytes;
+            _historicoEscolarMedioFileName = fileName;
             break;
           case 'comprovanteResidencia':
-            _comprovanteResidenciaPath = path;
+            _comprovanteResidenciaPath = filePath;
+            _comprovanteResidenciaBytes = bytes;
+            _comprovanteResidenciaFileName = fileName;
             break;
           case 'certidaoNascimentoCasamento':
-            _certidaoNascimentoCasamentoPath = path;
+            _certidaoNascimentoCasamentoPath = filePath;
+            _certidaoNascimentoCasamentoBytes = bytes;
+            _certidaoNascimentoCasamentoFileName = fileName;
             break;
           case 'reservista':
-            _reservistaPath = path;
+            _reservistaPath = filePath;
+            _reservistaBytes = bytes;
+            _reservistaFileName = fileName;
             break;
           case 'tituloEleitor':
-            _tituloEleitorPath = path;
+            _tituloEleitorPath = filePath;
+            _tituloEleitorBytes = bytes;
+            _tituloEleitorFileName = fileName;
             break;
           case 'carteiraVacinacao':
-            _carteiraVacinacaoPath = path;
+            _carteiraVacinacaoPath = filePath;
+            _carteiraVacinacaoBytes = bytes;
+            _carteiraVacinacaoFileName = fileName;
             break;
           case 'atestadoEliminacaoDisciplina':
-            _atestadoEliminacaoDisciplinaPath = path;
+            _atestadoEliminacaoDisciplinaPath = filePath;
+            _atestadoEliminacaoDisciplinaBytes = bytes;
+            _atestadoEliminacaoDisciplinaFileName = fileName;
             break;
           case 'declaracaoTransferenciaEscolaridade':
-            _declaracaoTransferenciaEscolaridadePath = path;
+            _declaracaoTransferenciaEscolaridadePath = filePath;
+            _declaracaoTransferenciaEscolaridadeBytes = bytes;
+            _declaracaoTransferenciaEscolaridadeFileName = fileName;
             break;
         }
       });
       final provider = context.read<EnrollmentProvider>();
       switch (documentType) {
         case 'rgFrente':
-          provider.updateRgFrentePath(path ?? '');
+          provider.updateRgFrente(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'rgVerso':
-          provider.updateRgVersoPath(path ?? '');
+          provider.updateRgVerso(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'cpfDoc':
-          provider.updateCpfDocPath(path);
+          provider.updateCpfDoc(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'foto3x4':
-          provider.updateFoto3x4Path(path);
+          provider.updateFoto3x4(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'historicoEscolarFundamental':
-          provider.updateHistoricoEscolarFundamentalPath(path);
+          provider.updateHistoricoEscolarFundamental(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'historicoEscolarMedio':
-          provider.updateHistoricoEscolarMedioPath(path);
+          provider.updateHistoricoEscolarMedio(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'comprovanteResidencia':
-          provider.updateComprovanteResidenciaPath(path);
+          provider.updateComprovanteResidencia(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'certidaoNascimentoCasamento':
-          provider.updateCertidaoNascimentoCasamentoPath(path);
+          provider.updateCertidaoNascimentoCasamento(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'reservista':
-          provider.updateReservistaPath(path);
+          provider.updateReservista(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'tituloEleitor':
-          provider.updateTituloEleitorPath(path);
+          provider.updateTituloEleitor(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'carteiraVacinacao':
-          provider.updateCarteiraVacinacaoPath(path);
+          provider.updateCarteiraVacinacao(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'atestadoEliminacaoDisciplina':
-          provider.updateAtestadoEliminacaoDisciplinaPath(path);
+          provider.updateAtestadoEliminacaoDisciplina(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
         case 'declaracaoTransferenciaEscolaridade':
-          provider.updateDeclaracaoTransferenciaEscolaridadePath(path);
+          provider.updateDeclaracaoTransferenciaEscolaridade(
+            path: filePath,
+            bytes: bytes,
+            fileName: fileName,
+          );
           break;
       }
     }

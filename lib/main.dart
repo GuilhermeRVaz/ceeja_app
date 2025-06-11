@@ -7,17 +7,15 @@ import 'package:ceeja_app/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_provider.dart';
+import 'package:ceeja_app/env.dart'; // Importar o arquivo env.dart
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Carregar variáveis de ambiente do arquivo .env
-  await dotenv.load(fileName: ".env");
-
-  // Inicializar Supabase
+  // Inicializar Supabase com as variáveis do env.dart
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    url: AppEnv.supabaseUrl,
+    anonKey: AppEnv.supabaseAnonKey,
   );
 
   runApp(const MyApp());

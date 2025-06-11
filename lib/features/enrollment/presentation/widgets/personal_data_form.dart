@@ -31,6 +31,11 @@ class _PersonalDataFormState extends State<PersonalDataForm> {
   final _profissaoController = TextEditingController();
   final _empresaController = TextEditingController();
   final _deficienciaController = TextEditingController();
+  final _nomeGemeoController = TextEditingController();
+  final _nascimentoUfController = TextEditingController(); // Novo controller
+  final _nascimentoCidadeController =
+      TextEditingController(); // Novo controller
+  final _paisOrigemController = TextEditingController(); // Novo controller
 
   final List<String> _racaOptions = [
     'Não declarada',
@@ -46,18 +51,46 @@ class _PersonalDataFormState extends State<PersonalDataForm> {
   void initState() {
     super.initState();
     final provider = context.read<EnrollmentProvider>();
-    final data = provider.personalData;
-    _nomeCompletoController.text = data.nomeCompleto ?? '';
-    // ... inicialização de todos os outros controllers
+    provider.loadPersonalData().then((_) {
+      final data = provider.personalData;
+      _nomeCompletoController.text = data.nomeCompleto ?? '';
+      _nomeSocialController.text = data.nomeSocial ?? '';
+      _nomeAfetivoController.text = data.nomeAfetivo ?? '';
+      _rgController.text = data.rg ?? '';
+      _rgDigitoController.text = data.rgDigito ?? '';
+      _rgUfController.text = data.rgUf ?? '';
+      if (data.rgDataEmissao != null) {
+        _rgDataEmissaoController.text = DateFormat(
+          'dd/MM/yyyy',
+        ).format(data.rgDataEmissao!);
+      }
+      _cpfController.text = data.cpf ?? '';
+      if (data.dataNascimento != null) {
+        _dataNascimentoController.text = DateFormat(
+          'dd/MM/yyyy',
+        ).format(data.dataNascimento!);
+        _calculateAndSetAge(data.dataNascimento!); // Remover o provider
+      }
+      _idadeController.text = data.idade?.toString() ?? ''; // Carregar idade
+      _nomeMaeController.text = data.nomeMae ?? '';
+      _nomePaiController.text = data.nomePai ?? '';
+      _telefoneController.text = data.telefone ?? '';
+      _emailController.text = data.email ?? '';
+      _profissaoController.text = data.profissao ?? '';
+      _empresaController.text = data.empresa ?? '';
+      _deficienciaController.text = data.deficiencia ?? '';
+      _nomeGemeoController.text = data.nomeGemeo ?? '';
+      _nascimentoUfController.text =
+          data.nascimentoUf ?? ''; // Carregar UF de nascimento
+      _nascimentoCidadeController.text =
+          data.nascimentoCidade ?? ''; // Carregar cidade de nascimento
+      _paisOrigemController.text =
+          data.paisOrigem ?? ''; // Carregar país de origem
+    });
   }
 
-  @override
-  void dispose() {
-    // ... dispose de todos os controllers
-    super.dispose();
-  }
-
-  void _calculateAndSetAge(DateTime birthDate) {
+  int _calculateAndSetAge(DateTime birthDate) {
+    // Retornar a idade
     final today = DateTime.now();
     int age = today.year - birthDate.year;
     if (today.month < birthDate.month ||
@@ -65,6 +98,7 @@ class _PersonalDataFormState extends State<PersonalDataForm> {
       age--;
     }
     _idadeController.text = age.toString();
+    return age; // Retornar a idade calculada
   }
 
   Future<void> _selectDate(
@@ -258,16 +292,20 @@ class _PersonalDataFormState extends State<PersonalDataForm> {
                       labelText: 'Data de Nascimento',
                       readOnly: true,
                       onTap:
-                          () => _selectDate(
-                            context,
-                            _dataNascimentoController,
-                            (date) {
-                              _calculateAndSetAge(date);
-                              updateProvider(
-                                data.copyWith(dataNascimento: date),
-                              );
-                            },
-                          ),
+                          () => _selectDate(context, _dataNascimentoController, (
+                            date,
+                          ) {
+                            final calculatedAge = _calculateAndSetAge(
+                              date,
+                            ); // Obter a idade calculada
+                            updateProvider(
+                              data.copyWith(
+                                dataNascimento: date,
+                                idade:
+                                    calculatedAge, // Incluir a idade na atualização
+                              ),
+                            );
+                          }),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -280,6 +318,67 @@ class _PersonalDataFormState extends State<PersonalDataForm> {
                   ),
                 ],
               ),
+            ],
+          ),
+          FormSection(
+            title: 'Nacionalidade e Naturalidade', // Nova seção
+            children: [
+              DropdownButtonFormField<String>(
+                value: data.nacionalidade,
+                decoration: const InputDecoration(
+                  labelText: 'Nacionalidade',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem<String>(
+                    value: 'Brasileira',
+                    child: Text('Brasileira'),
+                  ),
+                  DropdownMenuItem<String>(
+                    value: 'Estrangeira',
+                    child: Text('Estrangeira'),
+                  ),
+                ],
+                onChanged: (String? newValue) {
+                  updateProvider(
+                    data.copyWith(
+                      nacionalidade: newValue,
+                      nascimentoUf: '',
+                      nascimentoCidade: '',
+                      paisOrigem: '',
+                    ),
+                  );
+                },
+              ),
+              if (data.nacionalidade == 'Brasileira') ...[
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: _nascimentoUfController,
+                  labelText: 'Qual Estado/UF nasceu?',
+                  onChanged:
+                      (value) =>
+                          updateProvider(data.copyWith(nascimentoUf: value)),
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: _nascimentoCidadeController,
+                  labelText: 'Qual Cidade de Nascimento?',
+                  onChanged:
+                      (value) => updateProvider(
+                        data.copyWith(nascimentoCidade: value),
+                      ),
+                ),
+              ],
+              if (data.nacionalidade == 'Estrangeira') ...[
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: _paisOrigemController,
+                  labelText: 'Qual País nasceu?',
+                  onChanged:
+                      (value) =>
+                          updateProvider(data.copyWith(paisOrigem: value)),
+                ),
+              ],
             ],
           ),
           FormSection(
@@ -338,6 +437,28 @@ class _PersonalDataFormState extends State<PersonalDataForm> {
           FormSection(
             title: 'Informações Adicionais',
             children: [
+              SwitchListTile(
+                title: const Text('Possui irmão gêmeo?'), // Novo campo
+                value: data.isGemeo ?? false,
+                onChanged:
+                    (bool value) => updateProvider(
+                      data.copyWith(isGemeo: value, nomeGemeo: ''),
+                    ),
+              ),
+              if (data.isGemeo == true)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: CustomTextField(
+                    controller: _nomeGemeoController,
+                    labelText: 'Nome do Irmão Gêmeo',
+                    onChanged:
+                        (value) =>
+                            updateProvider(data.copyWith(nomeGemeo: value)),
+                  ),
+                ),
               SwitchListTile(
                 title: const Text('Trabalha?'),
                 value: data.trabalha ?? false,
@@ -400,8 +521,48 @@ class _PersonalDataFormState extends State<PersonalDataForm> {
                 ),
             ],
           ),
+          const SizedBox(height: 24),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                await provider.savePersonalData();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Dados pessoais salvos com sucesso!'),
+                  ),
+                );
+              },
+              child: const Text('Salvar Dados Pessoais'),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nomeCompletoController.dispose();
+    _nomeSocialController.dispose();
+    _nomeAfetivoController.dispose();
+    _rgController.dispose();
+    _rgDigitoController.dispose();
+    _rgUfController.dispose();
+    _rgDataEmissaoController.dispose();
+    _cpfController.dispose();
+    _dataNascimentoController.dispose();
+    _idadeController.dispose();
+    _nomeMaeController.dispose();
+    _nomePaiController.dispose();
+    _telefoneController.dispose();
+    _emailController.dispose();
+    _profissaoController.dispose();
+    _empresaController.dispose();
+    _deficienciaController.dispose();
+    _nomeGemeoController.dispose();
+    _nascimentoUfController.dispose(); // Dispose do novo controller
+    _nascimentoCidadeController.dispose(); // Dispose do novo controller
+    _paisOrigemController.dispose(); // Dispose do novo controller
+    super.dispose();
   }
 }

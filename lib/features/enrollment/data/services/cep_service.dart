@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async'; // Importe para usar Future.delayed
 import 'package:http/http.dart' as http;
 import 'package:ceeja_app/features/enrollment/domain/models/address_model.dart';
 
@@ -13,6 +14,8 @@ class CepService {
     final uri = Uri.parse('https://viacep.com.br/ws/$cleanedCep/json/');
 
     try {
+      // Adiciona um atraso de 1 segundo antes de fazer a requisição
+      await Future.delayed(Duration(seconds: 1));
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
