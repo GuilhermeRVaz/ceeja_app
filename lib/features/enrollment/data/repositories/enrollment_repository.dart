@@ -17,7 +17,10 @@ class EnrollmentRepository {
     String bucketName,
   ) async {
     try {
-      final String path = '${_supabaseClient.auth.currentUser?.id}/$fileName';
+      // Sanitize the file name to remove problematic characters
+      final sanitizedFileName = _sanitizeFileName(fileName);
+      final String path =
+          '${_supabaseClient.auth.currentUser?.id}/$sanitizedFileName';
       await _supabaseClient.storage
           .from(bucketName)
           .uploadBinary(
@@ -30,6 +33,12 @@ class EnrollmentRepository {
       print('Erro ao fazer upload do arquivo: $e');
       return null;
     }
+  }
+
+  String _sanitizeFileName(String fileName) {
+    // Remove special characters and replace spaces with underscores
+    // Keeps only alphanumeric characters, dots, and hyphens
+    return fileName.replaceAll(RegExp(r'[^\w\s\.-]'), '').replaceAll(' ', '_');
   }
 
   Future<void> addEnrollment({
@@ -259,7 +268,7 @@ class EnrollmentRepository {
 
   Future<void> saveAddressData(AddressModel addressData) async {
     try {
-      await _supabaseClient.from('address_data').upsert(addressData.toJson());
+      await _supabaseClient.from('addresses').upsert(addressData.toJson());
     } catch (e) {
       if (e is PostgrestException) {
         print('Erro Postgrest ao salvar dados de endereço:');
@@ -278,7 +287,7 @@ class EnrollmentRepository {
     try {
       final response =
           await _supabaseClient
-              .from('address_data')
+              .from('addresses')
               .select()
               .eq('user_id', userId)
               .maybeSingle();
@@ -342,6 +351,205 @@ class EnrollmentRepository {
         print('  Hint: ${e.hint}');
       } else {
         print('Erro desconhecido ao buscar dados acadêmicos: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<void> saveDocumentsData(DocumentsModel documentsData) async {
+    try {
+      // Upload de documentos e atualização dos caminhos
+      String? rgFrenteUrl;
+      if (documentsData.rgFrenteBytes != null &&
+          documentsData.rgFrenteFileName != null) {
+        rgFrenteUrl = await _uploadFile(
+          documentsData.rgFrenteBytes!,
+          documentsData.rgFrenteFileName!,
+          'documents', // Nome do bucket no Supabase Storage
+        );
+      }
+
+      String? rgVersoUrl;
+      if (documentsData.rgVersoBytes != null &&
+          documentsData.rgVersoFileName != null) {
+        rgVersoUrl = await _uploadFile(
+          documentsData.rgVersoBytes!,
+          documentsData.rgVersoFileName!,
+          'documents',
+        );
+      }
+
+      String? cpfDocUrl;
+      if (documentsData.cpfDocBytes != null &&
+          documentsData.cpfDocFileName != null) {
+        cpfDocUrl = await _uploadFile(
+          documentsData.cpfDocBytes!,
+          documentsData.cpfDocFileName!,
+          'documents',
+        );
+      }
+
+      String? foto3x4Url;
+      if (documentsData.foto3x4Bytes != null &&
+          documentsData.foto3x4FileName != null) {
+        foto3x4Url = await _uploadFile(
+          documentsData.foto3x4Bytes!,
+          documentsData.foto3x4FileName!,
+          'documents',
+        );
+      }
+
+      String? historicoEscolarFundamentalUrl;
+      if (documentsData.historicoEscolarFundamentalBytes != null &&
+          documentsData.historicoEscolarFundamentalFileName != null) {
+        historicoEscolarFundamentalUrl = await _uploadFile(
+          documentsData.historicoEscolarFundamentalBytes!,
+          documentsData.historicoEscolarFundamentalFileName!,
+          'documents',
+        );
+      }
+
+      String? historicoEscolarMedioUrl;
+      if (documentsData.historicoEscolarMedioBytes != null &&
+          documentsData.historicoEscolarMedioFileName != null) {
+        historicoEscolarMedioUrl = await _uploadFile(
+          documentsData.historicoEscolarMedioBytes!,
+          documentsData.historicoEscolarMedioFileName!,
+          'documents',
+        );
+      }
+
+      String? comprovanteResidenciaUrl;
+      if (documentsData.comprovanteResidenciaBytes != null &&
+          documentsData.comprovanteResidenciaFileName != null) {
+        comprovanteResidenciaUrl = await _uploadFile(
+          documentsData.comprovanteResidenciaBytes!,
+          documentsData.comprovanteResidenciaFileName!,
+          'documents',
+        );
+      }
+
+      String? certidaoNascimentoCasamentoUrl;
+      if (documentsData.certidaoNascimentoCasamentoBytes != null &&
+          documentsData.certidaoNascimentoCasamentoFileName != null) {
+        certidaoNascimentoCasamentoUrl = await _uploadFile(
+          documentsData.certidaoNascimentoCasamentoBytes!,
+          documentsData.certidaoNascimentoCasamentoFileName!,
+          'documents',
+        );
+      }
+
+      String? reservistaUrl;
+      if (documentsData.reservistaBytes != null &&
+          documentsData.reservistaFileName != null) {
+        reservistaUrl = await _uploadFile(
+          documentsData.reservistaBytes!,
+          documentsData.reservistaFileName!,
+          'documents',
+        );
+      }
+
+      String? tituloEleitorUrl;
+      if (documentsData.tituloEleitorBytes != null &&
+          documentsData.tituloEleitorFileName != null) {
+        tituloEleitorUrl = await _uploadFile(
+          documentsData.tituloEleitorBytes!,
+          documentsData.tituloEleitorFileName!,
+          'documents',
+        );
+      }
+
+      String? carteiraVacinacaoUrl;
+      if (documentsData.carteiraVacinacaoBytes != null &&
+          documentsData.carteiraVacinacaoFileName != null) {
+        carteiraVacinacaoUrl = await _uploadFile(
+          documentsData.carteiraVacinacaoBytes!,
+          documentsData.carteiraVacinacaoFileName!,
+          'documents',
+        );
+      }
+
+      String? atestadoEliminacaoDisciplinaUrl;
+      if (documentsData.atestadoEliminacaoDisciplinaBytes != null &&
+          documentsData.atestadoEliminacaoDisciplinaFileName != null) {
+        atestadoEliminacaoDisciplinaUrl = await _uploadFile(
+          documentsData.atestadoEliminacaoDisciplinaBytes!,
+          documentsData.atestadoEliminacaoDisciplinaFileName!,
+          'documents',
+        );
+      }
+
+      String? declaracaoTransferenciaEscolaridadeUrl;
+      if (documentsData.declaracaoTransferenciaEscolaridadeBytes != null &&
+          documentsData.declaracaoTransferenciaEscolaridadeFileName != null) {
+        declaracaoTransferenciaEscolaridadeUrl = await _uploadFile(
+          documentsData.declaracaoTransferenciaEscolaridadeBytes!,
+          documentsData.declaracaoTransferenciaEscolaridadeFileName!,
+          'documents',
+        );
+      }
+
+      await _supabaseClient
+          .from('documents')
+          .upsert(
+            documentsData
+                .copyWith(
+                  rgFrentePath: rgFrenteUrl,
+                  rgVersoPath: rgVersoUrl,
+                  cpfDocPath: cpfDocUrl,
+                  foto3x4Path: foto3x4Url,
+                  historicoEscolarFundamentalPath:
+                      historicoEscolarFundamentalUrl,
+                  historicoEscolarMedioPath: historicoEscolarMedioUrl,
+                  comprovanteResidenciaPath: comprovanteResidenciaUrl,
+                  certidaoNascimentoCasamentoPath:
+                      certidaoNascimentoCasamentoUrl,
+                  reservistaPath: reservistaUrl,
+                  tituloEleitorPath: tituloEleitorUrl,
+                  carteiraVacinacaoPath: carteiraVacinacaoUrl,
+                  atestadoEliminacaoDisciplinaPath:
+                      atestadoEliminacaoDisciplinaUrl,
+                  declaracaoTransferenciaEscolaridadePath:
+                      declaracaoTransferenciaEscolaridadeUrl,
+                )
+                .toJson(),
+          );
+    } catch (e) {
+      if (e is PostgrestException) {
+        print('Erro Postgrest ao salvar dados de documentos:');
+        print('  Mensagem: ${e.message}');
+        print('  Código: ${e.code}');
+        print('  Detalhes: ${e.details}');
+        print('  Hint: ${e.hint}');
+      } else {
+        print('Erro desconhecido ao salvar dados de documentos: $e');
+      }
+      rethrow;
+    }
+  }
+
+  Future<DocumentsModel?> getDocumentsData(String userId) async {
+    try {
+      final response =
+          await _supabaseClient
+              .from('documents')
+              .select()
+              .eq('user_id', userId)
+              .maybeSingle();
+
+      if (response != null) {
+        return DocumentsModel.fromJson(response);
+      }
+      return null;
+    } catch (e) {
+      if (e is PostgrestException) {
+        print('Erro Postgrest ao buscar dados de documentos:');
+        print('  Mensagem: ${e.message}');
+        print('  Código: ${e.code}');
+        print('  Detalhes: ${e.details}');
+        print('  Hint: ${e.hint}');
+      } else {
+        print('Erro desconhecido ao buscar dados de documentos: $e');
       }
       return null;
     }
