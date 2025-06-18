@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ceeja_app/features/auth/presentation/screens/login_screen.dart'; 
-import 'package:ceeja_app/features/auth/presentation/screens/register_screen.dart'; 
-import 'package:ceeja_app/features/home/presentation/screens/home_screen.dart'; // Import da HomeScreen adicionado
+import 'package:ceeja_app/features/auth/presentation/screens/login_screen.dart';
+import 'package:ceeja_app/features/auth/presentation/screens/register_screen.dart';
+import 'package:ceeja_app/features/home/presentation/screens/home_screen.dart';
+import 'package:ceeja_app/features/enrollment/presentation/screens/admin_enrollment_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -13,21 +14,28 @@ class AppRouter {
         path: '/login',
         name: 'login',
         builder: (BuildContext context, GoRouterState state) {
-          return const LoginScreen(); 
+          return const LoginScreen();
         },
       ),
       GoRoute(
         path: '/register',
         name: 'register',
         builder: (BuildContext context, GoRouterState state) {
-          return const RegisterScreen(); 
+          return const RegisterScreen();
         },
       ),
       GoRoute(
         path: '/home',
         name: 'home',
         builder: (BuildContext context, GoRouterState state) {
-          return const HomeScreen(); // Rota da HomeScreen descomentada e corrigida
+          return const HomeScreen();
+        },
+      ),
+      GoRoute(
+        path: '/admin-enrollment',
+        name: 'admin-enrollment',
+        builder: (BuildContext context, GoRouterState state) {
+          return const AdminEnrollmentScreen();
         },
       ),
       // Adicionar outras rotas aqui
@@ -47,4 +55,3 @@ class AppRouter {
     // },
   );
 }
-

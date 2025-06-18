@@ -47,6 +47,13 @@ class HomeScreen extends StatelessWidget {
               },
               child: const Text('Requerimento de Matrícula'),
             ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                context.goNamed('admin-enrollment');
+              },
+              child: const Text('Cadastro de Alunos (Admin)'),
+            ),
           ],
         ),
       ),

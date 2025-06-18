@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 class DocumentsModel {
+  String? userId;
   String? rgFrentePath;
   Uint8List? rgFrenteBytes;
   String? rgFrenteFileName;
@@ -42,6 +43,7 @@ class DocumentsModel {
   String? declaracaoTransferenciaEscolaridadeFileName;
 
   DocumentsModel({
+    this.userId,
     this.rgFrentePath,
     this.rgFrenteBytes,
     this.rgFrenteFileName,
@@ -84,6 +86,7 @@ class DocumentsModel {
   });
 
   DocumentsModel copyWith({
+    String? userId,
     String? rgFrentePath,
     Uint8List? rgFrenteBytes,
     String? rgFrenteFileName,
@@ -125,6 +128,7 @@ class DocumentsModel {
     String? declaracaoTransferenciaEscolaridadeFileName,
   }) {
     return DocumentsModel(
+      userId: userId ?? this.userId,
       rgFrentePath: rgFrentePath ?? this.rgFrentePath,
       rgFrenteBytes: rgFrenteBytes ?? this.rgFrenteBytes,
       rgFrenteFileName: rgFrenteFileName ?? this.rgFrenteFileName,
@@ -203,6 +207,7 @@ class DocumentsModel {
 
   Map<String, dynamic> toJson() {
     return {
+      'user_id': userId,
       'rgFrentePath': rgFrentePath,
       'rgFrenteFileName': rgFrenteFileName,
       'rgVersoPath': rgVersoPath,
@@ -239,6 +244,7 @@ class DocumentsModel {
 
   factory DocumentsModel.fromJson(Map<String, dynamic> json) {
     return DocumentsModel(
+      userId: json['user_id'],
       rgFrentePath: json['rgFrentePath'],
       rgFrenteFileName: json['rgFrenteFileName'],
       rgVersoPath: json['rgVersoPath'],

@@ -10,10 +10,14 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EnrollmentProvider with ChangeNotifier {
-  final EnrollmentRepository _repository = EnrollmentRepository(
-    Supabase.instance.client,
-  );
+  late final EnrollmentRepository _repository;
   final CepService _cepService = CepService();
+
+  EnrollmentProvider({SupabaseClient? adminSupabaseClient}) {
+    _repository = EnrollmentRepository(
+      adminSupabaseClient ?? Supabase.instance.client,
+    );
+  }
 
   PersonalDataModel _personalData = PersonalDataModel();
   PersonalDataModel get personalData => _personalData;
@@ -32,14 +36,14 @@ class EnrollmentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> savePersonalData() async {
+  Future<void> savePersonalData({String? targetUserId}) async {
     try {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
+      final userId =
+          targetUserId ?? Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) {
         throw Exception('Usuário não autenticado.');
       }
-      _personalData = _personalData.copyWith(userId: userId);
-      await _repository.savePersonalData(_personalData);
+      await _repository.savePersonalData(_personalData, userId);
       // TODO: Adicionar feedback de sucesso para o usuário
     } catch (e) {
       // TODO: Adicionar feedback de erro para o usuário
@@ -70,14 +74,14 @@ class EnrollmentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveAddressData() async {
+  Future<void> saveAddressData({String? targetUserId}) async {
     try {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
+      final userId =
+          targetUserId ?? Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) {
         throw Exception('Usuário não autenticado.');
       }
-      _addressData = _addressData.copyWith(userId: userId);
-      await _repository.saveAddressData(_addressData);
+      await _repository.saveAddressData(_addressData, userId);
       // TODO: Adicionar feedback de sucesso para o usuário
     } catch (e) {
       // TODO: Adicionar feedback de erro para o usuário
@@ -123,14 +127,14 @@ class EnrollmentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveSchoolingData() async {
+  Future<void> saveSchoolingData({String? targetUserId}) async {
     try {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
+      final userId =
+          targetUserId ?? Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) {
         throw Exception('Usuário não autenticado.');
       }
-      _schoolingData = _schoolingData.copyWith(userId: userId);
-      await _repository.saveSchoolingData(_schoolingData);
+      await _repository.saveSchoolingData(_schoolingData, userId);
       // TODO: Adicionar feedback de sucesso para o usuário
     } catch (e) {
       // TODO: Adicionar feedback de erro para o usuário
@@ -306,18 +310,57 @@ class EnrollmentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> submitEnrollment() async {
+  Future<void> submitEnrollment({String? targetUserId}) async {
     try {
+      final userId =
+          targetUserId ?? Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Usuário não autenticado.');
+      }
       await _repository.addEnrollment(
         personalData: _personalData,
         addressData: _addressData,
         schoolingData: _schoolingData,
         documentsData: _documentsData,
+        userId: userId, // Passa o userId
       );
       // TODO: Adicionar feedback de sucesso para o usuário
     } catch (e) {
       // TODO: Adicionar feedback de erro para o usuário
       print('Erro no provider ao enviar: $e');
+    }
+  }
+
+  Future<void> saveDocumentsData({String? targetUserId}) async {
+    try {
+      final userId =
+          targetUserId ?? Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Usuário não autenticado.');
+      }
+      await _repository.saveDocumentsData(_documentsData, userId);
+      // TODO: Adicionar feedback de sucesso para o usuário
+    } catch (e) {
+      // TODO: Adicionar feedback de erro para o usuário
+      print('Erro no provider ao salvar dados de documentos: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> loadDocumentsData() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('Usuário não autenticado.');
+      }
+      final data = await _repository.getDocumentsData(userId);
+      if (data != null) {
+        _documentsData = data;
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Erro no provider ao carregar dados de documentos: $e');
+      // Não rethrow aqui, pois pode ser que o usuário ainda não tenha dados
     }
   }
 }

@@ -12,10 +12,15 @@ import 'package:ceeja_app/env.dart'; // Importar o arquivo env.dart
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Carregar variáveis de ambiente do arquivo .env
+  await dotenv.load(fileName: 'assets/.env');
+
   // Inicializar Supabase com as variáveis do env.dart
   await Supabase.initialize(
     url: AppEnv.supabaseUrl,
     anonKey: AppEnv.supabaseAnonKey,
+    // A service_role key não é passada diretamente aqui.
+    // Ela será usada internamente pelo AuthProvider para operações administrativas.
   );
 
   runApp(const MyApp());
@@ -29,9 +34,23 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => AuthProvider(supabaseClient: Supabase.instance.client),
+          create:
+              (_) => AuthProvider(
+                supabaseClient: Supabase.instance.client,
+                serviceRoleKey: AppEnv.supabaseServiceRoleKey,
+              ),
         ),
-        ChangeNotifierProvider(create: (_) => EnrollmentProvider()),
+        ChangeNotifierProvider(
+          create: (context) {
+            final authProvider = Provider.of<AuthProvider>(
+              context,
+              listen: false,
+            );
+            return EnrollmentProvider(
+              adminSupabaseClient: authProvider.adminSupabaseClient,
+            );
+          },
+        ),
       ],
       child: MaterialApp.router(
         title: 'CEEJA de Lins App',
