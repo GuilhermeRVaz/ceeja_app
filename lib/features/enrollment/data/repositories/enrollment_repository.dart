@@ -15,12 +15,12 @@ class EnrollmentRepository {
     Uint8List bytes,
     String fileName,
     String bucketName,
+    String userId,
   ) async {
     try {
       // Sanitize the file name to remove problematic characters
       final sanitizedFileName = _sanitizeFileName(fileName);
-      final String path =
-          '${_supabaseClient.auth.currentUser?.id}/$sanitizedFileName';
+      final String path = '$userId/$sanitizedFileName';
       await _supabaseClient.storage
           .from(bucketName)
           .uploadBinary(
@@ -46,6 +46,7 @@ class EnrollmentRepository {
     required AddressModel addressData,
     required SchoolingModel schoolingData,
     required DocumentsModel documentsData,
+    required String userId, // Adicionado userId
   }) async {
     try {
       // Upload de documentos e atualização dos caminhos
@@ -56,6 +57,7 @@ class EnrollmentRepository {
           documentsData.rgFrenteBytes!,
           documentsData.rgFrenteFileName!,
           'documents', // Nome do bucket no Supabase Storage
+          userId, // Passa o userId
         );
       }
 
@@ -66,6 +68,7 @@ class EnrollmentRepository {
           documentsData.rgVersoBytes!,
           documentsData.rgVersoFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -76,6 +79,7 @@ class EnrollmentRepository {
           documentsData.cpfDocBytes!,
           documentsData.cpfDocFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -86,6 +90,7 @@ class EnrollmentRepository {
           documentsData.foto3x4Bytes!,
           documentsData.foto3x4FileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -96,6 +101,7 @@ class EnrollmentRepository {
           documentsData.historicoEscolarFundamentalBytes!,
           documentsData.historicoEscolarFundamentalFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -106,6 +112,7 @@ class EnrollmentRepository {
           documentsData.historicoEscolarMedioBytes!,
           documentsData.historicoEscolarMedioFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -116,6 +123,7 @@ class EnrollmentRepository {
           documentsData.comprovanteResidenciaBytes!,
           documentsData.comprovanteResidenciaFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -126,6 +134,7 @@ class EnrollmentRepository {
           documentsData.certidaoNascimentoCasamentoBytes!,
           documentsData.certidaoNascimentoCasamentoFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -136,6 +145,7 @@ class EnrollmentRepository {
           documentsData.reservistaBytes!,
           documentsData.reservistaFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -146,6 +156,7 @@ class EnrollmentRepository {
           documentsData.tituloEleitorBytes!,
           documentsData.tituloEleitorFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -156,6 +167,7 @@ class EnrollmentRepository {
           documentsData.carteiraVacinacaoBytes!,
           documentsData.carteiraVacinacaoFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -166,6 +178,7 @@ class EnrollmentRepository {
           documentsData.atestadoEliminacaoDisciplinaBytes!,
           documentsData.atestadoEliminacaoDisciplinaFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -176,6 +189,7 @@ class EnrollmentRepository {
           documentsData.declaracaoTransferenciaEscolaridadeBytes!,
           documentsData.declaracaoTransferenciaEscolaridadeFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -205,7 +219,7 @@ class EnrollmentRepository {
                       declaracaoTransferenciaEscolaridadeUrl,
                 )
                 .toJson(),
-        'user_id': _supabaseClient.auth.currentUser?.id,
+        'user_id': userId, // Usa o userId passado como parâmetro
       });
     } catch (e) {
       if (e is PostgrestException) {
@@ -217,14 +231,19 @@ class EnrollmentRepository {
       } else {
         print('Erro desconhecido ao salvar requerimento: $e');
       }
-      print('User ID atual: ${_supabaseClient.auth.currentUser?.id}');
+      print('User ID atual: $userId'); // Loga o userId passado
       rethrow;
     }
   }
 
-  Future<void> savePersonalData(PersonalDataModel personalData) async {
+  Future<void> savePersonalData(
+    PersonalDataModel personalData,
+    String userId, // Adicionado userId
+  ) async {
     try {
-      await _supabaseClient.from('personal_data').upsert(personalData.toJson());
+      // Garante que o userId no modelo corresponde ao userId para o qual estamos salvando
+      final dataToSave = personalData.copyWith(userId: userId).toJson();
+      await _supabaseClient.from('personal_data').upsert(dataToSave);
     } catch (e) {
       if (e is PostgrestException) {
         print('Erro Postgrest ao salvar dados pessoais:');
@@ -266,9 +285,14 @@ class EnrollmentRepository {
     }
   }
 
-  Future<void> saveAddressData(AddressModel addressData) async {
+  Future<void> saveAddressData(
+    AddressModel addressData,
+    String userId, // Adicionado userId
+  ) async {
     try {
-      await _supabaseClient.from('addresses').upsert(addressData.toJson());
+      // Garante que o userId no modelo corresponde ao userId para o qual estamos salvando
+      final dataToSave = addressData.copyWith(userId: userId).toJson();
+      await _supabaseClient.from('addresses').upsert(dataToSave);
     } catch (e) {
       if (e is PostgrestException) {
         print('Erro Postgrest ao salvar dados de endereço:');
@@ -310,11 +334,14 @@ class EnrollmentRepository {
     }
   }
 
-  Future<void> saveSchoolingData(SchoolingModel schoolingData) async {
+  Future<void> saveSchoolingData(
+    SchoolingModel schoolingData,
+    String userId, // Adicionado userId
+  ) async {
     try {
-      await _supabaseClient
-          .from('schooling_data')
-          .upsert(schoolingData.toJson());
+      // Garante que o userId no modelo corresponde ao userId para o qual estamos salvando
+      final dataToSave = schoolingData.copyWith(userId: userId).toJson();
+      await _supabaseClient.from('schooling_data').upsert(dataToSave);
     } catch (e) {
       if (e is PostgrestException) {
         print('Erro Postgrest ao salvar dados acadêmicos:');
@@ -356,7 +383,10 @@ class EnrollmentRepository {
     }
   }
 
-  Future<void> saveDocumentsData(DocumentsModel documentsData) async {
+  Future<void> saveDocumentsData(
+    DocumentsModel documentsData,
+    String userId, // Adicionado userId
+  ) async {
     try {
       // Upload de documentos e atualização dos caminhos
       String? rgFrenteUrl;
@@ -366,6 +396,7 @@ class EnrollmentRepository {
           documentsData.rgFrenteBytes!,
           documentsData.rgFrenteFileName!,
           'documents', // Nome do bucket no Supabase Storage
+          userId, // Passa o userId
         );
       }
 
@@ -376,6 +407,7 @@ class EnrollmentRepository {
           documentsData.rgVersoBytes!,
           documentsData.rgVersoFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -386,6 +418,7 @@ class EnrollmentRepository {
           documentsData.cpfDocBytes!,
           documentsData.cpfDocFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -396,6 +429,7 @@ class EnrollmentRepository {
           documentsData.foto3x4Bytes!,
           documentsData.foto3x4FileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -406,6 +440,7 @@ class EnrollmentRepository {
           documentsData.historicoEscolarFundamentalBytes!,
           documentsData.historicoEscolarFundamentalFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -416,6 +451,7 @@ class EnrollmentRepository {
           documentsData.historicoEscolarMedioBytes!,
           documentsData.historicoEscolarMedioFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -426,6 +462,7 @@ class EnrollmentRepository {
           documentsData.comprovanteResidenciaBytes!,
           documentsData.comprovanteResidenciaFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -436,6 +473,7 @@ class EnrollmentRepository {
           documentsData.certidaoNascimentoCasamentoBytes!,
           documentsData.certidaoNascimentoCasamentoFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -446,6 +484,7 @@ class EnrollmentRepository {
           documentsData.reservistaBytes!,
           documentsData.reservistaFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -456,6 +495,7 @@ class EnrollmentRepository {
           documentsData.tituloEleitorBytes!,
           documentsData.tituloEleitorFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -466,6 +506,7 @@ class EnrollmentRepository {
           documentsData.carteiraVacinacaoBytes!,
           documentsData.carteiraVacinacaoFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -476,6 +517,7 @@ class EnrollmentRepository {
           documentsData.atestadoEliminacaoDisciplinaBytes!,
           documentsData.atestadoEliminacaoDisciplinaFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -486,6 +528,7 @@ class EnrollmentRepository {
           documentsData.declaracaoTransferenciaEscolaridadeBytes!,
           documentsData.declaracaoTransferenciaEscolaridadeFileName!,
           'documents',
+          userId, // Passa o userId
         );
       }
 
@@ -494,6 +537,7 @@ class EnrollmentRepository {
           .upsert(
             documentsData
                 .copyWith(
+                  userId: userId, // Garante que o userId no modelo corresponde
                   rgFrentePath: rgFrenteUrl,
                   rgVersoPath: rgVersoUrl,
                   cpfDocPath: cpfDocUrl,

@@ -80,50 +80,51 @@ class SchoolingModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'userId': userId,
-      'nivelEnsino': nivelEnsino,
-      'itinerarioFormativo': itinerarioFormativo,
-      'ultimaSerieConcluida': ultimaSerieConcluida,
-      'estudouNoCeeja': estudouNoCeeja,
-      'temProgressaoParcial': temProgressaoParcial,
-      'progressaoParcialDisciplinas': progressaoParcialDisciplinas,
-      'eliminouDisciplina': eliminouDisciplina,
-      'eliminouDisciplinaNivel': eliminouDisciplinaNivel,
-      'eliminouDisciplinas': eliminouDisciplinas,
-      'optouEnsinoReligioso': optouEnsinoReligioso,
-      'optouEducacaoFisica': optouEducacaoFisica,
-      'aceitouTermos': aceitouTermos,
-      'dataAceite': dataAceite?.toIso8601String(),
+      'user_id': userId,
+      'nivel_ensino': nivelEnsino,
+      'itinerario_formativo': itinerarioFormativo,
+      'ultima_serie_concluida': ultimaSerieConcluida,
+      'estudou_no_ceeja': estudouNoCeeja,
+      'tem_progressao_parcial': temProgressaoParcial,
+      'progressao_parcial_disciplinas': progressaoParcialDisciplinas,
+      'eliminou_disciplina': eliminouDisciplina,
+      'eliminou_disciplina_nivel': eliminouDisciplinaNivel,
+      'eliminou_disciplinas': eliminouDisciplinas,
+      'optou_ensino_religioso': optouEnsinoReligioso,
+      'optou_educacao_fisica': optouEducacaoFisica,
+      'aceitou_termos': aceitouTermos,
+      'data_aceite': dataAceite?.toIso8601String(),
     };
   }
 
   factory SchoolingModel.fromJson(Map<String, dynamic> json) {
     return SchoolingModel(
-      userId: json['userId'],
-      nivelEnsino: json['nivelEnsino'],
-      itinerarioFormativo: json['itinerarioFormativo'],
-      ultimaSerieConcluida: json['ultimaSerieConcluida'],
-      estudouNoCeeja: json['estudouNoCeeja'],
-      temProgressaoParcial: json['temProgressaoParcial'],
-      progressaoParcialDisciplinas:
-          (json['progressaoParcialDisciplinas'] as Map<String, dynamic>?)?.map(
+      userId: json['user_id'],
+      nivelEnsino: json['nivel_ensino'],
+      itinerarioFormativo: json['itinerario_formativo'],
+      ultimaSerieConcluida: json['ultima_serie_concluida'],
+      estudouNoCeeja: json['estudou_no_ceeja'],
+      temProgressaoParcial: json['tem_progressao_parcial'],
+      progressaoParcialDisciplinas: (json['progressao_parcial_disciplinas']
+              as Map<String, dynamic>?)
+          ?.map(
             (key, value) => MapEntry(
               key,
               (value as List).map((e) => e.toString()).toList(),
             ),
           ),
-      eliminouDisciplina: json['eliminouDisciplina'],
-      eliminouDisciplinaNivel: json['eliminouDisciplinaNivel'],
+      eliminouDisciplina: json['eliminou_disciplina'],
+      eliminouDisciplinaNivel: json['eliminou_disciplina_nivel'],
       eliminouDisciplinas:
-          (json['eliminouDisciplinas'] as List?)
+          (json['eliminou_disciplinas'] as List?)
               ?.map((e) => e.toString())
               .toList(),
-      optouEnsinoReligioso: json['optouEnsinoReligioso'],
-      optouEducacaoFisica: json['optouEducacaoFisica'],
-      aceitouTermos: json['aceitouTermos'],
+      optouEnsinoReligioso: json['optou_ensino_religioso'],
+      optouEducacaoFisica: json['optou_educacao_fisica'],
+      aceitouTermos: json['aceitou_termos'],
       dataAceite:
-          json['dataAceite'] != null
-              ? DateTime.parse(json['dataAceite'])
+          json['data_aceite'] != null
+              ? DateTime.parse(json['data_aceite'])
               : null,
     );
   }

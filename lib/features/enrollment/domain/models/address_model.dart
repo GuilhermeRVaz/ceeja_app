@@ -58,7 +58,7 @@ class AddressModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'userId': userId,
+      'user_id': userId,
       'cep': cep,
       'logradouro': logradouro,
       'numero': numero,
@@ -74,7 +74,7 @@ class AddressModel {
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {
     return AddressModel(
-      userId: json['userId'],
+      userId: json['user_id'],
       cep: json['cep'],
       logradouro: json['logradouro'],
       numero: json['numero'],

@@ -46,3 +46,7 @@ coverage/
 
 # Arquivos temporários do Microsoft Office
 ~$*
+
+# Arquivos de credenciais e tokens
+token.json
+credentials.json
