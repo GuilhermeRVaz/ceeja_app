@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart'; // Importa o AuthProvider existente
 
 // Define o estado do perfil do usuário
 class UserProfileState {

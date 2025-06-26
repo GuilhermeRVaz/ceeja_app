@@ -62,7 +62,7 @@ class _AdminEnrollmentScreenState extends ConsumerState<AdminEnrollmentScreen> {
 
       // 2. Salvar os Dados da Matrícula associados ao ID do Novo Aluno
       // O método `submitEnrollment` no EnrollmentNotifier agora lida com tudo.
-      await enrollmentNotifier.submitEnrollment(targetUserId: newStudentUserId);
+      await enrollmentNotifier.submitEnrollment();
 
       print('Dados da matrícula do aluno salvos com sucesso!');
       if (mounted) {

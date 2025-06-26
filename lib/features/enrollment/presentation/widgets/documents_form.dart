@@ -37,8 +37,20 @@ class DocumentsForm extends ConsumerWidget {
             fileName: file.name,
           );
           break;
+        case 'historicoEscolarFundamentalVerso':
+          notifier.updateHistoricoFundamentalVerso(
+            bytes: file.bytes,
+            fileName: file.name,
+          );
+          break;
         case 'historicoEscolarMedio':
           notifier.updateHistoricoEscolarMedio(
+            bytes: file.bytes,
+            fileName: file.name,
+          );
+          break;
+        case 'historicoEscolarMedioVerso':
+          notifier.updateHistoricoMedioVerso(
             bytes: file.bytes,
             fileName: file.name,
           );
@@ -158,14 +170,24 @@ class DocumentsForm extends ConsumerWidget {
           () => _pickFile(ref, 'foto3x4'),
         ),
         _buildFileInput(
-          'Histórico Escolar Fundamental',
+          'Histórico Escolar (Fundamental - Frente)',
           documentsState.historicoEscolarFundamentalFileName,
           () => _pickFile(ref, 'historicoEscolarFundamental'),
         ),
         _buildFileInput(
-          'Histórico Escolar Médio',
+          'Histórico Escolar (Fundamental - Verso)',
+          documentsState.historicoEscolarFundamentalVersoFileName,
+          () => _pickFile(ref, 'historicoEscolarFundamentalVerso'),
+        ),
+        _buildFileInput(
+          'Histórico Escolar (Médio - Frente)',
           documentsState.historicoEscolarMedioFileName,
           () => _pickFile(ref, 'historicoEscolarMedio'),
+        ),
+        _buildFileInput(
+          'Histórico Escolar (Médio - Verso)',
+          documentsState.historicoEscolarMedioVersoFileName,
+          () => _pickFile(ref, 'historicoEscolarMedioVerso'),
         ),
         _buildFileInput(
           'Comprovante de Residência',

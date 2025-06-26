@@ -9,31 +9,37 @@ class EnrollmentRepository {
   final SupabaseClient _client;
   EnrollmentRepository(this._client);
 
-  // === MÉTODO DE UPLOAD DE DOCUMENTOS (O que estava faltando) ===
+  // Função para limpar nomes de arquivos
+  String _sanitizeFileName(String fileName) {
+    String sanitized = fileName.replaceAll(RegExp(r'[áàâãä]'), 'a');
+    sanitized = sanitized.replaceAll(RegExp(r'[éèêë]'), 'e');
+    sanitized = sanitized.replaceAll(RegExp(r'[íìîï]'), 'i');
+    sanitized = sanitized.replaceAll(RegExp(r'[óòôõö]'), 'o');
+    sanitized = sanitized.replaceAll(RegExp(r'[úùûü]'), 'u');
+    sanitized = sanitized.replaceAll(RegExp(r'[ç]'), 'c');
+    sanitized = sanitized.replaceAll(' ', '_');
+    sanitized = sanitized.replaceAll(RegExp(r'[^a-zA-Z0-9.\-_]'), '');
+    return sanitized.toLowerCase();
+  }
+
   Future<String> uploadDocument({
-    required String userId,
+    required String enrollmentId,
     required String documentType,
     required Uint8List fileBytes,
     required String fileName,
   }) async {
-    // Cria um caminho único para o arquivo, ex: 'uuid-do-usuario/rg_frente/rg_frente.pdf'
-    final filePath = '$userId/$documentType/$fileName';
+    // APLICA A LIMPEZA AQUI
+    final sanitizedName = _sanitizeFileName(fileName);
+    final filePath = '$enrollmentId/$documentType/$sanitizedName';
 
-    // Faz o upload do arquivo binário para o bucket 'documents'
     await _client.storage
-        .from(
-          'documents',
-        ) // Certifique-se que o nome do seu bucket é 'documents'
+        .from('documents')
         .uploadBinary(
           filePath,
           fileBytes,
-          fileOptions: const FileOptions(
-            cacheControl: '3600',
-            upsert: true,
-          ), // 'upsert: true' permite substituir o arquivo se já existir
+          fileOptions: const FileOptions(upsert: true),
         );
 
-    // Retorna o caminho do arquivo no storage para referência futura
     return filePath;
   }
 
@@ -65,19 +71,49 @@ class EnrollmentRepository {
         .upsert(dataToSave, onConflict: 'user_id');
   }
 
-  // Você pode adicionar métodos para inserir na tabela 'document_extractions' aqui
+  // === NOVO MÉTODO: Inicia uma nova matrícula e retorna seu ID ===
+  Future<String> startNewEnrollment(String userId) async {
+    final response =
+        await _client
+            .from('enrollments')
+            .insert({'user_id': userId})
+            .select('id') // Pede para o Supabase retornar o ID da linha criada
+            .single(); // Espera um único resultado
+
+    return response['id'];
+  }
+
+  // === NOVO MÉTODO: Atualiza uma matrícula existente com todos os dados confirmados ===
+  Future<void> updateEnrollment({
+    required String enrollmentId,
+    required PersonalDataModel personalData,
+    required AddressModel addressData,
+    required SchoolingModel schoolingData,
+  }) async {
+    await _client
+        .from('enrollments')
+        .update({
+          'confirmed_personal_data': personalData.toJson(),
+          'confirmed_address_data': addressData.toJson(),
+          'confirmed_schooling_data': schoolingData.toJson(),
+          'status': 'concluida', // Atualiza o status da matrícula
+        })
+        .eq('id', enrollmentId);
+  }
+
+  // === MÉTODO MODIFICADO: createExtractionEntry agora usa enrollment_id ===
   Future<void> createExtractionEntry({
-    required String userId,
+    required String enrollmentId, // MUDANÇA: Recebe enrollmentId
     required String documentType,
     required String fileName,
     required String storagePath,
   }) async {
     await _client.from('document_extractions').insert({
-      'user_id': userId,
+      'enrollment_id': enrollmentId, // MUDANÇA: Salva o ID da matrícula
       'document_type': documentType,
       'file_name': fileName,
       'storage_path': storagePath,
-      'status': 'pendente', // Define o status inicial
+      'status': 'pendente',
     });
   }
 }

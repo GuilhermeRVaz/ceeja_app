@@ -23,8 +23,17 @@ class _EnrollmentStepperScreenState
   int _currentStep = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // Assim que a tela é construída, inicia uma nova matrícula no provider.
+    // Usamos 'addPostFrameCallback' para garantir que o build inicial já tenha ocorrido.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(enrollmentProvider.notifier).startNewEnrollment();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
     final enrollmentState = ref.watch(enrollmentProvider);
     final enrollmentNotifier = ref.read(enrollmentProvider.notifier);
 

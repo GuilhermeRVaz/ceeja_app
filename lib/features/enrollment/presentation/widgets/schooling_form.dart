@@ -4,10 +4,6 @@ import 'package:ceeja_app/features/enrollment/presentation/widgets/discipline_se
 import 'package:ceeja_app/features/enrollment/presentation/widgets/form_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ceeja_app/features/enrollment/domain/models/schooling_model.dart';
-import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_provider.dart';
-import 'package:ceeja_app/features/enrollment/presentation/widgets/discipline_selection_panel.dart';
-import 'package:ceeja_app/features/enrollment/presentation/widgets/form_section.dart';
 import 'package:ceeja_app/core/widgets/custom_text_field.dart';
 
 // MUDANÇA: Converte para ConsumerStatefulWidget
