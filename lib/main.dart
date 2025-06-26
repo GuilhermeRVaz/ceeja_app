@@ -1,70 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // IMPORTANTE: Verifique se este import existe
+
 import 'package:ceeja_app/core/navigation/app_router.dart';
 import 'package:ceeja_app/core/theme/app_theme.dart';
-import 'package:provider/provider.dart';
-import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_provider.dart';
-import 'package:ceeja_app/env.dart'; // Importar o arquivo env.dart
+import 'package:ceeja_app/env.dart';
 
 Future<void> main() async {
+  // Garante que os bindings do Flutter sejam inicializados.
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Carregar variáveis de ambiente do arquivo .env
-  await dotenv.load(fileName: 'assets/.env');
+  // PASSO 1 (CORRIGIDO): Carregar as variáveis de ambiente do arquivo .env PRIMEIRO.
+  // Certifique-se que você tem um arquivo chamado '.env' dentro de uma pasta 'assets'
+  // e que este arquivo está listado no seu pubspec.yaml na seção 'assets'.
+  try {
+    await dotenv.load(fileName: "assets/.env");
+  } catch (e) {
+    print("Erro ao carregar o arquivo .env: $e");
+    // Você pode querer parar a execução aqui se o .env for essencial
+  }
 
-  // Inicializar Supabase com as variáveis do env.dart
+  // PASSO 2 (CORRIGIDO): AGORA inicializar o Supabase, pois as variáveis já foram carregadas.
   await Supabase.initialize(
     url: AppEnv.supabaseUrl,
     anonKey: AppEnv.supabaseAnonKey,
-    // A service_role key não é passada diretamente aqui.
-    // Ela será usada internamente pelo AuthProvider para operações administrativas.
   );
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
+// O resto do arquivo MyApp permanece o mesmo.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create:
-              (_) => AuthProvider(
-                supabaseClient: Supabase.instance.client,
-                serviceRoleKey: AppEnv.supabaseServiceRoleKey,
-              ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) {
-            final authProvider = Provider.of<AuthProvider>(
-              context,
-              listen: false,
-            );
-            return EnrollmentProvider(
-              adminSupabaseClient: authProvider.adminSupabaseClient,
-            );
-          },
-        ),
+    return MaterialApp.router(
+      title: 'CEEJA de Lins App',
+      theme: AppTheme.lightTheme,
+      routerConfig: AppRouter.router,
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
       ],
-      child: MaterialApp.router(
-        title: 'CEEJA de Lins App',
-        theme: AppTheme.lightTheme,
-        routerConfig: AppRouter.router,
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('pt', 'BR')],
-        locale: const Locale('pt', 'BR'),
-      ),
+      supportedLocales: const [Locale('pt', 'BR')],
+      locale: const Locale('pt', 'BR'),
     );
   }
 }

@@ -3,21 +3,64 @@ import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_
 import 'package:ceeja_app/features/enrollment/presentation/widgets/discipline_selection_panel.dart';
 import 'package:ceeja_app/features/enrollment/presentation/widgets/form_section.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ceeja_app/features/enrollment/domain/models/schooling_model.dart';
+import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_provider.dart';
+import 'package:ceeja_app/features/enrollment/presentation/widgets/discipline_selection_panel.dart';
+import 'package:ceeja_app/features/enrollment/presentation/widgets/form_section.dart';
+import 'package:ceeja_app/core/widgets/custom_text_field.dart';
 
-class SchoolingForm extends StatelessWidget {
+// MUDANÇA: Converte para ConsumerStatefulWidget
+class SchoolingForm extends ConsumerStatefulWidget {
   const SchoolingForm({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<EnrollmentProvider>();
-    final data = provider.schoolingData;
+  ConsumerState<SchoolingForm> createState() => _SchoolingFormState();
+}
 
-    void updateProvider(SchoolingModel updatedData) {
-      context.read<EnrollmentProvider>().updateSchoolingData(updatedData);
+class _SchoolingFormState extends ConsumerState<SchoolingForm> {
+  final _raController = TextEditingController();
+  final _nomeEscolaController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Preenche o controller com os dados iniciais do provider.
+    final initialData = ref.read(enrollmentProvider).schoolingData;
+    _updateControllers(initialData, forceUpdate: true);
+  }
+
+  @override
+  void dispose() {
+    _raController.dispose();
+    _nomeEscolaController.dispose();
+    super.dispose();
+  }
+
+  // Função helper para atualizar todos os controllers.
+  void _updateControllers(SchoolingModel data, {bool forceUpdate = false}) {
+    if (forceUpdate || _raController.text != (data.ra ?? '')) {
+      _raController.text = data.ra ?? '';
     }
+    if (forceUpdate || _nomeEscolaController.text != (data.nomeEscola ?? '')) {
+      _nomeEscolaController.text = data.nomeEscola ?? '';
+    }
+  }
 
-    // --- Listas de Opções ---
+  @override
+  Widget build(BuildContext context) {
+    // MUDANÇA: Ouve as mudanças no provider para manter o controller sincronizado.
+    ref.listen<EnrollmentState>(enrollmentProvider, (previous, next) {
+      if (previous?.schoolingData != next.schoolingData) {
+        _updateControllers(next.schoolingData, forceUpdate: false);
+      }
+    });
+
+    // MUDANÇA: Acessa os dados e o notifier do provider.
+    final schoolingData = ref.watch(enrollmentProvider).schoolingData;
+    final notifier = ref.read(enrollmentProvider.notifier);
+
+    // --- Listas de Opções (movidas para dentro do build para clareza) ---
     const itinerarios = [
       'Linguagens e Ciências Humanas',
       'Matemática e Ciências da Natureza',
@@ -58,7 +101,6 @@ class SchoolingForm extends StatelessWidget {
       'Filosofia',
       'Educação Física',
     ];
-
     final disciplineOptionsMap = {
       '8ª Série Ensino Fundamental': disciplinasFundamental,
       '1ª Série do Ensino Médio': disciplinasMedio,
@@ -72,15 +114,15 @@ class SchoolingForm extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           FormSection(
-            title: 'Nível de Ensino',
+            title: '4. Escolaridade',
             children: [
               RadioListTile<String>(
                 title: const Text('Ensino Fundamental'),
                 value: 'Ensino Fundamental',
-                groupValue: data.nivelEnsino,
+                groupValue: schoolingData.nivelEnsino,
                 onChanged:
-                    (value) => updateProvider(
-                      data.copyWith(
+                    (value) => notifier.updateSchoolingData(
+                      schoolingData.copyWith(
                         nivelEnsino: value,
                         itinerarioFormativo: null,
                         ultimaSerieConcluida: null,
@@ -90,20 +132,20 @@ class SchoolingForm extends StatelessWidget {
               RadioListTile<String>(
                 title: const Text('Ensino Médio'),
                 value: 'Ensino Médio',
-                groupValue: data.nivelEnsino,
+                groupValue: schoolingData.nivelEnsino,
                 onChanged:
-                    (value) => updateProvider(
-                      data.copyWith(
+                    (value) => notifier.updateSchoolingData(
+                      schoolingData.copyWith(
                         nivelEnsino: value,
                         itinerarioFormativo: null,
                         ultimaSerieConcluida: null,
                       ),
                     ),
               ),
-              if (data.nivelEnsino == 'Ensino Médio') ...[
+              if (schoolingData.nivelEnsino == 'Ensino Médio') ...[
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: data.itinerarioFormativo,
+                  value: schoolingData.itinerarioFormativo,
                   decoration: const InputDecoration(
                     labelText: 'Área do Itinerário Formativo',
                     border: OutlineInputBorder(),
@@ -115,21 +157,21 @@ class SchoolingForm extends StatelessWidget {
                           )
                           .toList(),
                   onChanged:
-                      (value) => updateProvider(
-                        data.copyWith(itinerarioFormativo: value),
+                      (value) => notifier.updateSchoolingData(
+                        schoolingData.copyWith(itinerarioFormativo: value),
                       ),
                 ),
               ],
-              if (data.nivelEnsino != null) ...[
+              if (schoolingData.nivelEnsino != null) ...[
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: data.ultimaSerieConcluida,
+                  value: schoolingData.ultimaSerieConcluida,
                   decoration: const InputDecoration(
                     labelText: 'Última série concluída',
                     border: OutlineInputBorder(),
                   ),
                   items:
-                      (data.nivelEnsino == 'Ensino Fundamental'
+                      (schoolingData.nivelEnsino == 'Ensino Fundamental'
                               ? seriesFundamental
                               : seriesMedio)
                           .map(
@@ -137,11 +179,57 @@ class SchoolingForm extends StatelessWidget {
                           )
                           .toList(),
                   onChanged:
-                      (value) => updateProvider(
-                        data.copyWith(ultimaSerieConcluida: value),
+                      (value) => notifier.updateSchoolingData(
+                        schoolingData.copyWith(ultimaSerieConcluida: value),
                       ),
                 ),
               ],
+            ],
+          ),
+          FormSection(
+            title: 'Dados de Registro',
+            children: [
+              CustomTextField(
+                controller: _raController,
+                labelText: 'RA (Registro do Aluno)',
+                onChanged:
+                    (value) => notifier.updateSchoolingData(
+                      schoolingData.copyWith(ra: value),
+                    ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: schoolingData.tipoEscola,
+                decoration: const InputDecoration(
+                  labelText: 'Tipo de Escola',
+                  border: OutlineInputBorder(),
+                ),
+                items:
+                    <String>[
+                      'Pública',
+                      'Privada',
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                onChanged: (String? newValue) {
+                  notifier.updateSchoolingData(
+                    schoolingData.copyWith(tipoEscola: newValue),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                controller: _nomeEscolaController,
+                labelText: 'Nome da Escola',
+                onChanged:
+                    (value) => notifier.updateSchoolingData(
+                      schoolingData.copyWith(nomeEscola: value),
+                    ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
           FormSection(
@@ -149,32 +237,34 @@ class SchoolingForm extends StatelessWidget {
             children: [
               SwitchListTile(
                 title: const Text('Já estudou no CEEJA de Lins antes?'),
-                value: data.estudouNoCeeja ?? false,
+                value: schoolingData.estudouNoCeeja ?? false,
                 onChanged:
-                    (value) =>
-                        updateProvider(data.copyWith(estudouNoCeeja: value)),
+                    (value) => notifier.updateSchoolingData(
+                      schoolingData.copyWith(estudouNoCeeja: value),
+                    ),
               ),
               const Divider(),
               SwitchListTile(
                 title: const Text('Tem Progressão Parcial (dependência)?'),
-                value: data.temProgressaoParcial ?? false,
+                value: schoolingData.temProgressaoParcial ?? false,
                 onChanged:
-                    (value) => updateProvider(
-                      data.copyWith(
+                    (value) => notifier.updateSchoolingData(
+                      schoolingData.copyWith(
                         temProgressaoParcial: value,
                         progressaoParcialDisciplinas: {},
                       ),
                     ),
               ),
-              if (data.temProgressaoParcial == true)
+              if (schoolingData.temProgressaoParcial == true)
                 _buildDisciplinePanel(
                   context: context,
                   seriesOptions: seriesMedio,
                   disciplineOptions: disciplineOptionsMap,
-                  selectedDisciplines: data.progressaoParcialDisciplinas ?? {},
+                  selectedDisciplines:
+                      schoolingData.progressaoParcialDisciplinas ?? {},
                   onChanged:
-                      (newSelection) => updateProvider(
-                        data.copyWith(
+                      (newSelection) => notifier.updateSchoolingData(
+                        schoolingData.copyWith(
                           progressaoParcialDisciplinas: newSelection,
                         ),
                       ),
@@ -184,17 +274,17 @@ class SchoolingForm extends StatelessWidget {
                 title: const Text(
                   'Eliminou Disciplina por ENCCEJA, ENEM, etc.?',
                 ),
-                value: data.eliminouDisciplina ?? false,
+                value: schoolingData.eliminouDisciplina ?? false,
                 onChanged:
-                    (value) => updateProvider(
-                      data.copyWith(
+                    (value) => notifier.updateSchoolingData(
+                      schoolingData.copyWith(
                         eliminouDisciplina: value,
                         eliminouDisciplinaNivel: null,
                         eliminouDisciplinas: [],
                       ),
                     ),
               ),
-              if (data.eliminouDisciplina == true) ...[
+              if (schoolingData.eliminouDisciplina == true) ...[
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                   child: Column(
@@ -207,10 +297,10 @@ class SchoolingForm extends StatelessWidget {
                       RadioListTile<String>(
                         title: const Text('Ensino Fundamental'),
                         value: 'Ensino Fundamental',
-                        groupValue: data.eliminouDisciplinaNivel,
+                        groupValue: schoolingData.eliminouDisciplinaNivel,
                         onChanged:
-                            (value) => updateProvider(
-                              data.copyWith(
+                            (value) => notifier.updateSchoolingData(
+                              schoolingData.copyWith(
                                 eliminouDisciplinaNivel: value,
                                 eliminouDisciplinas: [],
                               ),
@@ -219,10 +309,10 @@ class SchoolingForm extends StatelessWidget {
                       RadioListTile<String>(
                         title: const Text('Ensino Médio'),
                         value: 'Ensino Médio',
-                        groupValue: data.eliminouDisciplinaNivel,
+                        groupValue: schoolingData.eliminouDisciplinaNivel,
                         onChanged:
-                            (value) => updateProvider(
-                              data.copyWith(
+                            (value) => notifier.updateSchoolingData(
+                              schoolingData.copyWith(
                                 eliminouDisciplinaNivel: value,
                                 eliminouDisciplinas: [],
                               ),
@@ -231,17 +321,21 @@ class SchoolingForm extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (data.eliminouDisciplinaNivel != null)
+                if (schoolingData.eliminouDisciplinaNivel != null)
                   _buildEliminatedDisciplineCheckboxes(
                     context: context,
                     disciplineOptions:
-                        data.eliminouDisciplinaNivel == 'Ensino Fundamental'
+                        schoolingData.eliminouDisciplinaNivel ==
+                                'Ensino Fundamental'
                             ? disciplinasFundamental
                             : disciplinasMedio,
-                    selectedDisciplines: data.eliminouDisciplinas ?? [],
+                    selectedDisciplines:
+                        schoolingData.eliminouDisciplinas ?? [],
                     onChanged:
-                        (newSelection) => updateProvider(
-                          data.copyWith(eliminouDisciplinas: newSelection),
+                        (newSelection) => notifier.updateSchoolingData(
+                          schoolingData.copyWith(
+                            eliminouDisciplinas: newSelection,
+                          ),
                         ),
                   ),
               ],
@@ -252,15 +346,15 @@ class SchoolingForm extends StatelessWidget {
             children: [
               CheckboxListTile(
                 title: const Text('Ensino Religioso'),
-                value: data.optouEnsinoReligioso ?? false,
+                value: schoolingData.optouEnsinoReligioso ?? false,
                 onChanged:
-                    (value) => updateProvider(
-                      data.copyWith(optouEnsinoReligioso: value),
+                    (value) => notifier.updateSchoolingData(
+                      schoolingData.copyWith(optouEnsinoReligioso: value),
                     ),
               ),
               CheckboxListTile(
                 title: const Text('Educação Física'),
-                value: data.optouEducacaoFisica ?? false,
+                value: schoolingData.optouEducacaoFisica ?? false,
                 onChanged: (value) {
                   if (value == true) {
                     showDialog(
@@ -280,7 +374,9 @@ class SchoolingForm extends StatelessWidget {
                           ),
                     );
                   }
-                  updateProvider(data.copyWith(optouEducacaoFisica: value));
+                  notifier.updateSchoolingData(
+                    schoolingData.copyWith(optouEducacaoFisica: value),
+                  );
                 },
               ),
             ],
@@ -295,16 +391,31 @@ class SchoolingForm extends StatelessWidget {
               const SizedBox(height: 8),
               CheckboxListTile(
                 title: const Text('Li e aceito os termos'),
-                value: data.aceitouTermos ?? false,
+                value: schoolingData.aceitouTermos ?? false,
                 onChanged:
-                    (value) => updateProvider(
-                      data.copyWith(
+                    (value) => notifier.updateSchoolingData(
+                      schoolingData.copyWith(
                         aceitouTermos: value,
                         dataAceite: value == true ? DateTime.now() : null,
                       ),
                     ),
               ),
             ],
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                await notifier.submitEnrollment();
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Dados de escolaridade salvos com sucesso!'),
+                  ),
+                );
+              },
+              child: const Text('Salvar Dados de Escolaridade'),
+            ),
           ),
         ],
       ),

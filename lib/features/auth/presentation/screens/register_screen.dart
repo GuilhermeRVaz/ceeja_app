@@ -1,56 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // Para AuthException
-import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // MUDANÇA: Importa o Riverpod
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart'; // MUDANÇA: Importa o provider do Riverpod
 import 'package:ceeja_app/features/auth/presentation/widgets/auth_form.dart';
 import 'package:ceeja_app/core/theme/app_theme.dart';
 
-class RegisterScreen extends StatefulWidget {
+// MUDANÇA: Converte de StatefulWidget para ConsumerStatefulWidget
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  // MUDANÇA: Converte para ConsumerState
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _isLoading = false;
 
   Future<void> _submitAuthForm(
     String email,
     String password,
     String? fullName,
-    bool isLogin, // Não usado diretamente aqui, pois é sempre cadastro
+    bool isLogin,
   ) async {
+    // Validação simples para garantir que o nome não é nulo no cadastro
+    if (fullName == null || fullName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, preencha o nome completo.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    // MUDANÇA: Usa ref.read para acessar o notifier do provider
+    final authNotifier = ref.read(authProvider.notifier);
     String? errorMessage;
 
     try {
-      final response = await authProvider.signUp(
-        email,
-        password,
-        data: {'full_name': fullName ?? ''},
-      );
+      // Supondo que você tenha um método `signUp` no seu AuthNotifier.
+      // Este método deve ser chamado aqui.
+      await authNotifier.signUp(email, password, fullName);
 
-      if (response?.user != null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Cadastro realizado com sucesso! Verifique seu e-mail para confirmação (se habilitado).',
-              ),
-              backgroundColor: Colors.green,
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Cadastro realizado com sucesso! Verifique seu e-mail para confirmação.',
             ),
-          );
-          // Usar goNamed é uma boa prática se você nomeou suas rotas.
-          context.goNamed('login');
-        }
-      } else {
-        errorMessage = 'Falha no cadastro. Resposta inesperada.';
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.goNamed('login');
       }
     } on AuthException catch (e) {
       errorMessage = e.message;
@@ -65,11 +72,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
       if (errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor:
-                Colors.red, // Corrigido: removido '!' desnecessário
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     }
@@ -109,10 +112,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 20),
               TextButton(
-                onPressed: () {
-                  // Usar goNamed é uma boa prática se você nomeou suas rotas.
-                  context.goNamed('login');
-                },
+                onPressed:
+                    _isLoading
+                        ? null
+                        : () {
+                          context.goNamed('login');
+                        },
                 child: const Text(
                   'Já tem uma conta? Faça login',
                   style: TextStyle(

@@ -1,366 +1,266 @@
 import 'dart:typed_data';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:ceeja_app/features/enrollment/data/repositories/enrollment_repository.dart';
 import 'package:ceeja_app/features/enrollment/data/services/cep_service.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/address_model.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/documents_model.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/personal_data_model.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/schooling_model.dart';
-import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-class EnrollmentProvider with ChangeNotifier {
-  late final EnrollmentRepository _repository;
-  final CepService _cepService = CepService();
-
-  EnrollmentProvider({SupabaseClient? adminSupabaseClient}) {
-    _repository = EnrollmentRepository(
-      adminSupabaseClient ?? Supabase.instance.client,
+class EnrollmentState {
+  final PersonalDataModel personalData;
+  final AddressModel addressData;
+  final SchoolingModel schoolingData;
+  final DocumentsModel documentsData;
+  final bool isLoading;
+  final String? errorMessage;
+  const EnrollmentState({
+    this.personalData = const PersonalDataModel(),
+    this.addressData = const AddressModel(),
+    this.schoolingData = const SchoolingModel(),
+    this.documentsData = const DocumentsModel(),
+    this.isLoading = false,
+    this.errorMessage,
+  });
+  EnrollmentState copyWith({
+    PersonalDataModel? personalData,
+    AddressModel? addressData,
+    SchoolingModel? schoolingData,
+    DocumentsModel? documentsData,
+    bool? isLoading,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return EnrollmentState(
+      personalData: personalData ?? this.personalData,
+      addressData: addressData ?? this.addressData,
+      schoolingData: schoolingData ?? this.schoolingData,
+      documentsData: documentsData ?? this.documentsData,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
+}
 
-  PersonalDataModel _personalData = PersonalDataModel();
-  PersonalDataModel get personalData => _personalData;
+class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
+  final EnrollmentRepository _repository;
+  final CepService _cepService;
+  final Ref _ref;
+  EnrollmentNotifier(this._repository, this._cepService, this._ref)
+    : super(const EnrollmentState());
 
-  AddressModel _addressData = AddressModel();
-  AddressModel get addressData => _addressData;
-
-  SchoolingModel _schoolingData = SchoolingModel();
-  SchoolingModel get schoolingData => _schoolingData;
-
-  DocumentsModel _documentsData = DocumentsModel();
-  DocumentsModel get documentsData => _documentsData;
-
-  void updatePersonalData(PersonalDataModel data) {
-    _personalData = data;
-    notifyListeners();
-  }
-
-  Future<void> savePersonalData({String? targetUserId}) async {
-    try {
-      final userId =
-          targetUserId ?? Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado.');
-      }
-      await _repository.savePersonalData(_personalData, userId);
-      // TODO: Adicionar feedback de sucesso para o usuário
-    } catch (e) {
-      // TODO: Adicionar feedback de erro para o usuário
-      print('Erro no provider ao salvar dados pessoais: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> loadPersonalData() async {
-    try {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado.');
-      }
-      final data = await _repository.getPersonalData(userId);
-      if (data != null) {
-        _personalData = data;
-        notifyListeners();
-      }
-    } catch (e) {
-      print('Erro no provider ao carregar dados pessoais: $e');
-      // Não rethrow aqui, pois pode ser que o usuário ainda não tenha dados
-    }
-  }
-
-  void updateAddressData(AddressModel data) {
-    _addressData = data;
-    notifyListeners();
-  }
-
-  Future<void> saveAddressData({String? targetUserId}) async {
-    try {
-      final userId =
-          targetUserId ?? Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado.');
-      }
-      await _repository.saveAddressData(_addressData, userId);
-      // TODO: Adicionar feedback de sucesso para o usuário
-    } catch (e) {
-      // TODO: Adicionar feedback de erro para o usuário
-      print('Erro no provider ao salvar dados de endereço: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> loadAddressData() async {
-    try {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado.');
-      }
-      final data = await _repository.getAddressData(userId);
-      if (data != null) {
-        _addressData = data;
-        notifyListeners();
-      }
-    } catch (e) {
-      print('Erro no provider ao carregar dados de endereço: $e');
-      // Não rethrow aqui, pois pode ser que o usuário ainda não tenha dados
-    }
-  }
+  void updatePersonalData(PersonalDataModel data) =>
+      state = state.copyWith(personalData: data);
+  void updateAddressData(AddressModel data) =>
+      state = state.copyWith(addressData: data);
+  void updateSchoolingData(SchoolingModel data) =>
+      state = state.copyWith(schoolingData: data);
+  void updateRgFrente({Uint8List? bytes, String? fileName}) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          rgFrenteBytes: bytes,
+          rgFrenteFileName: fileName,
+        ),
+      );
+  void updateRgVerso({Uint8List? bytes, String? fileName}) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          rgVersoBytes: bytes,
+          rgVersoFileName: fileName,
+        ),
+      );
+  void updateCpfDoc({Uint8List? bytes, String? fileName}) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          cpfDocBytes: bytes,
+          cpfDocFileName: fileName,
+        ),
+      );
+  void updateFoto3x4({Uint8List? bytes, String? fileName}) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          foto3x4Bytes: bytes,
+          foto3x4FileName: fileName,
+        ),
+      );
+  void updateHistoricoEscolarFundamental({
+    Uint8List? bytes,
+    String? fileName,
+  }) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          historicoEscolarFundamentalBytes: bytes,
+          historicoEscolarFundamentalFileName: fileName,
+        ),
+      );
+  void updateHistoricoEscolarMedio({Uint8List? bytes, String? fileName}) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          historicoEscolarMedioBytes: bytes,
+          historicoEscolarMedioFileName: fileName,
+        ),
+      );
+  void updateComprovanteResidencia({Uint8List? bytes, String? fileName}) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          comprovanteResidenciaBytes: bytes,
+          comprovanteResidenciaFileName: fileName,
+        ),
+      );
+  void updateCertidaoNascimentoCasamento({
+    Uint8List? bytes,
+    String? fileName,
+  }) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          certidaoNascimentoCasamentoBytes: bytes,
+          certidaoNascimentoCasamentoFileName: fileName,
+        ),
+      );
+  void updateReservista({Uint8List? bytes, String? fileName}) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          reservistaBytes: bytes,
+          reservistaFileName: fileName,
+        ),
+      );
+  void updateTituloEleitor({Uint8List? bytes, String? fileName}) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          tituloEleitorBytes: bytes,
+          tituloEleitorFileName: fileName,
+        ),
+      );
+  void updateCarteiraVacinacao({Uint8List? bytes, String? fileName}) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          carteiraVacinacaoBytes: bytes,
+          carteiraVacinacaoFileName: fileName,
+        ),
+      );
+  void updateAtestadoEliminacaoDisciplina({
+    Uint8List? bytes,
+    String? fileName,
+  }) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          atestadoEliminacaoDisciplinaBytes: bytes,
+          atestadoEliminacaoDisciplinaFileName: fileName,
+        ),
+      );
+  void updateDeclaracaoTransferenciaEscolaridade({
+    Uint8List? bytes,
+    String? fileName,
+  }) =>
+      state = state.copyWith(
+        documentsData: state.documentsData.copyWith(
+          declaracaoTransferenciaEscolaridadeBytes: bytes,
+          declaracaoTransferenciaEscolaridadeFileName: fileName,
+        ),
+      );
 
   Future<void> fetchAddressByCep(String cep) async {
-    final fetchedAddress = await _cepService.fetchAddressByCep(cep);
-    if (fetchedAddress != null) {
-      _addressData = _addressData.copyWith(
-        cep: fetchedAddress.cep,
-        logradouro: fetchedAddress.logradouro,
-        bairro: fetchedAddress.bairro,
-        nomeCidade: fetchedAddress.nomeCidade,
-        ufCidade: fetchedAddress.ufCidade,
-      );
-      notifyListeners();
-    }
-    // TODO: Adicionar feedback para o usuário caso o CEP não seja encontrado
-  }
-
-  void updateSchoolingData(SchoolingModel data) {
-    _schoolingData = data;
-    notifyListeners();
-  }
-
-  Future<void> saveSchoolingData({String? targetUserId}) async {
     try {
-      final userId =
-          targetUserId ?? Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado.');
-      }
-      await _repository.saveSchoolingData(_schoolingData, userId);
-      // TODO: Adicionar feedback de sucesso para o usuário
+      state = state.copyWith(isLoading: true, errorMessage: null);
+      final address = await _cepService.fetchAddressByCep(cep);
+      state = state.copyWith(
+        addressData: state.addressData.copyWith(
+          logradouro: address?.logradouro,
+          bairro: address?.bairro,
+          nomeCidade: address?.nomeCidade,
+          ufCidade: address?.ufCidade,
+        ),
+        isLoading: false,
+      );
     } catch (e) {
-      // TODO: Adicionar feedback de erro para o usuário
-      print('Erro no provider ao salvar dados acadêmicos: $e');
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    }
+  }
+
+  Future<void> uploadAndExtractData() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    final documents = state.documentsData;
+    final userId = _ref.read(authProvider).user?.id;
+    if (userId == null) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: "Usuário não logado",
+      );
+      return;
+    }
+
+    try {
+      // Cria uma lista de tarefas de upload
+      final List<Future> uploadTasks = [];
+
+      // Função helper para adicionar tarefas à lista
+      void addUploadTask(String docType, Uint8List? bytes, String? name) {
+        if (bytes != null && name != null) {
+          uploadTasks.add(
+            _repository
+                .uploadDocument(
+                  userId: userId,
+                  documentType: docType,
+                  fileBytes: bytes,
+                  fileName: name,
+                )
+                .then(
+                  (storagePath) => _repository.createExtractionEntry(
+                    userId: userId,
+                    documentType: docType,
+                    fileName: name,
+                    storagePath: storagePath,
+                  ),
+                ),
+          );
+        }
+      }
+
+      addUploadTask(
+        'rg_frente',
+        documents.rgFrenteBytes,
+        documents.rgFrenteFileName,
+      );
+      // ... Adicione chamadas para todos os outros documentos
+      // addUploadTask('rg_verso', documents.rgVersoBytes, documents.rgVersoFileName);
+      // addUploadTask('cpf_doc', documents.cpfDocBytes, documents.cpfDocFileName);
+
+      // Executa todas as tarefas de upload em paralelo
+      await Future.wait(uploadTasks);
+      print("Todos os documentos foram enviados com sucesso.");
+
+      // AQUI VOCÊ CHAMARIA A EDGE FUNCTION PARA INICIAR A IA
+      // final response = await Supabase.instance.client.functions.invoke('extract-document-data', body: {'userId': userId});
+
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
       rethrow;
     }
-  }
-
-  Future<void> loadSchoolingData() async {
-    try {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado.');
-      }
-      final data = await _repository.getSchoolingData(userId);
-      if (data != null) {
-        _schoolingData = data;
-        notifyListeners();
-      }
-    } catch (e) {
-      print('Erro no provider ao carregar dados acadêmicos: $e');
-      // Não rethrow aqui, pois pode ser que o usuário ainda não tenha dados
-    }
-  }
-
-  void updateDocumentsData(DocumentsModel data) {
-    _documentsData = data;
-    notifyListeners();
-  }
-
-  void updateRgFrente({String? path, Uint8List? bytes, String? fileName}) {
-    _documentsData = _documentsData.copyWith(
-      rgFrentePath: path,
-      rgFrenteBytes: bytes,
-      rgFrenteFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateRgVerso({String? path, Uint8List? bytes, String? fileName}) {
-    _documentsData = _documentsData.copyWith(
-      rgVersoPath: path,
-      rgVersoBytes: bytes,
-      rgVersoFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateCpfDoc({String? path, Uint8List? bytes, String? fileName}) {
-    _documentsData = _documentsData.copyWith(
-      cpfDocPath: path,
-      cpfDocBytes: bytes,
-      cpfDocFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateFoto3x4({String? path, Uint8List? bytes, String? fileName}) {
-    _documentsData = _documentsData.copyWith(
-      foto3x4Path: path,
-      foto3x4Bytes: bytes,
-      foto3x4FileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateHistoricoEscolarFundamental({
-    String? path,
-    Uint8List? bytes,
-    String? fileName,
-  }) {
-    _documentsData = _documentsData.copyWith(
-      historicoEscolarFundamentalPath: path,
-      historicoEscolarFundamentalBytes: bytes,
-      historicoEscolarFundamentalFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateHistoricoEscolarMedio({
-    String? path,
-    Uint8List? bytes,
-    String? fileName,
-  }) {
-    _documentsData = _documentsData.copyWith(
-      historicoEscolarMedioPath: path,
-      historicoEscolarMedioBytes: bytes,
-      historicoEscolarMedioFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateComprovanteResidencia({
-    String? path,
-    Uint8List? bytes,
-    String? fileName,
-  }) {
-    _documentsData = _documentsData.copyWith(
-      comprovanteResidenciaPath: path,
-      comprovanteResidenciaBytes: bytes,
-      comprovanteResidenciaFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateCertidaoNascimentoCasamento({
-    String? path,
-    Uint8List? bytes,
-    String? fileName,
-  }) {
-    _documentsData = _documentsData.copyWith(
-      certidaoNascimentoCasamentoPath: path,
-      certidaoNascimentoCasamentoBytes: bytes,
-      certidaoNascimentoCasamentoFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateReservista({String? path, Uint8List? bytes, String? fileName}) {
-    _documentsData = _documentsData.copyWith(
-      reservistaPath: path,
-      reservistaBytes: bytes,
-      reservistaFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateTituloEleitor({String? path, Uint8List? bytes, String? fileName}) {
-    _documentsData = _documentsData.copyWith(
-      tituloEleitorPath: path,
-      tituloEleitorBytes: bytes,
-      tituloEleitorFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateCarteiraVacinacao({
-    String? path,
-    Uint8List? bytes,
-    String? fileName,
-  }) {
-    _documentsData = _documentsData.copyWith(
-      carteiraVacinacaoPath: path,
-      carteiraVacinacaoBytes: bytes,
-      carteiraVacinacaoFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateAtestadoEliminacaoDisciplina({
-    String? path,
-    Uint8List? bytes,
-    String? fileName,
-  }) {
-    _documentsData = _documentsData.copyWith(
-      atestadoEliminacaoDisciplinaPath: path,
-      atestadoEliminacaoDisciplinaBytes: bytes,
-      atestadoEliminacaoDisciplinaFileName: fileName,
-    );
-    notifyListeners();
-  }
-
-  void updateDeclaracaoTransferenciaEscolaridade({
-    String? path,
-    Uint8List? bytes,
-    String? fileName,
-  }) {
-    _documentsData = _documentsData.copyWith(
-      declaracaoTransferenciaEscolaridadePath: path,
-      declaracaoTransferenciaEscolaridadeBytes: bytes,
-      declaracaoTransferenciaEscolaridadeFileName: fileName,
-    );
-    notifyListeners();
   }
 
   Future<void> submitEnrollment({String? targetUserId}) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final userId =
-          targetUserId ?? Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado.');
-      }
-      await _repository.addEnrollment(
-        personalData: _personalData,
-        addressData: _addressData,
-        schoolingData: _schoolingData,
-        documentsData: _documentsData,
-        userId: userId, // Passa o userId
-      );
-      // TODO: Adicionar feedback de sucesso para o usuário
+      final userId = targetUserId ?? _ref.read(authProvider).user?.id;
+      if (userId == null) throw Exception('Usuário não autenticado.');
+      // Chama os métodos separados do repositório
+      await _repository.savePersonalData(state.personalData, userId);
+      await _repository.saveAddressData(state.addressData, userId);
+      await _repository.saveSchoolingData(state.schoolingData, userId);
+      state = state.copyWith(isLoading: false);
     } catch (e) {
-      // TODO: Adicionar feedback de erro para o usuário
-      print('Erro no provider ao enviar: $e');
-    }
-  }
-
-  Future<void> saveDocumentsData({String? targetUserId}) async {
-    try {
-      final userId =
-          targetUserId ?? Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado.');
-      }
-      await _repository.saveDocumentsData(_documentsData, userId);
-      // TODO: Adicionar feedback de sucesso para o usuário
-    } catch (e) {
-      // TODO: Adicionar feedback de erro para o usuário
-      print('Erro no provider ao salvar dados de documentos: $e');
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
       rethrow;
     }
   }
-
-  Future<void> loadDocumentsData() async {
-    try {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('Usuário não autenticado.');
-      }
-      final data = await _repository.getDocumentsData(userId);
-      if (data != null) {
-        _documentsData = data;
-        notifyListeners();
-      }
-    } catch (e) {
-      print('Erro no provider ao carregar dados de documentos: $e');
-      // Não rethrow aqui, pois pode ser que o usuário ainda não tenha dados
-    }
-  }
 }
+
+final enrollmentProvider =
+    StateNotifierProvider<EnrollmentNotifier, EnrollmentState>((ref) {
+      final repository = EnrollmentRepository(Supabase.instance.client);
+      final cepService = CepService();
+      return EnrollmentNotifier(repository, cepService, ref);
+    });

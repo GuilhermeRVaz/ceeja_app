@@ -1,35 +1,41 @@
 class SchoolingModel {
-  String? userId;
+  final String? userId;
   // Nível de Ensino
-  String? nivelEnsino;
-  String? itinerarioFormativo;
-  String? ultimaSerieConcluida;
+  final String? nivelEnsino;
+  final String? itinerarioFormativo;
+  final String? ultimaSerieConcluida;
+  final String? ra; // Adicionado o campo RA
+  final String? tipoEscola;
+  final String? nomeEscola;
 
   // Histórico CEEJA
-  bool? estudouNoCeeja;
+  final bool? estudouNoCeeja;
 
   // Dependências
-  bool? temProgressaoParcial;
-  Map<String, List<String>>? progressaoParcialDisciplinas;
+  final bool? temProgressaoParcial;
+  final Map<String, List<String>>? progressaoParcialDisciplinas;
 
   // Eliminações
-  bool? eliminouDisciplina;
-  String? eliminouDisciplinaNivel;
-  List<String>? eliminouDisciplinas; // Alterado para Lista
+  final bool? eliminouDisciplina;
+  final String? eliminouDisciplinaNivel;
+  final List<String>? eliminouDisciplinas; // Alterado para Lista
 
   // Opcionais
-  bool? optouEnsinoReligioso;
-  bool? optouEducacaoFisica;
+  final bool? optouEnsinoReligioso;
+  final bool? optouEducacaoFisica;
 
   // Termos
-  bool? aceitouTermos;
-  DateTime? dataAceite;
+  final bool? aceitouTermos;
+  final DateTime? dataAceite;
 
-  SchoolingModel({
+  const SchoolingModel({
     this.userId,
     this.nivelEnsino,
     this.itinerarioFormativo,
     this.ultimaSerieConcluida,
+    this.ra, // Adicionado o campo RA
+    this.tipoEscola,
+    this.nomeEscola,
     this.estudouNoCeeja,
     this.temProgressaoParcial,
     this.progressaoParcialDisciplinas,
@@ -47,6 +53,9 @@ class SchoolingModel {
     String? nivelEnsino,
     String? itinerarioFormativo,
     String? ultimaSerieConcluida,
+    String? ra, // Adicionado o campo RA
+    String? tipoEscola,
+    String? nomeEscola,
     bool? estudouNoCeeja,
     bool? temProgressaoParcial,
     Map<String, List<String>>? progressaoParcialDisciplinas,
@@ -63,6 +72,9 @@ class SchoolingModel {
       nivelEnsino: nivelEnsino ?? this.nivelEnsino,
       itinerarioFormativo: itinerarioFormativo ?? this.itinerarioFormativo,
       ultimaSerieConcluida: ultimaSerieConcluida ?? this.ultimaSerieConcluida,
+      ra: ra ?? this.ra, // Adicionado o campo RA
+      tipoEscola: tipoEscola ?? this.tipoEscola,
+      nomeEscola: nomeEscola ?? this.nomeEscola,
       estudouNoCeeja: estudouNoCeeja ?? this.estudouNoCeeja,
       temProgressaoParcial: temProgressaoParcial ?? this.temProgressaoParcial,
       progressaoParcialDisciplinas:
@@ -84,6 +96,9 @@ class SchoolingModel {
       'nivel_ensino': nivelEnsino,
       'itinerario_formativo': itinerarioFormativo,
       'ultima_serie_concluida': ultimaSerieConcluida,
+      'ra': ra, // Adicionado o campo RA
+      'tipo_escola': tipoEscola,
+      'nome_escola': nomeEscola,
       'estudou_no_ceeja': estudouNoCeeja,
       'tem_progressao_parcial': temProgressaoParcial,
       'progressao_parcial_disciplinas': progressaoParcialDisciplinas,
@@ -103,6 +118,9 @@ class SchoolingModel {
       nivelEnsino: json['nivel_ensino'],
       itinerarioFormativo: json['itinerario_formativo'],
       ultimaSerieConcluida: json['ultima_serie_concluida'],
+      ra: json['ra'], // Adicionado o campo RA
+      tipoEscola: json['tipo_escola'],
+      nomeEscola: json['nome_escola'],
       estudouNoCeeja: json['estudou_no_ceeja'],
       temProgressaoParcial: json['tem_progressao_parcial'],
       progressaoParcialDisciplinas: (json['progressao_parcial_disciplinas']

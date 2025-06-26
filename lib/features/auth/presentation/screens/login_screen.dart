@@ -1,70 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // Para AuthException
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:ceeja_app/features/auth/presentation/widgets/auth_form.dart';
 import 'package:ceeja_app/core/theme/app_theme.dart';
 
-class LoginScreen extends StatefulWidget {
+// MUDANÇA: A classe já é um ConsumerStatefulWidget, o que é ótimo.
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  bool _isLoading = false;
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  // MUDANÇA: Não precisamos mais de um `_isLoading` local. O provider vai gerenciar isso.
+  // bool _isLoading = false;
 
+  // MUDANÇA: A lógica de submit fica mais limpa.
   Future<void> _submitAuthForm(
     String email,
     String password,
-    String?
-    fullName, // Não usado no login, mas mantido pela assinatura do AuthForm
+    String? fullName, // Não usado no login
     bool isLogin,
   ) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    String? errorMessage;
+    // Acessamos o notifier para chamar a função de login.
+    final authNotifier = ref.read(authProvider.notifier);
 
     try {
-      final response = await authProvider.signInWithPassword(email, password);
-      if (response?.user != null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login bem-sucedido! Redirecionando...'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          // Navegar para a tela principal após login bem-sucedido
-          // Usar goNamed é uma boa prática se você nomeou suas rotas.
-          context.goNamed('home');
-          print("Login bem-sucedido, usuário: ${response?.user?.id}");
-        }
-      } else {
-        errorMessage = 'Falha no login. Resposta inesperada.';
-      }
-    } on AuthException catch (e) {
-      errorMessage = e.message;
-    } catch (e) {
-      errorMessage = 'Ocorreu um erro inesperado. Tente novamente.';
-      print('Erro não AuthException no login: $e');
-    }
+      // Chamamos o método de login. O try/catch é para lidar com a UI.
+      await authNotifier.signInWithPassword(email, password);
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (errorMessage != null) {
+      // Se o login for bem-sucedido, o GoRouter e o listener de autenticação
+      // cuidarão do redirecionamento para a tela 'home'.
+      // Podemos apenas mostrar uma mensagem de sucesso.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login bem-sucedido! Redirecionando...'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // O GoRouter deve ter um listener de autenticação para redirecionar
+        // automaticamente. Mas podemos forçar aqui para garantir.
+        context.goNamed('home');
+      }
+    } catch (e) {
+      // Se o método signInWithPassword lançar uma exceção, pegamos aqui.
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(errorMessage),
-            backgroundColor:
-                Colors.red, // Corrigido: removido '!' desnecessário
+            // O provider já formatou a mensagem de erro para nós.
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -73,6 +61,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // MUDANÇA: Usamos 'ref.watch' para observar o estado de autenticação.
+    // Isso reconstruirá o widget quando o estado de 'isLoading' mudar.
+    final authState = ref.watch(authProvider);
+
     return Scaffold(
       backgroundColor: AppTheme.lightGreyColor,
       body: Center(
@@ -99,17 +91,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
+              // MUDANÇA: Passamos o `isLoading` diretamente do estado do provider.
               AuthForm(
                 submitFn: _submitAuthForm,
                 isLogin: true,
-                isLoading: _isLoading,
+                isLoading: authState.isLoading,
               ),
               const SizedBox(height: 20),
+              // Desabilita o botão se estiver carregando.
               TextButton(
-                onPressed: () {
-                  // Usar goNamed é uma boa prática se você nomeou suas rotas.
-                  context.goNamed('register');
-                },
+                onPressed:
+                    authState.isLoading
+                        ? null
+                        : () {
+                          context.goNamed('register');
+                        },
                 child: const Text(
                   'Não tem uma conta? Cadastre-se',
                   style: TextStyle(

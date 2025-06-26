@@ -4,6 +4,7 @@ import 'package:ceeja_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:ceeja_app/features/auth/presentation/screens/register_screen.dart';
 import 'package:ceeja_app/features/home/presentation/screens/home_screen.dart';
 import 'package:ceeja_app/features/enrollment/presentation/screens/admin_enrollment_screen.dart';
+import 'package:ceeja_app/features/enrollment/presentation/screens/enrollment_stepper_screen.dart'; // Importar EnrollmentStepperScreen
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -36,6 +37,13 @@ class AppRouter {
         name: 'admin-enrollment',
         builder: (BuildContext context, GoRouterState state) {
           return const AdminEnrollmentScreen();
+        },
+      ),
+      GoRoute(
+        path: '/enrollment-stepper',
+        name: 'enrollment_stepper',
+        builder: (BuildContext context, GoRouterState state) {
+          return const EnrollmentStepperScreen();
         },
       ),
       // Adicionar outras rotas aqui

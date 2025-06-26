@@ -1,47 +1,47 @@
 class PersonalDataModel {
   // Dados de Identificação
-  String? nomeCompleto;
-  bool temNomeSocial;
-  String? nomeSocial;
-  bool temNomeAfetivo;
-  String? nomeAfetivo;
-  String? sexo;
-  String? rg;
-  String? rgDigito;
-  String? rgUf;
-  DateTime? rgDataEmissao;
-  String? cpf;
-  String? racaCor;
-  DateTime? dataNascimento;
-  int? idade; // Adicionado para armazenar a idade
+  final String? nomeCompleto;
+  final bool temNomeSocial;
+  final String? nomeSocial;
+  final bool temNomeAfetivo;
+  final String? nomeAfetivo;
+  final String? sexo;
+  final String? rg;
+  final String? rgDigito;
+  final String? rgUf;
+  final DateTime? rgDataEmissao;
+  final String? cpf;
+  final String? racaCor;
+  final DateTime? dataNascimento;
+  final int? idade; // Adicionado para armazenar a idade
 
   // Filiação
-  String? nomeMae;
-  String? nomePai;
+  final String? nomeMae;
+  final String? nomePai;
 
   // Nacionalidade
-  String? nacionalidade; // 'Brasileira' ou 'Estrangeira'
-  String? nascimentoUf;
-  String? nascimentoCidade;
-  String? paisOrigem;
+  final String? nacionalidade; // 'Brasileira' ou 'Estrangeira'
+  final String? nascimentoUf;
+  final String? nascimentoCidade;
+  final String? paisOrigem;
 
   // Contato e Conectividade
-  bool? possuiInternet;
-  bool? possuiDevice;
-  String? telefone;
-  String? email;
+  final bool? possuiInternet;
+  final bool? possuiDevice;
+  final String? telefone;
+  final String? email;
 
   // Outros
-  bool? isGemeo;
-  String? nomeGemeo;
-  bool? trabalha;
-  String? profissao;
-  String? empresa;
-  bool? isPCD;
-  String? deficiencia;
-  String? userId; // Adicionado para associar ao usuário do Supabase
+  final bool? isGemeo;
+  final String? nomeGemeo;
+  final bool? trabalha;
+  final String? profissao;
+  final String? empresa;
+  final bool? isPCD;
+  final String? deficiencia;
+  final String? userId; // Adicionado para associar ao usuário do Supabase
 
-  PersonalDataModel({
+  const PersonalDataModel({
     this.nomeCompleto,
     this.temNomeSocial = false,
     this.nomeSocial,

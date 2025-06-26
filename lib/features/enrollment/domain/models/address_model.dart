@@ -1,18 +1,18 @@
 class AddressModel {
-  String? userId;
-  String? cep;
-  String? logradouro;
-  String? numero;
-  String? complemento;
-  String? bairro;
-  String? nomeCidade;
-  String? ufCidade;
-  String? zona; // 'Urbana' ou 'Rural'
-  bool temLocalizacaoDiferenciada;
-  String?
+  final String? userId;
+  final String? cep;
+  final String? logradouro;
+  final String? numero;
+  final String? complemento;
+  final String? bairro;
+  final String? nomeCidade;
+  final String? ufCidade;
+  final String? zona; // 'Urbana' ou 'Rural'
+  final bool temLocalizacaoDiferenciada;
+  final String?
   localizacaoDiferenciada; // 'Área de assentamento', 'Terra indígena', 'Área quilombola'
 
-  AddressModel({
+  const AddressModel({
     this.userId,
     this.cep,
     this.logradouro,
