@@ -50,3 +50,4 @@ coverage/
 # Arquivos de credenciais e tokens
 token.json
 credentials.json
+login_credentials.json
