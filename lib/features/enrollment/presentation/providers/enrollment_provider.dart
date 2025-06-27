@@ -1,4 +1,6 @@
 import 'dart:typed_data';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart';
@@ -346,16 +348,42 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
         );
       } else {
         print("Nenhum documento foi selecionado para upload.");
+        // Se não houver documentos, talvez não queira chamar a IA.
+        state = state.copyWith(isLoading: false);
+        return; // Sai da função mais cedo.
       }
 
-      // 5. Opcional: Chamar a Edge Function de IA aqui.
-      // await Supabase.instance.client.functions.invoke('extract-document-data', body: {'enrollmentId': enrollmentId});
+      // ======================================================================
+      // == O LOCAL PERFEITO É AQUI!                                         ==
+      // ======================================================================
+      // Após garantir que todos os uploads terminaram com sucesso.
+      print("Chamando a API Python local para iniciar a extração...");
+
+      final response = await http.post(
+        Uri.parse(
+          'http://127.0.0.1:5000/extract-data',
+        ), // URL do seu servidor Python local
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'enrollmentId': state.enrollmentId}),
+      );
+
+      // Opcional, mas recomendado: verificar se a chamada para a API foi bem-sucedida.
+      if (response.statusCode != 200) {
+        // Se a API Python retornar um erro, nós o capturamos aqui.
+        throw Exception(
+          'Falha ao acionar o serviço de extração de IA. Status: ${response.statusCode}',
+        );
+      }
+
+      print("API Python acionada com sucesso: ${response.body}");
+
+      // ======================================================================
 
       state = state.copyWith(isLoading: false);
     } catch (e) {
-      print("Ocorreu um erro durante o upload em paralelo: $e");
+      print("Ocorreu um erro durante o upload ou chamada da API: $e");
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
-      rethrow; // Lança o erro para a UI poder mostrar uma mensagem
+      rethrow;
     }
   }
 

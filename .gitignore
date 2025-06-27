@@ -51,3 +51,6 @@ coverage/
 token.json
 credentials.json
 login_credentials.json
+
+# Ambiente virtual Python
+backend/venv/
