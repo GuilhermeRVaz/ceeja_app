@@ -1,22 +1,29 @@
+// COPIE E COLE TUDO ABAIXO NO ARQUIVO:
+// lib/features/enrollment/presentation/widgets/address_form.dart
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ceeja_app/core/widgets/custom_text_field.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/address_model.dart';
 import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_provider.dart';
 import 'package:ceeja_app/features/enrollment/presentation/widgets/form_section.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-class AddressForm extends StatefulWidget {
+// MUDANÇA: Converte para ConsumerStatefulWidget
+class AddressForm extends ConsumerStatefulWidget {
   const AddressForm({super.key});
 
   @override
-  State<AddressForm> createState() => _AddressFormState();
+  ConsumerState<AddressForm> createState() => _AddressFormState();
 }
 
-class _AddressFormState extends State<AddressForm> {
+class _AddressFormState extends ConsumerState<AddressForm> {
+  // Controllers para os campos que o usuário digita.
   final _cepController = TextEditingController();
-  final _logradouroController = TextEditingController();
   final _numeroController = TextEditingController();
   final _complementoController = TextEditingController();
+
+  // Controllers para os campos preenchidos automaticamente.
+  final _logradouroController = TextEditingController();
   final _bairroController = TextEditingController();
   final _cidadeController = TextEditingController();
   final _ufController = TextEditingController();
@@ -30,48 +37,63 @@ class _AddressFormState extends State<AddressForm> {
   @override
   void initState() {
     super.initState();
-    final provider = context.read<EnrollmentProvider>();
-    final data = provider.addressData;
-    _cepController.text = data.cep ?? '';
-    _numeroController.text = data.numero ?? '';
-    _complementoController.text = data.complemento ?? '';
+    // Preenche os controllers com os dados iniciais do provider.
+    final initialData = ref.read(enrollmentProvider).addressData;
+    _updateControllers(initialData, forceUpdate: true);
+  }
+
+  // Função helper para atualizar todos os controllers.
+  void _updateControllers(AddressModel data, {bool forceUpdate = false}) {
+    if (forceUpdate || _cepController.text != (data.cep ?? '')) {
+      _cepController.text = data.cep ?? '';
+    }
+    if (forceUpdate || _numeroController.text != (data.numero ?? '')) {
+      _numeroController.text = data.numero ?? '';
+    }
+    if (forceUpdate ||
+        _complementoController.text != (data.complemento ?? '')) {
+      _complementoController.text = data.complemento ?? '';
+    }
+    if (forceUpdate || _logradouroController.text != (data.logradouro ?? '')) {
+      _logradouroController.text = data.logradouro ?? '';
+    }
+    if (forceUpdate || _bairroController.text != (data.bairro ?? '')) {
+      _bairroController.text = data.bairro ?? '';
+    }
+    if (forceUpdate || _cidadeController.text != (data.nomeCidade ?? '')) {
+      _cidadeController.text = data.nomeCidade ?? '';
+    }
+    if (forceUpdate || _ufController.text != (data.ufCidade ?? '')) {
+      _ufController.text = data.ufCidade ?? '';
+    }
   }
 
   @override
   void dispose() {
+    // Lembre-se de fazer o dispose de todos os controllers.
     _cepController.dispose();
-    _logradouroController.dispose();
     _numeroController.dispose();
     _complementoController.dispose();
+    _logradouroController.dispose();
     _bairroController.dispose();
     _cidadeController.dispose();
     _ufController.dispose();
     super.dispose();
   }
 
-  void _onCepChanged(String cep) {
-    final provider = context.read<EnrollmentProvider>();
-    provider.updateAddressData(provider.addressData.copyWith(cep: cep));
-
-    final cleanedCep = cep.replaceAll(RegExp(r'[^0-9]'), '');
-    if (cleanedCep.length == 8) {
-      provider.fetchAddressByCep(cleanedCep);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<EnrollmentProvider>();
-    final data = provider.addressData;
+    // MUDANÇA: Ouve as mudanças no provider.
+    // Quando a busca por CEP (ou dados da IA) terminar, os controllers serão atualizados.
+    ref.listen<EnrollmentState>(enrollmentProvider, (previous, next) {
+      if (previous?.addressData != next.addressData) {
+        _updateControllers(next.addressData, forceUpdate: false);
+      }
+    });
 
-    _logradouroController.text = data.logradouro ?? '';
-    _bairroController.text = data.bairro ?? '';
-    _cidadeController.text = data.nomeCidade ?? '';
-    _ufController.text = data.ufCidade ?? '';
-
-    void updateProvider(AddressModel updatedData) {
-      context.read<EnrollmentProvider>().updateAddressData(updatedData);
-    }
+    // MUDANÇA: Acessa os dados e o notifier do provider.
+    final addressData = ref.watch(enrollmentProvider).addressData;
+    final notifier = ref.read(enrollmentProvider.notifier);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(8.0),
@@ -79,19 +101,28 @@ class _AddressFormState extends State<AddressForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           FormSection(
-            title: 'Endereço Principal',
+            title: '3. Endereço',
             children: [
               CustomTextField(
                 controller: _cepController,
                 labelText: 'CEP',
                 keyboardType: TextInputType.number,
-                onChanged: _onCepChanged,
+                onChanged: (cep) {
+                  // Atualiza o estado no provider a cada dígito.
+                  notifier.updateAddressData(addressData.copyWith(cep: cep));
+                  final cleanedCep = cep.replaceAll(RegExp(r'[^0-9]'), '');
+                  if (cleanedCep.length == 8) {
+                    // Chama a lógica de busca de CEP no provider.
+                    notifier.fetchAddressByCep(cleanedCep);
+                  }
+                },
               ),
               const SizedBox(height: 16),
               CustomTextField(
                 controller: _logradouroController,
                 labelText: 'Rua / Logradouro',
-                enabled: false,
+                enabled:
+                    false, // O campo é desabilitado pois é preenchido automaticamente
               ),
               const SizedBox(height: 16),
               Row(
@@ -102,8 +133,9 @@ class _AddressFormState extends State<AddressForm> {
                       labelText: 'Número',
                       keyboardType: TextInputType.number,
                       onChanged:
-                          (value) =>
-                              updateProvider(data.copyWith(numero: value)),
+                          (value) => notifier.updateAddressData(
+                            addressData.copyWith(numero: value),
+                          ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -112,8 +144,9 @@ class _AddressFormState extends State<AddressForm> {
                       controller: _complementoController,
                       labelText: 'Complemento',
                       onChanged:
-                          (value) =>
-                              updateProvider(data.copyWith(complemento: value)),
+                          (value) => notifier.updateAddressData(
+                            addressData.copyWith(complemento: value),
+                          ),
                     ),
                   ),
                 ],
@@ -153,34 +186,38 @@ class _AddressFormState extends State<AddressForm> {
               RadioListTile<String>(
                 title: const Text('Urbana'),
                 value: 'Urbana',
-                groupValue: data.zona,
+                groupValue: addressData.zona,
                 onChanged:
-                    (value) => updateProvider(data.copyWith(zona: value)),
+                    (value) => notifier.updateAddressData(
+                      addressData.copyWith(zona: value),
+                    ),
               ),
               RadioListTile<String>(
                 title: const Text('Rural'),
                 value: 'Rural',
-                groupValue: data.zona,
+                groupValue: addressData.zona,
                 onChanged:
-                    (value) => updateProvider(data.copyWith(zona: value)),
+                    (value) => notifier.updateAddressData(
+                      addressData.copyWith(zona: value),
+                    ),
               ),
               const Divider(height: 32),
               SwitchListTile(
                 title: const Text('Localização Diferenciada?'),
-                value: data.temLocalizacaoDiferenciada,
+                value: addressData.temLocalizacaoDiferenciada,
                 onChanged:
-                    (bool value) => updateProvider(
-                      data.copyWith(
+                    (bool value) => notifier.updateAddressData(
+                      addressData.copyWith(
                         temLocalizacaoDiferenciada: value,
                         localizacaoDiferenciada: null,
                       ),
                     ),
               ),
-              if (data.temLocalizacaoDiferenciada)
+              if (addressData.temLocalizacaoDiferenciada)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: DropdownButtonFormField<String>(
-                    value: data.localizacaoDiferenciada,
+                    value: addressData.localizacaoDiferenciada,
                     decoration: const InputDecoration(
                       labelText: 'Qual?',
                       border: OutlineInputBorder(),
@@ -193,13 +230,16 @@ class _AddressFormState extends State<AddressForm> {
                           );
                         }).toList(),
                     onChanged:
-                        (String? newValue) => updateProvider(
-                          data.copyWith(localizacaoDiferenciada: newValue),
+                        (String? newValue) => notifier.updateAddressData(
+                          addressData.copyWith(
+                            localizacaoDiferenciada: newValue,
+                          ),
                         ),
                   ),
                 ),
             ],
           ),
+          // Botão de salvar foi removido para ser centralizado na tela principal do stepper.
         ],
       ),
     );

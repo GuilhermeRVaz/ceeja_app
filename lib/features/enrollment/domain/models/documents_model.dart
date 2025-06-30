@@ -1,48 +1,53 @@
 import 'dart:typed_data';
 
 class DocumentsModel {
-  String? userId;
-  String? rgFrentePath;
-  Uint8List? rgFrenteBytes;
-  String? rgFrenteFileName;
-  String? rgVersoPath;
-  Uint8List? rgVersoBytes;
-  String? rgVersoFileName;
-  String? cpfDocPath;
-  Uint8List? cpfDocBytes;
-  String? cpfDocFileName;
-  String? foto3x4Path;
-  Uint8List? foto3x4Bytes;
-  String? foto3x4FileName;
-  String? historicoEscolarFundamentalPath;
-  Uint8List? historicoEscolarFundamentalBytes;
-  String? historicoEscolarFundamentalFileName;
-  String? historicoEscolarMedioPath;
-  Uint8List? historicoEscolarMedioBytes;
-  String? historicoEscolarMedioFileName;
-  String? comprovanteResidenciaPath;
-  Uint8List? comprovanteResidenciaBytes;
-  String? comprovanteResidenciaFileName;
-  String? certidaoNascimentoCasamentoPath;
-  Uint8List? certidaoNascimentoCasamentoBytes;
-  String? certidaoNascimentoCasamentoFileName;
-  String? reservistaPath;
-  Uint8List? reservistaBytes;
-  String? reservistaFileName;
-  String? tituloEleitorPath;
-  Uint8List? tituloEleitorBytes;
-  String? tituloEleitorFileName;
-  String? carteiraVacinacaoPath;
-  Uint8List? carteiraVacinacaoBytes;
-  String? carteiraVacinacaoFileName;
-  String? atestadoEliminacaoDisciplinaPath;
-  Uint8List? atestadoEliminacaoDisciplinaBytes;
-  String? atestadoEliminacaoDisciplinaFileName;
-  String? declaracaoTransferenciaEscolaridadePath;
-  Uint8List? declaracaoTransferenciaEscolaridadeBytes;
-  String? declaracaoTransferenciaEscolaridadeFileName;
+  final String? userId;
+  final String? rgFrentePath;
+  final Uint8List? rgFrenteBytes;
+  final String? rgFrenteFileName;
+  final String? rgVersoPath;
+  final Uint8List? rgVersoBytes;
+  final String? rgVersoFileName;
+  final String? cpfDocPath;
+  final Uint8List? cpfDocBytes;
+  final String? cpfDocFileName;
+  final String? foto3x4Path;
+  final Uint8List? foto3x4Bytes;
+  final String? foto3x4FileName;
+  final String? historicoEscolarFundamentalPath;
+  final Uint8List? historicoEscolarFundamentalBytes;
+  final String? historicoEscolarFundamentalFileName;
+  final Uint8List? historicoEscolarFundamentalVersoBytes;
+  final String? historicoEscolarFundamentalVersoFileName;
 
-  DocumentsModel({
+  final String? historicoEscolarMedioPath;
+  final Uint8List? historicoEscolarMedioBytes;
+  final String? historicoEscolarMedioFileName;
+  final Uint8List? historicoEscolarMedioVersoBytes;
+  final String? historicoEscolarMedioVersoFileName;
+  final String? comprovanteResidenciaPath;
+  final Uint8List? comprovanteResidenciaBytes;
+  final String? comprovanteResidenciaFileName;
+  final String? certidaoNascimentoCasamentoPath;
+  final Uint8List? certidaoNascimentoCasamentoBytes;
+  final String? certidaoNascimentoCasamentoFileName;
+  final String? reservistaPath;
+  final Uint8List? reservistaBytes;
+  final String? reservistaFileName;
+  final String? tituloEleitorPath;
+  final Uint8List? tituloEleitorBytes;
+  final String? tituloEleitorFileName;
+  final String? carteiraVacinacaoPath;
+  final Uint8List? carteiraVacinacaoBytes;
+  final String? carteiraVacinacaoFileName;
+  final String? atestadoEliminacaoDisciplinaPath;
+  final Uint8List? atestadoEliminacaoDisciplinaBytes;
+  final String? atestadoEliminacaoDisciplinaFileName;
+  final String? declaracaoTransferenciaEscolaridadePath;
+  final Uint8List? declaracaoTransferenciaEscolaridadeBytes;
+  final String? declaracaoTransferenciaEscolaridadeFileName;
+
+  const DocumentsModel({
     this.userId,
     this.rgFrentePath,
     this.rgFrenteBytes,
@@ -59,9 +64,13 @@ class DocumentsModel {
     this.historicoEscolarFundamentalPath,
     this.historicoEscolarFundamentalBytes,
     this.historicoEscolarFundamentalFileName,
+    this.historicoEscolarFundamentalVersoBytes,
+    this.historicoEscolarFundamentalVersoFileName,
     this.historicoEscolarMedioPath,
     this.historicoEscolarMedioBytes,
     this.historicoEscolarMedioFileName,
+    this.historicoEscolarMedioVersoBytes,
+    this.historicoEscolarMedioVersoFileName,
     this.comprovanteResidenciaPath,
     this.comprovanteResidenciaBytes,
     this.comprovanteResidenciaFileName,
@@ -102,9 +111,13 @@ class DocumentsModel {
     String? historicoEscolarFundamentalPath,
     Uint8List? historicoEscolarFundamentalBytes,
     String? historicoEscolarFundamentalFileName,
+    Uint8List? historicoEscolarFundamentalVersoBytes,
+    String? historicoEscolarFundamentalVersoFileName,
     String? historicoEscolarMedioPath,
     Uint8List? historicoEscolarMedioBytes,
     String? historicoEscolarMedioFileName,
+    Uint8List? historicoEscolarMedioVersoBytes,
+    String? historicoEscolarMedioVersoFileName,
     String? comprovanteResidenciaPath,
     Uint8List? comprovanteResidenciaBytes,
     String? comprovanteResidenciaFileName,
@@ -150,12 +163,24 @@ class DocumentsModel {
       historicoEscolarFundamentalFileName:
           historicoEscolarFundamentalFileName ??
           this.historicoEscolarFundamentalFileName,
+      historicoEscolarFundamentalVersoBytes:
+          historicoEscolarFundamentalVersoBytes ??
+          this.historicoEscolarFundamentalVersoBytes,
+      historicoEscolarFundamentalVersoFileName:
+          historicoEscolarFundamentalVersoFileName ??
+          this.historicoEscolarFundamentalVersoFileName,
       historicoEscolarMedioPath:
           historicoEscolarMedioPath ?? this.historicoEscolarMedioPath,
       historicoEscolarMedioBytes:
           historicoEscolarMedioBytes ?? this.historicoEscolarMedioBytes,
       historicoEscolarMedioFileName:
           historicoEscolarMedioFileName ?? this.historicoEscolarMedioFileName,
+      historicoEscolarMedioVersoBytes:
+          historicoEscolarMedioVersoBytes ??
+          this.historicoEscolarMedioVersoBytes,
+      historicoEscolarMedioVersoFileName:
+          historicoEscolarMedioVersoFileName ??
+          this.historicoEscolarMedioVersoFileName,
       comprovanteResidenciaPath:
           comprovanteResidenciaPath ?? this.comprovanteResidenciaPath,
       comprovanteResidenciaBytes:
@@ -219,8 +244,14 @@ class DocumentsModel {
       'historicoEscolarFundamentalPath': historicoEscolarFundamentalPath,
       'historicoEscolarFundamentalFileName':
           historicoEscolarFundamentalFileName,
+      'historicoEscolarFundamentalVersoBytes':
+          historicoEscolarFundamentalVersoBytes,
+      'historicoEscolarFundamentalVersoFileName':
+          historicoEscolarFundamentalVersoFileName,
       'historicoEscolarMedioPath': historicoEscolarMedioPath,
       'historicoEscolarMedioFileName': historicoEscolarMedioFileName,
+      'historicoEscolarMedioVersoBytes': historicoEscolarMedioVersoBytes,
+      'historicoEscolarMedioVersoFileName': historicoEscolarMedioVersoFileName,
       'comprovanteResidenciaPath': comprovanteResidenciaPath,
       'comprovanteResidenciaFileName': comprovanteResidenciaFileName,
       'certidaoNascimentoCasamentoPath': certidaoNascimentoCasamentoPath,
@@ -256,8 +287,15 @@ class DocumentsModel {
       historicoEscolarFundamentalPath: json['historicoEscolarFundamentalPath'],
       historicoEscolarFundamentalFileName:
           json['historicoEscolarFundamentalFileName'],
+      historicoEscolarFundamentalVersoBytes:
+          json['historicoEscolarFundamentalVersoBytes'],
+      historicoEscolarFundamentalVersoFileName:
+          json['historicoEscolarFundamentalVersoFileName'],
       historicoEscolarMedioPath: json['historicoEscolarMedioPath'],
       historicoEscolarMedioFileName: json['historicoEscolarMedioFileName'],
+      historicoEscolarMedioVersoBytes: json['historicoEscolarMedioVersoBytes'],
+      historicoEscolarMedioVersoFileName:
+          json['historicoEscolarMedioVersoFileName'],
       comprovanteResidenciaPath: json['comprovanteResidenciaPath'],
       comprovanteResidenciaFileName: json['comprovanteResidenciaFileName'],
       certidaoNascimentoCasamentoPath: json['certidaoNascimentoCasamentoPath'],

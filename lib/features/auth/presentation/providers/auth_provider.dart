@@ -1,208 +1,191 @@
-import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // Importar flutter_dotenv
-import 'package:ceeja_app/env.dart'; // Importar o arquivo env.dart
+// COPIE E COLE TUDO ABAIXO NO ARQUIVO:
+// lib/features/auth/presentation/providers/auth_provider.dart
 
-class AuthProvider with ChangeNotifier {
-  final SupabaseClient _supabaseClient;
-  final SupabaseClient?
-  _adminSupabaseClient; // Cliente para operações administrativas
-  String? _userRole; // Adiciona a propriedade para armazenar a role do usuário
+import 'dart:async';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+// MUDANÇA: Adicionado o alias 'as supabase' para evitar conflito de nomes.
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+import 'package:ceeja_app/env.dart';
 
-  SupabaseClient? get adminSupabaseClient =>
-      _adminSupabaseClient; // Getter público
+// ESTADO DE AUTENTICAÇÃO
+class AuthState {
+  // MUDANÇA: Usando o tipo User com o alias.
+  final supabase.User? user;
+  final String? userRole;
+  final bool isLoading;
+  final String? errorMessage;
 
-  AuthProvider({required SupabaseClient supabaseClient, String? serviceRoleKey})
-    : _supabaseClient = supabaseClient,
-      _adminSupabaseClient =
-          serviceRoleKey != null
-              ? SupabaseClient(
-                AppEnv.supabaseUrl, // Usa AppEnv para consistência
-                serviceRoleKey!, // Usa a serviceRoleKey passada para o construtor
-                headers: {'Authorization': 'Bearer $serviceRoleKey'},
-              )
-              : null {
-    // Inicializa o listener de mudanças de autenticação
-    _setupAuthListener();
-    // Tenta carregar o perfil do usuário se já estiver logado na inicialização
-    if (currentUser != null) {
-      fetchUserProfile();
+  const AuthState({
+    this.user,
+    this.userRole,
+    this.isLoading = false,
+    this.errorMessage,
+  });
+
+  AuthState copyWith({
+    supabase.User? user,
+    String? userRole,
+    bool? isLoading,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return AuthState(
+      user: user ?? this.user,
+      userRole: userRole ?? this.userRole,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+    );
+  }
+}
+
+// NOTIFICADOR (LÓGICA DE NEGÓCIO)
+class AuthNotifier extends StateNotifier<AuthState> {
+  // MUDANÇA: Usando o tipo SupabaseClient com o alias.
+  final supabase.SupabaseClient _supabase;
+  // MUDANÇA: Usando o tipo AuthState do pacote Supabase com o alias.
+  late final StreamSubscription<supabase.AuthState> _authStateSubscription;
+
+  AuthNotifier(this._supabase) : super(const AuthState()) {
+    _authStateSubscription = _supabase.auth.onAuthStateChange.listen((data) {
+      final user = data.session?.user;
+      if (user != null) {
+        _fetchUserProfile(user);
+      } else {
+        state = const AuthState();
+      }
+    });
+
+    final initialUser = _supabase.auth.currentUser;
+    if (initialUser != null) {
+      _fetchUserProfile(initialUser);
     }
   }
 
-  User? get currentUser => _supabaseClient.auth.currentUser;
-  bool get isLoggedIn => currentUser != null;
-  String? get userRole => _userRole; // Getter para a role do usuário
+  @override
+  void dispose() {
+    _authStateSubscription.cancel();
+    super.dispose();
+  }
 
-  // Retorna a resposta para que a UI possa verificar user/session ou null em caso de exceção não tratada aqui
-  // As exceções específicas de autenticação (AuthException) devem ser tratadas na UI para feedback ao usuário
-  Future<AuthResponse?> signUp(
-    String email,
-    String password, {
-    Map<String, dynamic>? data,
-  }) async {
+  Future<void> _fetchUserProfile(supabase.User user) async {
+    state = state.copyWith(isLoading: true, user: user, clearError: true);
     try {
-      final response = await _supabaseClient.auth.signUp(
+      final response =
+          await _supabase
+              .from('profiles')
+              .select('role')
+              .eq('user_id', user.id)
+              .maybeSingle();
+      state = state.copyWith(
+        userRole: response?['role'] as String?,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Erro ao buscar perfil do usuário.',
+      );
+    }
+  }
+
+  Future<void> signInWithPassword(String email, String password) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final response = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
-        data: data,
       );
-
-      if (response.user != null) {
-        // INSERÇÃO NA TABELA PROFILES
-        final userId = response.user!.id;
-        final String? fullName = data?["full_name"];
-
-        try {
-          await _supabaseClient.from("profiles").insert({
-            "user_id": userId,
-            "email": email,
-            "full_name": fullName ?? "Nome não informado",
-            "role": "aluno",
-          });
-          print("✅ Perfil criado com sucesso!");
-        } catch (profileError) {
-          print("❌ Erro ao criar perfil: $profileError");
-          // Opcional: desfazer cadastro no auth.users se desejar
-          await _supabaseClient.auth.admin.deleteUser(userId);
-          rethrow;
-        }
-      }
-
-      notifyListeners(); // Atualiza a UI após mudanças
-      return response;
-    } on AuthException catch (e) {
-      print('AuthException no signUp: ${e.message}');
-      rethrow; // Permite que a UI capture e trate a AuthException
+      if (response.user == null)
+        throw const supabase.AuthException(
+          'Credenciais inválidas ou erro desconhecido.',
+        );
+    } on supabase.AuthException catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.message);
+      rethrow;
     } catch (e) {
-      print('Erro genérico no signUp: $e');
-      return null; // Para outros tipos de erro não esperados
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Ocorreu um erro inesperado.',
+      );
+      rethrow;
     }
   }
 
-  Future<User?> createStudentUser({
+  Future<void> signUp(String email, String password, String fullName) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final response = await _supabase.auth.signUp(
+        email: email,
+        password: password,
+        data: {'full_name': fullName},
+      );
+      if (response.user == null)
+        throw const supabase.AuthException('Não foi possível criar o usuário.');
+      await _supabase.from('profiles').insert({
+        'user_id': response.user!.id,
+        'email': email,
+        'full_name': fullName,
+        'role': 'aluno',
+      });
+      state = state.copyWith(isLoading: false);
+    } on supabase.AuthException catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.message);
+      rethrow;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Ocorreu um erro inesperado durante o cadastro.',
+      );
+      rethrow;
+    }
+  }
+
+  Future<supabase.User> createStudentUser({
     required String email,
     required String password,
-    String? fullName,
+    required String fullName,
   }) async {
-    if (_adminSupabaseClient == null) {
-      throw Exception(
-        'Service Role Key não configurada para criar usuário aluno.',
-      );
-    }
+    final adminClient = supabase.SupabaseClient(
+      AppEnv.supabaseUrl,
+      AppEnv.supabaseServiceRoleKey,
+    );
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final response = await _adminSupabaseClient!.auth.admin.createUser(
-        AdminUserAttributes(
+      final response = await adminClient.auth.admin.createUser(
+        supabase.AdminUserAttributes(
           email: email,
           password: password,
-          emailConfirm: true, // Opcional: confirma o email automaticamente
+          emailConfirm: true,
           userMetadata: {'full_name': fullName, 'role': 'aluno'},
         ),
       );
-
-      if (response.user != null) {
-        // INSERÇÃO NA TABELA PROFILES
-        // Se a tabela 'profiles' tem RLS que impede admin de inserir, ou se já tem trigger,
-        // essa parte pode ser removida. Mas para garantir, vamos manter.
-        try {
-          await _adminSupabaseClient!.from("profiles").insert({
-            "user_id": response.user!.id,
-            "email": email,
-            "full_name": fullName ?? "Nome não informado",
-            "role": "aluno",
-          });
-          print("✅ Perfil de aluno criado com sucesso!");
-        } catch (profileError) {
-          print("❌ Erro ao criar perfil de aluno: $profileError");
-          // Opcional: desfazer criação do usuário se o perfil falhar
-          await _adminSupabaseClient!.auth.admin.deleteUser(response.user!.id);
-          rethrow;
-        }
-      }
-      return response.user;
-    } on AuthException catch (e) {
-      print('AuthException ao criar usuário aluno: ${e.message}');
+      final newUser = response.user;
+      if (newUser == null)
+        throw const supabase.AuthException(
+          'Falha ao criar usuário no sistema de Auth.',
+        );
+      await adminClient.from('profiles').insert({
+        'user_id': newUser.id,
+        'email': email,
+        'full_name': fullName,
+        'role': 'aluno',
+      });
+      state = state.copyWith(isLoading: false);
+      return newUser;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
       rethrow;
-    } catch (e) {
-      print('Erro genérico ao criar usuário aluno: $e');
-      return null;
-    }
-  }
-
-  Future<AuthResponse?> signInWithPassword(
-    String email,
-    String password,
-  ) async {
-    try {
-      final response = await _supabaseClient.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-      if (response.user != null) {
-        await fetchUserProfile(); // Busca a role após o login
-      }
-      return response;
-    } on AuthException catch (e) {
-      print('AuthException no signIn: ${e.message}');
-      rethrow; // Permite que a UI capture e trate a AuthException
-    } catch (e) {
-      print('Erro genérico no signIn: $e');
-      return null;
     }
   }
 
   Future<void> signOut() async {
-    try {
-      await _supabaseClient.auth.signOut();
-      _userRole = null; // Limpa a role ao fazer logout
-      notifyListeners(); // Notifica a UI sobre a mudança de estado
-    } on AuthException catch (e) {
-      print('AuthException no signOut: ${e.message}');
-      rethrow;
-    } catch (e) {
-      print('Erro genérico no signOut: $e');
-    }
-  }
-
-  // Método para buscar o perfil do usuário e sua role
-  Future<void> fetchUserProfile() async {
-    try {
-      final userId = currentUser?.id;
-      if (userId == null) {
-        _userRole = null;
-        notifyListeners();
-        return;
-      }
-      final response =
-          await _supabaseClient
-              .from('profiles')
-              .select('role')
-              .eq('user_id', userId)
-              .maybeSingle(); // Usar maybeSingle para lidar com 0 ou 1 resultado
-      _userRole = response?['role'] as String?; // Acessa a role com segurança
-      notifyListeners();
-    } catch (e) {
-      print('Erro ao buscar perfil do usuário: $e');
-      _userRole = null; // Garante que a role seja nula em caso de erro
-      notifyListeners();
-    }
-  }
-
-  void _setupAuthListener() {
-    _supabaseClient.auth.onAuthStateChange.listen((data) async {
-      final AuthChangeEvent event = data.event;
-      final Session? session = data.session;
-
-      print(
-        "AuthProvider: onAuthStateChange - Event: $event, Session: ${session?.toJson()}",
-      );
-
-      if (event == AuthChangeEvent.signedIn) {
-        await fetchUserProfile(); // Busca a role quando o usuário faz login
-      } else if (event == AuthChangeEvent.signedOut) {
-        _userRole = null; // Limpa a role quando o usuário faz logout
-      }
-      notifyListeners(); // Notifica sobre qualquer mudança de autenticação
-    });
+    state = state.copyWith(isLoading: true);
+    await _supabase.auth.signOut();
   }
 }
+
+// PROVIDER GLOBAL
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  // MUDANÇA: Usando o tipo SupabaseClient com o alias.
+  return AuthNotifier(supabase.Supabase.instance.client);
+});

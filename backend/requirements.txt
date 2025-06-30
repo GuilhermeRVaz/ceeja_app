@@ -1,0 +1,6 @@
+Flask
+flask-cors
+python-dotenv
+supabase
+google-generativeai
+Pillowpip install -r requirements.txt

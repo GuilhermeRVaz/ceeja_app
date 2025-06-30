@@ -1,18 +1,18 @@
 class AddressModel {
-  String? userId;
-  String? cep;
-  String? logradouro;
-  String? numero;
-  String? complemento;
-  String? bairro;
-  String? nomeCidade;
-  String? ufCidade;
-  String? zona; // 'Urbana' ou 'Rural'
-  bool temLocalizacaoDiferenciada;
-  String?
+  final String? userId;
+  final String? cep;
+  final String? logradouro;
+  final String? numero;
+  final String? complemento;
+  final String? bairro;
+  final String? nomeCidade;
+  final String? ufCidade;
+  final String? zona; // 'Urbana' ou 'Rural'
+  final bool temLocalizacaoDiferenciada;
+  final String?
   localizacaoDiferenciada; // 'Área de assentamento', 'Terra indígena', 'Área quilombola'
 
-  AddressModel({
+  const AddressModel({
     this.userId,
     this.cep,
     this.logradouro,
@@ -73,6 +73,13 @@ class AddressModel {
   }
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {
+    bool parseBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is int) return value != 0;
+      if (value is String) return value.toLowerCase() == 'true' || value == '1';
+      return false;
+    }
     return AddressModel(
       userId: json['user_id'],
       cep: json['cep'],
@@ -83,7 +90,7 @@ class AddressModel {
       nomeCidade: json['nomeCidade'],
       ufCidade: json['ufCidade'],
       zona: json['zona'],
-      temLocalizacaoDiferenciada: json['temLocalizacaoDiferenciada'],
+      temLocalizacaoDiferenciada: parseBool(json['temLocalizacaoDiferenciada']),
       localizacaoDiferenciada: json['localizacaoDiferenciada'],
     );
   }
