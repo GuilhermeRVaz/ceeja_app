@@ -7,6 +7,8 @@ import 'package:ceeja_app/core/widgets/custom_text_field.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/address_model.dart';
 import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_provider.dart';
 import 'package:ceeja_app/features/enrollment/presentation/widgets/form_section.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 // MUDANÇA: Converte para ConsumerStatefulWidget
 class AddressForm extends ConsumerStatefulWidget {
@@ -81,101 +83,70 @@ class _AddressFormState extends ConsumerState<AddressForm> {
     super.dispose();
   }
 
+  Future<String?> buscarCepPorEndereco({required String rua, required String cidade, required String uf}) async {
+    final url = Uri.parse('https://viacep.com.br/ws/$uf/$cidade/$rua/json/');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data is List && data.isNotEmpty) {
+        return data[0]['cep'];
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // MUDANÇA: Ouve as mudanças no provider.
-    // Quando a busca por CEP (ou dados da IA) terminar, os controllers serão atualizados.
     ref.listen<EnrollmentState>(enrollmentProvider, (previous, next) {
       if (previous?.addressData != next.addressData) {
         _updateControllers(next.addressData, forceUpdate: false);
       }
     });
-
-    // MUDANÇA: Acessa os dados e o notifier do provider.
     final addressData = ref.watch(enrollmentProvider).addressData;
     final notifier = ref.read(enrollmentProvider.notifier);
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           FormSection(
-            title: '3. Endereço',
+            title: 'Endereço',
             children: [
               CustomTextField(
                 controller: _cepController,
                 labelText: 'CEP',
                 keyboardType: TextInputType.number,
-                onChanged: (cep) {
-                  // Atualiza o estado no provider a cada dígito.
-                  notifier.updateAddressData(addressData.copyWith(cep: cep));
-                  final cleanedCep = cep.replaceAll(RegExp(r'[^0-9]'), '');
-                  if (cleanedCep.length == 8) {
-                    // Chama a lógica de busca de CEP no provider.
-                    notifier.fetchAddressByCep(cleanedCep);
-                  }
-                },
+                onChanged: (cep) => notifier.updateAddressData(addressData.copyWith(cep: cep)),
               ),
-              const SizedBox(height: 16),
               CustomTextField(
                 controller: _logradouroController,
-                labelText: 'Rua / Logradouro',
-                enabled:
-                    false, // O campo é desabilitado pois é preenchido automaticamente
+                labelText: 'Logradouro',
+                onChanged: (value) => notifier.updateAddressData(addressData.copyWith(logradouro: value)),
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomTextField(
-                      controller: _numeroController,
-                      labelText: 'Número',
-                      keyboardType: TextInputType.number,
-                      onChanged:
-                          (value) => notifier.updateAddressData(
-                            addressData.copyWith(numero: value),
-                          ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: CustomTextField(
-                      controller: _complementoController,
-                      labelText: 'Complemento',
-                      onChanged:
-                          (value) => notifier.updateAddressData(
-                            addressData.copyWith(complemento: value),
-                          ),
-                    ),
-                  ),
-                ],
+              CustomTextField(
+                controller: _numeroController,
+                labelText: 'Número',
+                onChanged: (value) => notifier.updateAddressData(addressData.copyWith(numero: value)),
               ),
-              const SizedBox(height: 16),
+              CustomTextField(
+                controller: _complementoController,
+                labelText: 'Complemento',
+                onChanged: (value) => notifier.updateAddressData(addressData.copyWith(complemento: value)),
+              ),
               CustomTextField(
                 controller: _bairroController,
                 labelText: 'Bairro',
-                enabled: false,
+                onChanged: (value) => notifier.updateAddressData(addressData.copyWith(bairro: value)),
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomTextField(
-                      controller: _cidadeController,
-                      labelText: 'Cidade',
-                      enabled: false,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: CustomTextField(
-                      controller: _ufController,
-                      labelText: 'Estado',
-                      enabled: false,
-                    ),
-                  ),
-                ],
+              CustomTextField(
+                controller: _cidadeController,
+                labelText: 'Cidade',
+                onChanged: (value) => notifier.updateAddressData(addressData.copyWith(nomeCidade: value)),
+              ),
+              CustomTextField(
+                controller: _ufController,
+                labelText: 'UF',
+                onChanged: (value) => notifier.updateAddressData(addressData.copyWith(ufCidade: value)),
               ),
             ],
           ),

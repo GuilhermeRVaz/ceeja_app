@@ -31,8 +31,6 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
   final _idadeController = TextEditingController();
   final _nomeMaeController = TextEditingController();
   final _nomePaiController = TextEditingController();
-  final _nascimentoCidadeController = TextEditingController();
-  final _paisOrigemController = TextEditingController();
   final _telefoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _nomeGemeoController = TextEditingController();
@@ -121,13 +119,6 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
         _rgDataEmissaoController.clear();
       }
     }
-    if (forceUpdate ||
-        _nascimentoCidadeController.text != (data.nascimentoCidade ?? '')) {
-      _nascimentoCidadeController.text = data.nascimentoCidade ?? '';
-    }
-    if (forceUpdate || _paisOrigemController.text != (data.paisOrigem ?? '')) {
-      _paisOrigemController.text = data.paisOrigem ?? '';
-    }
     if (forceUpdate || _telefoneController.text != (data.telefone ?? '')) {
       _telefoneController.text = data.telefone ?? '';
     }
@@ -193,8 +184,6 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
     _rgDigitoController.dispose();
     _rgUfController.dispose();
     _rgDataEmissaoController.dispose();
-    _nascimentoCidadeController.dispose();
-    _paisOrigemController.dispose();
     _telefoneController.dispose();
     _emailController.dispose();
     _nomeGemeoController.dispose();
@@ -418,11 +407,12 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
               if (personalData.nacionalidade == 'Estrangeira') ...[
                 const SizedBox(height: 16),
                 CustomTextField(
-                  controller: _paisOrigemController,
-                  labelText: 'País de Origem',
+                  controller: _telefoneController,
+                  labelText: 'Telefone',
+                  keyboardType: TextInputType.phone,
                   onChanged:
                       (value) => notifier.updatePersonalData(
-                        personalData.copyWith(paisOrigem: value),
+                        personalData.copyWith(telefone: value),
                       ),
                 ),
               ] else if (personalData.nacionalidade == 'Brasileira') ...[
@@ -466,63 +456,6 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
                           personalData.copyWith(rgDataEmissao: date),
                         );
                       }),
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: _nascimentoCidadeController,
-                  labelText: 'Cidade de Nascimento',
-                  onChanged:
-                      (value) => notifier.updatePersonalData(
-                        personalData.copyWith(nascimentoCidade: value),
-                      ),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: personalData.nascimentoUf,
-                  decoration: const InputDecoration(
-                    labelText: 'UF de Nascimento',
-                    border: OutlineInputBorder(),
-                  ),
-                  items:
-                      <String>[
-                        'AC',
-                        'AL',
-                        'AP',
-                        'AM',
-                        'BA',
-                        'CE',
-                        'DF',
-                        'ES',
-                        'GO',
-                        'MA',
-                        'MT',
-                        'MS',
-                        'MG',
-                        'PA',
-                        'PB',
-                        'PR',
-                        'PE',
-                        'PI',
-                        'RJ',
-                        'RN',
-                        'RS',
-                        'RO',
-                        'RR',
-                        'SC',
-                        'SP',
-                        'SE',
-                        'TO',
-                      ].map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                  onChanged: (String? newValue) {
-                    notifier.updatePersonalData(
-                      personalData.copyWith(nascimentoUf: newValue),
-                    );
-                  },
                 ),
               ],
               const SizedBox(height: 16),

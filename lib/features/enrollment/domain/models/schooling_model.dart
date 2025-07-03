@@ -1,30 +1,19 @@
 class SchoolingModel {
   final String? userId;
-  // Nível de Ensino
   final String? nivelEnsino;
   final String? itinerarioFormativo;
   final String? ultimaSerieConcluida;
-  final String? ra; // Adicionado o campo RA
+  final String? ra;
   final String? tipoEscola;
   final String? nomeEscola;
-
-  // Histórico CEEJA
   final bool? estudouNoCeeja;
-
-  // Dependências
   final bool? temProgressaoParcial;
   final Map<String, List<String>>? progressaoParcialDisciplinas;
-
-  // Eliminações
   final bool? eliminouDisciplina;
   final String? eliminouDisciplinaNivel;
-  final List<String>? eliminouDisciplinas; // Alterado para Lista
-
-  // Opcionais
+  final List<String>? eliminouDisciplinas;
   final bool? optouEnsinoReligioso;
   final bool? optouEducacaoFisica;
-
-  // Termos
   final bool? aceitouTermos;
   final DateTime? dataAceite;
 
@@ -33,7 +22,7 @@ class SchoolingModel {
     this.nivelEnsino,
     this.itinerarioFormativo,
     this.ultimaSerieConcluida,
-    this.ra, // Adicionado o campo RA
+    this.ra,
     this.tipoEscola,
     this.nomeEscola,
     this.estudouNoCeeja,
@@ -53,7 +42,7 @@ class SchoolingModel {
     String? nivelEnsino,
     String? itinerarioFormativo,
     String? ultimaSerieConcluida,
-    String? ra, // Adicionado o campo RA
+    String? ra,
     String? tipoEscola,
     String? nomeEscola,
     bool? estudouNoCeeja,
@@ -61,7 +50,7 @@ class SchoolingModel {
     Map<String, List<String>>? progressaoParcialDisciplinas,
     bool? eliminouDisciplina,
     String? eliminouDisciplinaNivel,
-    List<String>? eliminouDisciplinas, // Alterado para Lista
+    List<String>? eliminouDisciplinas,
     bool? optouEnsinoReligioso,
     bool? optouEducacaoFisica,
     bool? aceitouTermos,
@@ -72,16 +61,14 @@ class SchoolingModel {
       nivelEnsino: nivelEnsino ?? this.nivelEnsino,
       itinerarioFormativo: itinerarioFormativo ?? this.itinerarioFormativo,
       ultimaSerieConcluida: ultimaSerieConcluida ?? this.ultimaSerieConcluida,
-      ra: ra ?? this.ra, // Adicionado o campo RA
+      ra: ra ?? this.ra,
       tipoEscola: tipoEscola ?? this.tipoEscola,
       nomeEscola: nomeEscola ?? this.nomeEscola,
       estudouNoCeeja: estudouNoCeeja ?? this.estudouNoCeeja,
       temProgressaoParcial: temProgressaoParcial ?? this.temProgressaoParcial,
-      progressaoParcialDisciplinas:
-          progressaoParcialDisciplinas ?? this.progressaoParcialDisciplinas,
+      progressaoParcialDisciplinas: progressaoParcialDisciplinas ?? this.progressaoParcialDisciplinas,
       eliminouDisciplina: eliminouDisciplina ?? this.eliminouDisciplina,
-      eliminouDisciplinaNivel:
-          eliminouDisciplinaNivel ?? this.eliminouDisciplinaNivel,
+      eliminouDisciplinaNivel: eliminouDisciplinaNivel ?? this.eliminouDisciplinaNivel,
       eliminouDisciplinas: eliminouDisciplinas ?? this.eliminouDisciplinas,
       optouEnsinoReligioso: optouEnsinoReligioso ?? this.optouEnsinoReligioso,
       optouEducacaoFisica: optouEducacaoFisica ?? this.optouEducacaoFisica,
@@ -96,7 +83,7 @@ class SchoolingModel {
       'nivel_ensino': nivelEnsino,
       'itinerario_formativo': itinerarioFormativo,
       'ultima_serie_concluida': ultimaSerieConcluida,
-      'ra': ra, // Adicionado o campo RA
+      'ra': ra,
       'tipo_escola': tipoEscola,
       'nome_escola': nomeEscola,
       'estudou_no_ceeja': estudouNoCeeja,
@@ -118,32 +105,30 @@ class SchoolingModel {
       nivelEnsino: json['nivel_ensino'],
       itinerarioFormativo: json['itinerario_formativo'],
       ultimaSerieConcluida: json['ultima_serie_concluida'],
-      ra: json['ra'], // Adicionado o campo RA
+      ra: json['ra'],
       tipoEscola: json['tipo_escola'],
       nomeEscola: json['nome_escola'],
       estudouNoCeeja: json['estudou_no_ceeja'],
       temProgressaoParcial: json['tem_progressao_parcial'],
-      progressaoParcialDisciplinas: (json['progressao_parcial_disciplinas']
-              as Map<String, dynamic>?)
-          ?.map(
-            (key, value) => MapEntry(
-              key,
-              (value as List).map((e) => e.toString()).toList(),
-            ),
-          ),
+      progressaoParcialDisciplinas: (json['progressao_parcial_disciplinas'] as Map<String, dynamic>?)?.map(
+        (key, value) => MapEntry(key, (value as List).map((e) => e.toString()).toList()),
+      ),
       eliminouDisciplina: json['eliminou_disciplina'],
       eliminouDisciplinaNivel: json['eliminou_disciplina_nivel'],
-      eliminouDisciplinas:
-          (json['eliminou_disciplinas'] as List?)
-              ?.map((e) => e.toString())
-              .toList(),
+      eliminouDisciplinas: (json['eliminou_disciplinas'] as List?)?.map((e) => e.toString()).toList(),
       optouEnsinoReligioso: json['optou_ensino_religioso'],
       optouEducacaoFisica: json['optou_educacao_fisica'],
       aceitouTermos: json['aceitou_termos'],
-      dataAceite:
-          json['data_aceite'] != null
-              ? DateTime.parse(json['data_aceite'])
-              : null,
+      dataAceite: json['data_aceite'] != null ? DateTime.parse(json['data_aceite']) : null,
+    );
+  }
+
+  // Método utilitário para merge dos dados extraídos pela IA
+  SchoolingModel mergeFromExtractedData(Map<String, dynamic> extracted) {
+    return copyWith(
+      ultimaSerieConcluida: extracted['ultima_serie_concluida'],
+      ra: extracted['ra'],
+      temProgressaoParcial: extracted['tem_progressao_parcial'],
     );
   }
 }

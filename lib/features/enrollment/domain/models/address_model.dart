@@ -9,8 +9,11 @@ class AddressModel {
   final String? ufCidade;
   final String? zona; // 'Urbana' ou 'Rural'
   final bool temLocalizacaoDiferenciada;
-  final String?
-  localizacaoDiferenciada; // 'Área de assentamento', 'Terra indígena', 'Área quilombola'
+  final String? localizacaoDiferenciada; // 'Área de assentamento', 'Terra indígena', 'Área quilombola'
+  final String? nacionalidade; // 'Brasileira' ou 'Estrangeira'
+  final String? paisOrigem; // Para estrangeiros
+  final String? nascimentoUf; // Para brasileiros
+  final String? nascimentoCidade; // Para brasileiros
 
   const AddressModel({
     this.userId,
@@ -24,6 +27,10 @@ class AddressModel {
     this.zona,
     this.temLocalizacaoDiferenciada = false,
     this.localizacaoDiferenciada,
+    this.nacionalidade,
+    this.paisOrigem,
+    this.nascimentoUf,
+    this.nascimentoCidade,
   });
 
   AddressModel copyWith({
@@ -38,6 +45,10 @@ class AddressModel {
     String? zona,
     bool? temLocalizacaoDiferenciada,
     String? localizacaoDiferenciada,
+    String? nacionalidade,
+    String? paisOrigem,
+    String? nascimentoUf,
+    String? nascimentoCidade,
   }) {
     return AddressModel(
       userId: userId ?? this.userId,
@@ -49,10 +60,12 @@ class AddressModel {
       nomeCidade: nomeCidade ?? this.nomeCidade,
       ufCidade: ufCidade ?? this.ufCidade,
       zona: zona ?? this.zona,
-      temLocalizacaoDiferenciada:
-          temLocalizacaoDiferenciada ?? this.temLocalizacaoDiferenciada,
-      localizacaoDiferenciada:
-          localizacaoDiferenciada ?? this.localizacaoDiferenciada,
+      temLocalizacaoDiferenciada: temLocalizacaoDiferenciada ?? this.temLocalizacaoDiferenciada,
+      localizacaoDiferenciada: localizacaoDiferenciada ?? this.localizacaoDiferenciada,
+      nacionalidade: nacionalidade ?? this.nacionalidade,
+      paisOrigem: paisOrigem ?? this.paisOrigem,
+      nascimentoUf: nascimentoUf ?? this.nascimentoUf,
+      nascimentoCidade: nascimentoCidade ?? this.nascimentoCidade,
     );
   }
 
@@ -64,11 +77,15 @@ class AddressModel {
       'numero': numero,
       'complemento': complemento,
       'bairro': bairro,
-      'nomeCidade': nomeCidade,
-      'ufCidade': ufCidade,
+      'nome_cidade': nomeCidade,
+      'uf_cidade': ufCidade,
       'zona': zona,
-      'temLocalizacaoDiferenciada': temLocalizacaoDiferenciada,
-      'localizacaoDiferenciada': localizacaoDiferenciada,
+      'tem_localizacao_diferenciada': temLocalizacaoDiferenciada,
+      'localizacao_diferenciada': localizacaoDiferenciada,
+      'nacionalidade': nacionalidade,
+      'pais_origem': paisOrigem,
+      'nascimento_uf': nascimentoUf,
+      'nascimento_cidade': nascimentoCidade,
     };
   }
 
@@ -87,11 +104,35 @@ class AddressModel {
       numero: json['numero'],
       complemento: json['complemento'],
       bairro: json['bairro'],
-      nomeCidade: json['nomeCidade'],
-      ufCidade: json['ufCidade'],
+      nomeCidade: json['nome_cidade'],
+      ufCidade: json['uf_cidade'],
       zona: json['zona'],
-      temLocalizacaoDiferenciada: parseBool(json['temLocalizacaoDiferenciada']),
-      localizacaoDiferenciada: json['localizacaoDiferenciada'],
+      temLocalizacaoDiferenciada: parseBool(json['tem_localizacao_diferenciada']),
+      localizacaoDiferenciada: json['localizacao_diferenciada'],
+      nacionalidade: json['nacionalidade'],
+      paisOrigem: json['pais_origem'],
+      nascimentoUf: json['nascimento_uf'],
+      nascimentoCidade: json['nascimento_cidade'],
+    );
+  }
+
+  // Método utilitário para merge dos dados extraídos pela IA
+  AddressModel mergeFromExtractedData(Map<String, dynamic> extracted) {
+    return copyWith(
+      cep: extracted['cep'],
+      logradouro: extracted['logradouro'],
+      numero: extracted['numero'],
+      complemento: extracted['complemento'],
+      bairro: extracted['bairro'],
+      nomeCidade: extracted['nome_cidade'],
+      ufCidade: extracted['uf_cidade'],
+      zona: extracted['zona'],
+      temLocalizacaoDiferenciada: extracted['tem_localizacao_diferenciada'],
+      localizacaoDiferenciada: extracted['localizacao_diferenciada'],
+      nacionalidade: extracted['nacionalidade'],
+      paisOrigem: extracted['pais_origem'],
+      nascimentoUf: extracted['nascimento_uf'],
+      nascimentoCidade: extracted['nascimento_cidade'],
     );
   }
 }

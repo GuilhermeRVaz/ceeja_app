@@ -387,6 +387,39 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
     }
   }
 
+  // Função para padronizar o JSON da IA para o modelo do app
+  Map<String, dynamic> padronizarJsonIA(Map<String, dynamic> json) {
+    // Padroniza datas para ISO, normaliza sexo, traduz chaves
+    String? normalizarSexo(dynamic value) {
+      if (value == null) return null;
+      final s = value.toString().toLowerCase();
+      if (s.contains('masc')) return 'Masculino';
+      if (s.contains('fem')) return 'Feminino';
+      return null;
+    }
+    String? normalizarData(dynamic value) {
+      if (value == null) return null;
+      if (value is String && value.contains('/')) {
+        final parts = value.split('/');
+        if (parts.length == 3) {
+          return '${parts[2]}-${parts[1].padLeft(2, '0')}-${parts[0].padLeft(2, '0')}';
+        }
+      }
+      return value;
+    }
+    return {
+      'nome_completo': json['nome_completo'] ?? json['nome'],
+      'cpf': json['cpf'],
+      'rg': json['rg'],
+      'sexo': normalizarSexo(json['sexo']),
+      'data_nascimento': normalizarData(json['data_nascimento']),
+      'rg_data_emissao': normalizarData(json['rg_data_emissao']),
+      'nome_mae': json['nome_mae'],
+      'nome_pai': json['nome_pai'],
+      // Adicione outros campos conforme necessário
+    };
+  }
+
   // === MÉTODO MODIFICADO: submitEnrollment agora atualiza a matrícula existente ===
   Future<void> submitEnrollment() async {
     final enrollmentId = state.enrollmentId;
@@ -399,6 +432,7 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
 
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
+      // Envia o estado ATUAL dos modelos, não só os extraídos
       await _repository.updateEnrollment(
         enrollmentId: enrollmentId,
         personalData: state.personalData,
@@ -431,16 +465,20 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
         state = state.copyWith(isLoading: false, errorMessage: "Dados extraídos não encontrados.");
         return;
       }
-      // Mapeia os dados extraídos para os models
+      // Padroniza o JSON da IA antes do merge
       final personalData = data['extracted_personal_data'] != null
-          ? PersonalDataModel.fromJson(Map<String, dynamic>.from(data['extracted_personal_data']))
-          : const PersonalDataModel();
+          ? state.personalData.mergeFromExtractedData(padronizarJsonIA(Map<String, dynamic>.from(data['extracted_personal_data'])))
+          : state.personalData;
       final addressData = data['extracted_address_data'] != null
-          ? AddressModel.fromJson(Map<String, dynamic>.from(data['extracted_address_data']))
-          : const AddressModel();
+          ? state.addressData.mergeFromExtractedData(Map<String, dynamic>.from(data['extracted_address_data']))
+          : state.addressData;
+      final schoolingData = data['extracted_schooling_data'] != null
+          ? state.schoolingData.mergeFromExtractedData(Map<String, dynamic>.from(data['extracted_schooling_data']))
+          : state.schoolingData;
       state = state.copyWith(
         personalData: personalData,
         addressData: addressData,
+        schoolingData: schoolingData,
         isLoading: false,
       );
     } catch (e) {

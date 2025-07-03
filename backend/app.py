@@ -83,38 +83,135 @@ def extract_data_route():
         # --------------------------------
         # O prompt é a "pergunta" que fazemos para a IA.
         prompt = f"""
-            Analise os seguintes documentos de um aluno brasileiro:
-            {' '.join(prompt_files)}
+Analise cuidadosamente TODOS os documentos enviados (RG, CPF, comprovante de residência, histórico escolar, certidão, etc).
 
-            Sua tarefa é extrair as seguintes informações e retorná-las em um formato JSON estrito, sem nenhum texto adicional.
-            
-            Para dados pessoais, use as chaves: 'nome_completo', 'rg', 'cpf', 'data_nascimento' (formato AAAA-MM-DD), 'nome_mae', 'nome_pai'.
-            Para dados de endereço, use as chaves: 'cep', 'logradouro', 'numero', 'bairro', 'nomeCidade', 'ufCidade'.
+Sua tarefa é extrair o máximo de informações possíveis para matrícula escolar, buscando cada campo em TODOS os documentos. Se não encontrar algum campo, retorne null para ele.
 
-            Se uma informação não for encontrada em nenhum dos documentos, retorne o valor como null.
-            Combine informações se necessário (ex: o RG está em um arquivo e o CPF em outro).
+**Retorne o resultado em JSON, exatamente com as chaves abaixo. Não adicione texto extra, apenas o JSON.**
 
-            Exemplo de saída:
-            {{
-              "personal_data": {{
-                "nome_completo": "Maria da Silva",
-                "rg": "12.345.678-9",
-                "cpf": "123.456.789-00",
-                "data_nascimento": "1990-01-15",
-                "nome_mae": "Joana da Silva",
-                "nome_pai": "João da Silva"
-              }},
-              "address_data": {{
-                "cep": "12345-678",
-                "logradouro": "Rua das Flores",
-                "numero": "123",
-                "bairro": "Centro",
-                "nomeCidade": "São Paulo",
-                "ufCidade": "SP"
-              }}
-            }}
-        """
-        parts.insert(0, prompt) # Adiciona o prompt como a primeira parte da requisição
+- **Dados pessoais:**
+  - nome_completo
+  - nome_social
+  - nome_afetivo
+  - sexo (apenas 'Masculino' ou 'Feminino')
+  - rg
+  - rg_digito
+  - rg_uf
+  - rg_data_emissao (formato YYYY-MM-DD)
+  - cpf
+  - raca_cor
+  - data_nascimento (formato YYYY-MM-DD)
+  - idade
+  - nome_mae
+  - nome_pai
+  - possui_internet (true/false)
+  - possui_device (true/false)
+  - telefone
+  - email
+  - is_gemeo (true/false)
+  - nome_gemeo
+  - trabalha (true/false)
+  - profissao
+  - empresa
+  - is_pcd (true/false)
+  - deficiencia
+
+- **Endereço:**
+  - cep
+  - logradouro
+  - numero
+  - complemento
+  - bairro
+  - nome_cidade
+  - uf_cidade
+  - nacionalidade
+  - pais_origem
+  - nascimento_uf
+  - nascimento_cidade
+
+- **Escolaridade:**
+  - ultima_serie_concluida
+  - ra
+  - tem_progressao_parcial (true/false)
+  - dependencias (lista de disciplinas em dependência, se houver)
+  - nome_escola
+  - tipo_escola
+  - nivel_ensino
+  - estudou_no_ceeja (true/false)
+  - eliminou_disciplina (true/false)
+  - eliminou_disciplinas (lista de disciplinas eliminadas, se houver)
+  - itinerario_formativo
+  - optou_ensino_religioso (true/false)
+  - optou_educacao_fisica (true/false)
+  - aceitou_termos (true/false)
+  - data_aceite (formato YYYY-MM-DD)
+
+**Exemplo de resposta esperada:**
+{{
+  "personal_data": {{
+    "nome_completo": "Maria da Silva",
+    "sexo": "Feminino",
+    "rg": "12.345.678-9",
+    "rg_digito": "9",
+    "rg_uf": "SP",
+    "rg_data_emissao": "2015-06-10",
+    "cpf": "123.456.789-00",
+    "raca_cor": "Branca",
+    "data_nascimento": "2000-01-15",
+    "idade": 24,
+    "nome_mae": "Joana da Silva",
+    "nome_pai": "José da Silva",
+    "possui_internet": true,
+    "possui_device": true,
+    "telefone": "11999999999",
+    "email": "maria@email.com",
+    "is_gemeo": false,
+    "nome_gemeo": null,
+    "trabalha": false,
+    "profissao": null,
+    "empresa": null,
+    "is_pcd": false,
+    "deficiencia": null
+  }},
+  "address_data": {{
+    "cep": "12345-678",
+    "logradouro": "Rua das Flores",
+    "numero": "123",
+    "complemento": "Apto 45",
+    "bairro": "Centro",
+    "nome_cidade": "São Paulo",
+    "uf_cidade": "SP",
+    "nacionalidade": "Brasileira",
+    "pais_origem": null,
+    "nascimento_uf": "SP",
+    "nascimento_cidade": "São Paulo"
+  }},
+  "schooling_data": {{
+    "ultima_serie_concluida": "3ª Série do Ensino Médio",
+    "ra": "123456789",
+    "tem_progressao_parcial": false,
+    "dependencias": [],
+    "nome_escola": "Escola Estadual ABC",
+    "tipo_escola": "Pública",
+    "nivel_ensino": "Ensino Médio",
+    "estudou_no_ceeja": false,
+    "eliminou_disciplina": false,
+    "eliminou_disciplinas": [],
+    "itinerario_formativo": null,
+    "optou_ensino_religioso": false,
+    "optou_educacao_fisica": true,
+    "aceitou_termos": true,
+    "data_aceite": "2024-02-01"
+  }}
+}}
+
+**IMPORTANTE:**  
+- Sempre busque cada campo em todos os documentos, mesmo que estejam em arquivos diferentes.
+- Se não encontrar algum campo, retorne null para ele.
+- Use sempre o formato de data YYYY-MM-DD.
+- Para sexo, retorne apenas 'Masculino' ou 'Feminino'.
+"""
+        parts.insert(0, prompt)
 
         print("Enviando dados para o Gemini...")
         response_gemini = model.generate_content(parts)
@@ -133,6 +230,7 @@ def extract_data_route():
         supabase.table('enrollments').update({
             'extracted_personal_data': extracted_data.get('personal_data'),
             'extracted_address_data': extracted_data.get('address_data'),
+            'extracted_schooling_data': extracted_data.get('schooling_data'),
             'status': 'aguardando_revisao_aluno' # Atualiza o status da matrícula
         }).eq('id', enrollment_id).execute()
 

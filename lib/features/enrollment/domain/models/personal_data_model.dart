@@ -13,17 +13,11 @@ class PersonalDataModel {
   final String? cpf;
   final String? racaCor;
   final DateTime? dataNascimento;
-  final int? idade; // Adicionado para armazenar a idade
+  final int? idade;
 
   // Filiação
   final String? nomeMae;
   final String? nomePai;
-
-  // Nacionalidade
-  final String? nacionalidade; // 'Brasileira' ou 'Estrangeira'
-  final String? nascimentoUf;
-  final String? nascimentoCidade;
-  final String? paisOrigem;
 
   // Contato e Conectividade
   final bool? possuiInternet;
@@ -39,7 +33,13 @@ class PersonalDataModel {
   final String? empresa;
   final bool? isPCD;
   final String? deficiencia;
-  final String? userId; // Adicionado para associar ao usuário do Supabase
+  final String? userId;
+
+  // Nacionalidade
+  final String? nacionalidade; // 'Brasileira' ou 'Estrangeira'
+  final String? nascimentoUf;
+  final String? nascimentoCidade;
+  final String? paisOrigem;
 
   const PersonalDataModel({
     this.nomeCompleto,
@@ -55,13 +55,9 @@ class PersonalDataModel {
     this.cpf,
     this.racaCor,
     this.dataNascimento,
-    this.idade, // Adicionado ao construtor
+    this.idade,
     this.nomeMae,
     this.nomePai,
-    this.nacionalidade,
-    this.nascimentoUf,
-    this.nascimentoCidade,
-    this.paisOrigem,
     this.possuiInternet,
     this.possuiDevice,
     this.telefone,
@@ -73,7 +69,11 @@ class PersonalDataModel {
     this.empresa,
     this.isPCD,
     this.deficiencia,
-    this.userId, // Adicionado ao construtor
+    this.userId,
+    this.nacionalidade,
+    this.nascimentoUf,
+    this.nascimentoCidade,
+    this.paisOrigem,
   });
 
   PersonalDataModel copyWith({
@@ -90,13 +90,9 @@ class PersonalDataModel {
     String? cpf,
     String? racaCor,
     DateTime? dataNascimento,
-    int? idade, // Adicionado ao copyWith
+    int? idade,
     String? nomeMae,
     String? nomePai,
-    String? nacionalidade,
-    String? nascimentoUf,
-    String? nascimentoCidade,
-    String? paisOrigem,
     bool? possuiInternet,
     bool? possuiDevice,
     String? telefone,
@@ -108,7 +104,11 @@ class PersonalDataModel {
     String? empresa,
     bool? isPCD,
     String? deficiencia,
-    String? userId, // Adicionado ao copyWith
+    String? userId,
+    String? nacionalidade,
+    String? nascimentoUf,
+    String? nascimentoCidade,
+    String? paisOrigem,
   }) {
     return PersonalDataModel(
       nomeCompleto: nomeCompleto ?? this.nomeCompleto,
@@ -124,13 +124,9 @@ class PersonalDataModel {
       cpf: cpf ?? this.cpf,
       racaCor: racaCor ?? this.racaCor,
       dataNascimento: dataNascimento ?? this.dataNascimento,
-      idade: idade ?? this.idade, // Adicionado ao retorno do copyWith
+      idade: idade ?? this.idade,
       nomeMae: nomeMae ?? this.nomeMae,
       nomePai: nomePai ?? this.nomePai,
-      nacionalidade: nacionalidade ?? this.nacionalidade,
-      nascimentoUf: nascimentoUf ?? this.nascimentoUf,
-      nascimentoCidade: nascimentoCidade ?? this.nascimentoCidade,
-      paisOrigem: paisOrigem ?? this.paisOrigem,
       possuiInternet: possuiInternet ?? this.possuiInternet,
       possuiDevice: possuiDevice ?? this.possuiDevice,
       telefone: telefone ?? this.telefone,
@@ -142,7 +138,11 @@ class PersonalDataModel {
       empresa: empresa ?? this.empresa,
       isPCD: isPCD ?? this.isPCD,
       deficiencia: deficiencia ?? this.deficiencia,
-      userId: userId ?? this.userId, // Adicionado ao retorno do copyWith
+      userId: userId ?? this.userId,
+      nacionalidade: nacionalidade ?? this.nacionalidade,
+      nascimentoUf: nascimentoUf ?? this.nascimentoUf,
+      nascimentoCidade: nascimentoCidade ?? this.nascimentoCidade,
+      paisOrigem: paisOrigem ?? this.paisOrigem,
     );
   }
 
@@ -161,13 +161,9 @@ class PersonalDataModel {
       'cpf': cpf,
       'raca_cor': racaCor,
       'data_nascimento': dataNascimento?.toIso8601String(),
-      'idade': idade, // Adicionado ao toJson
+      'idade': idade,
       'nome_mae': nomeMae,
       'nome_pai': nomePai,
-      'nacionalidade': nacionalidade,
-      'nascimento_uf': nascimentoUf,
-      'nascimento_cidade': nascimentoCidade,
-      'pais_origem': paisOrigem,
       'possui_internet': possuiInternet,
       'possui_device': possuiDevice,
       'telefone': telefone,
@@ -180,6 +176,10 @@ class PersonalDataModel {
       'is_pcd': isPCD,
       'deficiencia': deficiencia,
       'user_id': userId,
+      'nacionalidade': nacionalidade,
+      'nascimento_uf': nascimentoUf,
+      'nascimento_cidade': nascimentoCidade,
+      'pais_origem': paisOrigem,
     };
   }
 
@@ -220,22 +220,60 @@ class PersonalDataModel {
       idade: json['idade'],
       nomeMae: json['nome_mae'],
       nomePai: json['nome_pai'],
+      possuiInternet: parseBool(json['possui_internet']),
+      possuiDevice: parseBool(json['possui_device']),
+      telefone: json['telefone'],
+      email: json['email'],
+      isGemeo: parseBool(json['is_gemeo']),
+      nomeGemeo: json['nome_gemeo'],
+      trabalha: parseBool(json['trabalha']),
+      profissao: json['profissao'],
+      empresa: json['empresa'],
+      isPCD: parseBool(json['is_pcd']),
+      deficiencia: json['deficiencia'],
+      userId: json['user_id'],
       nacionalidade: json['nacionalidade'],
       nascimentoUf: json['nascimento_uf'],
       nascimentoCidade: json['nascimento_cidade'],
       paisOrigem: json['pais_origem'],
-      possuiInternet: json['possui_internet'],
-      possuiDevice: json['possui_device'],
-      telefone: json['telefone'],
-      email: json['email'],
-      isGemeo: json['is_gemeo'],
-      nomeGemeo: json['nome_gemeo'],
-      trabalha: json['trabalha'],
-      profissao: json['profissao'],
-      empresa: json['empresa'],
-      isPCD: json['is_pcd'],
-      deficiencia: json['deficiencia'],
-      userId: json['user_id'],
+    );
+  }
+
+  // Método utilitário para merge dos dados extraídos pela IA
+  PersonalDataModel mergeFromExtractedData(Map<String, dynamic> extracted) {
+    return copyWith(
+      nomeCompleto: extracted['nome_completo'],
+      temNomeSocial: extracted['tem_nome_social'],
+      nomeSocial: extracted['nome_social'],
+      temNomeAfetivo: extracted['tem_nome_afetivo'],
+      nomeAfetivo: extracted['nome_afetivo'],
+      sexo: extracted['sexo'],
+      rg: extracted['rg'],
+      rgDigito: extracted['rg_digito'],
+      rgUf: extracted['rg_uf'],
+      rgDataEmissao: extracted['rg_data_emissao'] != null ? DateTime.tryParse(extracted['rg_data_emissao']) : null,
+      cpf: extracted['cpf'],
+      racaCor: extracted['raca_cor'],
+      dataNascimento: extracted['data_nascimento'] != null ? DateTime.tryParse(extracted['data_nascimento']) : null,
+      idade: extracted['idade'],
+      nomeMae: extracted['nome_mae'],
+      nomePai: extracted['nome_pai'],
+      nacionalidade: extracted['nacionalidade'],
+      nascimentoUf: extracted['nascimento_uf'],
+      nascimentoCidade: extracted['nascimento_cidade'],
+      paisOrigem: extracted['pais_origem'],
+      possuiInternet: extracted['possui_internet'],
+      possuiDevice: extracted['possui_device'],
+      telefone: extracted['telefone'],
+      email: extracted['email'],
+      isGemeo: extracted['is_gemeo'],
+      nomeGemeo: extracted['nome_gemeo'],
+      trabalha: extracted['trabalha'],
+      profissao: extracted['profissao'],
+      empresa: extracted['empresa'],
+      isPCD: extracted['is_pcd'],
+      deficiencia: extracted['deficiencia'],
+      userId: extracted['user_id'],
     );
   }
 }
