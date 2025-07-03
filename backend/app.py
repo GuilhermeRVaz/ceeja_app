@@ -9,6 +9,8 @@ from supabase import create_client, Client
 import google.generativeai as genai
 from PIL import Image
 import io
+from datetime import datetime
+from standardize import standardize_extracted_data
 
 # 1. CONFIGURAÇÃO INICIAL
 # --------------------------------
@@ -223,14 +225,21 @@ Sua tarefa é extrair o máximo de informações possíveis para matrícula esco
         print("--- DADOS ESTRUTURADOS RECEBIDOS DA IA ---")
         print(json.dumps(extracted_data, indent=2))
         print("------------------------------------------")
+
+        # === CHAMANDO A NOVA FUNÇÃO DE PADRONIZAÇÃO ===
+        standardized_data = standardize_extracted_data(extracted_data)
+
+        print("--- JSON PADRONIZADO PARA SALVAR ---")
+        print(json.dumps(standardized_data, indent=2))
+        print("------------------------------------------")
         
         # 5. SALVAR OS DADOS EXTRAÍDOS NO SUPABASE
         # --------------------------------
         print("Salvando dados extraídos na tabela 'enrollments'...")
         supabase.table('enrollments').update({
-            'extracted_personal_data': extracted_data.get('personal_data'),
-            'extracted_address_data': extracted_data.get('address_data'),
-            'extracted_schooling_data': extracted_data.get('schooling_data'),
+            'extracted_personal_data': standardized_data.get('personal_data'),
+            'extracted_address_data': standardized_data.get('address_data'),
+            'extracted_schooling_data': standardized_data.get('schooling_data'),
             'status': 'aguardando_revisao_aluno' # Atualiza o status da matrícula
         }).eq('id', enrollment_id).execute()
 
