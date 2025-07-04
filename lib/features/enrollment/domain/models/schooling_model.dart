@@ -125,10 +125,43 @@ class SchoolingModel {
 
   // Método utilitário para merge dos dados extraídos pela IA
   SchoolingModel mergeFromExtractedData(Map<String, dynamic> extracted) {
+    DateTime? parseDate(dynamic value) {
+      if (value == null) return null;
+      if (value is DateTime) return value;
+      if (value is String && value.isNotEmpty) {
+        try {
+          return DateTime.parse(value);
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    }
+    bool parseBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is int) return value != 0;
+      if (value is String) return value.toLowerCase() == 'true' || value == '1';
+      return false;
+    }
     return copyWith(
+      userId: extracted['user_id'],
+      nivelEnsino: extracted['nivel_ensino'],
+      itinerarioFormativo: extracted['itinerario_formativo'],
       ultimaSerieConcluida: extracted['ultima_serie_concluida'],
       ra: extracted['ra'],
-      temProgressaoParcial: extracted['tem_progressao_parcial'],
+      tipoEscola: extracted['tipo_escola'],
+      nomeEscola: extracted['nome_escola'],
+      estudouNoCeeja: parseBool(extracted['estudou_no_ceeja']),
+      temProgressaoParcial: parseBool(extracted['tem_progressao_parcial']),
+      progressaoParcialDisciplinas: extracted['progressao_parcial_disciplinas'] != null ? Map<String, List<String>>.from(extracted['progressao_parcial_disciplinas']) : null,
+      eliminouDisciplina: parseBool(extracted['eliminou_disciplina']),
+      eliminouDisciplinaNivel: extracted['eliminou_disciplina_nivel'],
+      eliminouDisciplinas: (extracted['eliminou_disciplinas'] as List?)?.map((e) => e.toString()).toList(),
+      optouEnsinoReligioso: parseBool(extracted['optou_ensino_religioso']),
+      optouEducacaoFisica: parseBool(extracted['optou_educacao_fisica']),
+      aceitouTermos: parseBool(extracted['aceitou_termos']),
+      dataAceite: parseDate(extracted['data_aceite']),
     );
   }
 }

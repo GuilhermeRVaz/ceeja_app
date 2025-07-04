@@ -226,37 +226,58 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
                     ),
               ),
               const SizedBox(height: 16),
-              // Exemplo de como um SwitchListTile deve ser adaptado:
+              // 1. Possui Nome Social
               SwitchListTile(
                 title: const Text('Possui Nome Social?'),
+                subtitle: Text(
+                  personalData.temNomeSocial ? 'Sim' : 'Não',
+                  style: TextStyle(
+                    color: personalData.temNomeSocial ? Colors.green : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 value: personalData.temNomeSocial,
-                onChanged:
-                    (bool value) => notifier.updatePersonalData(
-                      personalData.copyWith(
-                        temNomeSocial: value,
-                        nomeSocial: '',
+                activeColor: Colors.green,
+                inactiveThumbColor: Colors.grey,
+                onChanged: (bool value) => notifier.updatePersonalData(
+                  personalData.copyWith(
+                    temNomeSocial: value,
+                    nomeSocial: '',
+                  ),
+                ),
+                secondary: IconButton(
+                  icon: const Icon(Icons.help_outline),
+                  tooltip: 'O que é nome social?',
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Ajuda'),
+                        content: const Text(
+                          'Nome social é o nome adotado pela pessoa travesti, mulher transexual ou homem trans, que corresponde à forma pela qual se reconhece, identifica-se e é reconhecida(o) e denominada(o) por sua comunidade. (Decreto 55.588/10; Deliberação CEE 125/14; Resolução SE 45/2014; Parecer CNE/CP nº 14/2017)'
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Fechar'),
+                          ),
+                        ],
                       ),
-                    ),
+                    );
+                  },
+                ),
               ),
               if (personalData.temNomeSocial)
                 Padding(
-                  padding: const EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: 8,
-                  ),
+                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
                   child: CustomTextField(
                     controller: _nomeSocialController,
                     labelText: 'Qual o Nome Social?',
-                    onChanged:
-                        (value) => notifier.updatePersonalData(
-                          personalData.copyWith(nomeSocial: value),
-                        ),
+                    onChanged: (value) => notifier.updatePersonalData(
+                      personalData.copyWith(nomeSocial: value),
+                    ),
                   ),
                 ),
-              //
-              // Continue adaptando todos os outros campos da mesma forma...
-              //
               const SizedBox(height: 16),
               CustomTextField(
                 controller: _cpfController,
@@ -271,17 +292,28 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
                 controller: _dataNascimentoController,
                 labelText: 'Data de Nascimento',
                 readOnly: true,
-                onTap:
-                    () =>
-                        _selectDate(context, _dataNascimentoController, (date) {
-                          final calculatedAge = _calculateAge(date);
-                          notifier.updatePersonalData(
-                            personalData.copyWith(
-                              dataNascimento: date,
-                              idade: calculatedAge,
-                            ),
-                          );
-                        }),
+                onTap: () async {
+                  DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: personalData.dataNascimento ?? DateTime(2000, 1, 1),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                  );
+                  if (picked != null) {
+                    // Atualiza o controller
+                    _dataNascimentoController.text = DateFormat('yyyy-MM-dd').format(picked);
+                    // Calcula a idade
+                    int idade = _calculateAge(picked);
+                    _idadeController.text = idade.toString();
+                    // Atualiza o provider
+                    notifier.updatePersonalData(
+                      personalData.copyWith(
+                        dataNascimento: picked,
+                        idade: idade,
+                      ),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 16),
               CustomTextField(
@@ -311,28 +343,45 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
               SwitchListTile(
                 title: const Text('Possui Nome Afetivo?'),
                 value: personalData.temNomeAfetivo,
-                onChanged:
-                    (bool value) => notifier.updatePersonalData(
-                      personalData.copyWith(
-                        temNomeAfetivo: value,
-                        nomeAfetivo: '',
+                activeColor: Colors.green,
+                inactiveThumbColor: Colors.grey,
+                onChanged: (bool value) => notifier.updatePersonalData(
+                  personalData.copyWith(
+                    temNomeAfetivo: value,
+                    nomeAfetivo: '',
+                  ),
+                ),
+                secondary: IconButton(
+                  icon: const Icon(Icons.help_outline),
+                  tooltip: 'O que é nome afetivo?',
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Ajuda'),
+                        content: const Text(
+                          'Nome afetivo é o nome adotado pela pessoa travesti, mulher transexual ou homem trans, que corresponde à forma pela qual se reconhece, identifica-se e é reconhecida(o) e denominada(o) por sua comunidade. (Decreto 55.588/10; Deliberação CEE 125/14; Resolução SE 45/2014; Parecer CNE/CP nº 14/2017)'
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Fechar'),
+                          ),
+                        ],
                       ),
-                    ),
+                    );
+                  },
+                ),
               ),
               if (personalData.temNomeAfetivo)
                 Padding(
-                  padding: const EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: 8,
-                  ),
+                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
                   child: CustomTextField(
                     controller: _nomeAfetivoController,
                     labelText: 'Qual o Nome Afetivo?',
-                    onChanged:
-                        (value) => notifier.updatePersonalData(
-                          personalData.copyWith(nomeAfetivo: value),
-                        ),
+                    onChanged: (value) => notifier.updatePersonalData(
+                      personalData.copyWith(nomeAfetivo: value),
+                    ),
                   ),
                 ),
               const SizedBox(height: 16),
@@ -500,18 +549,39 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
               SwitchListTile(
                 title: const Text('É Gêmeo(a)?'),
                 value: personalData.isGemeo ?? false,
-                onChanged:
-                    (bool value) => notifier.updatePersonalData(
-                      personalData.copyWith(isGemeo: value, nomeGemeo: ''),
-                    ),
+                activeColor: Colors.green,
+                inactiveThumbColor: Colors.grey,
+                onChanged: (bool value) => notifier.updatePersonalData(
+                  personalData.copyWith(
+                    isGemeo: value,
+                    nomeGemeo: '',
+                  ),
+                ),
+                secondary: IconButton(
+                  icon: const Icon(Icons.help_outline),
+                  tooltip: 'O que é gêmeo?',
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Ajuda'),
+                        content: const Text(
+                          'Gêmeo(a) é uma pessoa que nasceu de um único bebê, que foi dividido em dois ou mais bebês, ou que foi concebido de duas maneiras diferentes. (Decreto 55.588/10; Deliberação CEE 125/14; Resolução SE 45/2014; Parecer CNE/CP nº 14/2017)'
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Fechar'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
               if (personalData.isGemeo ?? false)
                 Padding(
-                  padding: const EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: 8,
-                  ),
+                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
                   child: CustomTextField(
                     controller: _nomeGemeoController,
                     labelText: 'Nome do Gêmeo(a)',
@@ -558,25 +628,45 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
               SwitchListTile(
                 title: const Text('Possui Deficiência (PCD)?'),
                 value: personalData.isPCD ?? false,
-                onChanged:
-                    (bool value) => notifier.updatePersonalData(
-                      personalData.copyWith(isPCD: value, deficiencia: ''),
-                    ),
+                activeColor: Colors.green,
+                inactiveThumbColor: Colors.grey,
+                onChanged: (bool value) => notifier.updatePersonalData(
+                  personalData.copyWith(
+                    isPCD: value,
+                    deficiencia: '',
+                  ),
+                ),
+                secondary: IconButton(
+                  icon: const Icon(Icons.help_outline),
+                  tooltip: 'O que é PCD?',
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Ajuda'),
+                        content: const Text(
+                          'PCD é uma abreviação para "deficiência", que se refere a qualquer limitação física, mental, emocional ou social que uma pessoa possa ter. (Decreto 55.588/10; Deliberação CEE 125/14; Resolução SE 45/2014; Parecer CNE/CP nº 14/2017)'
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Fechar'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
               if (personalData.isPCD ?? false)
                 Padding(
-                  padding: const EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: 8,
-                  ),
+                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
                   child: CustomTextField(
                     controller: _deficienciaController,
                     labelText: 'Qual a Deficiência?',
-                    onChanged:
-                        (value) => notifier.updatePersonalData(
-                          personalData.copyWith(deficiencia: value),
-                        ),
+                    onChanged: (value) => notifier.updatePersonalData(
+                      personalData.copyWith(deficiencia: value),
+                    ),
                   ),
                 ),
             ],

@@ -95,6 +95,46 @@ class _AddressFormState extends ConsumerState<AddressForm> {
     return null;
   }
 
+  void _onCepChanged(String cep) async {
+    final notifier = ref.read(enrollmentProvider.notifier);
+    if (cep.replaceAll(RegExp(r'[^0-9]'), '').length == 8) {
+      // Mostra loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Buscando endereço pelo CEP...')),
+      );
+      final address = await notifier.fetchAddressByCep(cep);
+      if (address != null) {
+        notifier.updateAddressData(address.copyWith(cep: cep));
+        _updateControllers(address.copyWith(cep: cep), forceUpdate: true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Endereço preenchido automaticamente!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('CEP não encontrado. Preencha manualmente.')),
+        );
+      }
+    }
+    notifier.updateAddressData(ref.read(enrollmentProvider).addressData.copyWith(cep: cep));
+  }
+
+  // Exemplo de função de ajuda contextual
+  void _showHelpDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fechar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen<EnrollmentState>(enrollmentProvider, (previous, next) {
@@ -116,33 +156,39 @@ class _AddressFormState extends ConsumerState<AddressForm> {
                 controller: _cepController,
                 labelText: 'CEP',
                 keyboardType: TextInputType.number,
-                onChanged: (cep) => notifier.updateAddressData(addressData.copyWith(cep: cep)),
+                onChanged: _onCepChanged,
               ),
+              SizedBox(height: 12),
               CustomTextField(
                 controller: _logradouroController,
                 labelText: 'Logradouro',
                 onChanged: (value) => notifier.updateAddressData(addressData.copyWith(logradouro: value)),
               ),
+              SizedBox(height: 12),
               CustomTextField(
                 controller: _numeroController,
                 labelText: 'Número',
                 onChanged: (value) => notifier.updateAddressData(addressData.copyWith(numero: value)),
               ),
+              SizedBox(height: 12),
               CustomTextField(
                 controller: _complementoController,
                 labelText: 'Complemento',
                 onChanged: (value) => notifier.updateAddressData(addressData.copyWith(complemento: value)),
               ),
+              SizedBox(height: 12),
               CustomTextField(
                 controller: _bairroController,
                 labelText: 'Bairro',
                 onChanged: (value) => notifier.updateAddressData(addressData.copyWith(bairro: value)),
               ),
+              SizedBox(height: 12),
               CustomTextField(
                 controller: _cidadeController,
                 labelText: 'Cidade',
                 onChanged: (value) => notifier.updateAddressData(addressData.copyWith(nomeCidade: value)),
               ),
+              SizedBox(height: 12),
               CustomTextField(
                 controller: _ufController,
                 labelText: 'UF',
@@ -175,14 +221,33 @@ class _AddressFormState extends ConsumerState<AddressForm> {
               const Divider(height: 32),
               SwitchListTile(
                 title: const Text('Localização Diferenciada?'),
+                subtitle: Text(
+                  addressData.temLocalizacaoDiferenciada ? 'Sim' : 'Não',
+                  style: TextStyle(
+                    color: addressData.temLocalizacaoDiferenciada ? Colors.green : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 value: addressData.temLocalizacaoDiferenciada,
-                onChanged:
-                    (bool value) => notifier.updateAddressData(
-                      addressData.copyWith(
-                        temLocalizacaoDiferenciada: value,
-                        localizacaoDiferenciada: null,
-                      ),
-                    ),
+                activeColor: Colors.green,
+                inactiveThumbColor: Colors.grey,
+                onChanged: (bool value) => notifier.updateAddressData(
+                  addressData.copyWith(
+                    temLocalizacaoDiferenciada: value,
+                    localizacaoDiferenciada: null,
+                  ),
+                ),
+                secondary: IconButton(
+                  icon: const Icon(Icons.help_outline),
+                  tooltip: 'O que é localização diferenciada?',
+                  onPressed: () {
+                    _showHelpDialog(
+                      context,
+                      'Ajuda',
+                      'Localização diferenciada refere-se a áreas de assentamento, terras indígenas ou quilombolas, conforme classificação do INEP. Se o endereço se enquadra em alguma dessas categorias, selecione e especifique.',
+                    );
+                  },
+                ),
               ),
               if (addressData.temLocalizacaoDiferenciada)
                 Padding(

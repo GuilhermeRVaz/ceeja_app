@@ -241,39 +241,57 @@ class PersonalDataModel {
 
   // Método utilitário para merge dos dados extraídos pela IA
   PersonalDataModel mergeFromExtractedData(Map<String, dynamic> extracted) {
+    DateTime? parseDate(dynamic value) {
+      if (value == null) return null;
+      if (value is DateTime) return value;
+      if (value is String && value.isNotEmpty) {
+        try {
+          return DateTime.parse(value);
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    }
+    bool parseBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is int) return value != 0;
+      if (value is String) return value.toLowerCase() == 'true' || value == '1';
+      return false;
+    }
     return copyWith(
       nomeCompleto: extracted['nome_completo'],
-      temNomeSocial: extracted['tem_nome_social'],
+      temNomeSocial: parseBool(extracted['tem_nome_social']),
       nomeSocial: extracted['nome_social'],
-      temNomeAfetivo: extracted['tem_nome_afetivo'],
+      temNomeAfetivo: parseBool(extracted['tem_nome_afetivo']),
       nomeAfetivo: extracted['nome_afetivo'],
       sexo: extracted['sexo'],
       rg: extracted['rg'],
       rgDigito: extracted['rg_digito'],
       rgUf: extracted['rg_uf'],
-      rgDataEmissao: extracted['rg_data_emissao'] != null ? DateTime.tryParse(extracted['rg_data_emissao']) : null,
+      rgDataEmissao: parseDate(extracted['rg_data_emissao']),
       cpf: extracted['cpf'],
       racaCor: extracted['raca_cor'],
-      dataNascimento: extracted['data_nascimento'] != null ? DateTime.tryParse(extracted['data_nascimento']) : null,
+      dataNascimento: parseDate(extracted['data_nascimento']),
       idade: extracted['idade'],
       nomeMae: extracted['nome_mae'],
       nomePai: extracted['nome_pai'],
+      possuiInternet: parseBool(extracted['possui_internet']),
+      possuiDevice: parseBool(extracted['possui_device']),
+      telefone: extracted['telefone'],
+      email: extracted['email'],
+      isGemeo: parseBool(extracted['is_gemeo']),
+      nomeGemeo: extracted['nome_gemeo'],
+      trabalha: parseBool(extracted['trabalha']),
+      profissao: extracted['profissao'],
+      empresa: extracted['empresa'],
+      isPCD: parseBool(extracted['is_pcd']),
+      deficiencia: extracted['deficiencia'],
       nacionalidade: extracted['nacionalidade'],
       nascimentoUf: extracted['nascimento_uf'],
       nascimentoCidade: extracted['nascimento_cidade'],
       paisOrigem: extracted['pais_origem'],
-      possuiInternet: extracted['possui_internet'],
-      possuiDevice: extracted['possui_device'],
-      telefone: extracted['telefone'],
-      email: extracted['email'],
-      isGemeo: extracted['is_gemeo'],
-      nomeGemeo: extracted['nome_gemeo'],
-      trabalha: extracted['trabalha'],
-      profissao: extracted['profissao'],
-      empresa: extracted['empresa'],
-      isPCD: extracted['is_pcd'],
-      deficiencia: extracted['deficiencia'],
-      userId: extracted['user_id'],
     );
   }
 }

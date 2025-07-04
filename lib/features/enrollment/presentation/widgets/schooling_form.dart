@@ -140,22 +140,45 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
               ),
               if (schoolingData.nivelEnsino == 'Ensino Médio') ...[
                 const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: schoolingData.itinerarioFormativo,
-                  decoration: const InputDecoration(
-                    labelText: 'Área do Itinerário Formativo',
-                    border: OutlineInputBorder(),
-                  ),
-                  items:
-                      itinerarios
-                          .map(
-                            (e) => DropdownMenuItem(value: e, child: Text(e)),
-                          )
-                          .toList(),
-                  onChanged:
-                      (value) => notifier.updateSchoolingData(
-                        schoolingData.copyWith(itinerarioFormativo: value),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: schoolingData.itinerarioFormativo,
+                        decoration: const InputDecoration(
+                          labelText: 'Área do Itinerário Formativo',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: itinerarios
+                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (value) => notifier.updateSchoolingData(
+                          schoolingData.copyWith(itinerarioFormativo: value),
+                        ),
                       ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.help_outline),
+                      tooltip: 'O que é itinerário formativo?',
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Ajuda'),
+                            content: const Text(
+                              'O itinerário formativo é a área de aprofundamento escolhida pelo estudante no Ensino Médio, podendo ser Linguagens e Ciências Humanas ou Matemática e Ciências da Natureza.'
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Fechar'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
               if (schoolingData.nivelEnsino != null) ...[
@@ -219,11 +242,10 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
               const SizedBox(height: 16),
               CustomTextField(
                 controller: _nomeEscolaController,
-                labelText: 'Nome da Escola',
-                onChanged:
-                    (value) => notifier.updateSchoolingData(
-                      schoolingData.copyWith(nomeEscola: value),
-                    ),
+                labelText: 'Nome da Escola, cidade e estado de origem da matrícula anterior',
+                onChanged: (value) => notifier.updateSchoolingData(
+                  schoolingData.copyWith(nomeEscola: value),
+                ),
               ),
               const SizedBox(height: 16),
             ],

@@ -38,6 +38,16 @@ def parse_str(value):
     return str(value).strip()
 
 def standardize_extracted_data(data: dict) -> dict:
+    # Mapeamento de seções em português para o padrão esperado
+    section_map = {
+        "Dados pessoais": "personal_data",
+        "Endereço": "address_data",
+        "Escolaridade": "schooling_data"
+    }
+    # Se vier em português, converte para o padrão
+    for pt_key, std_key in section_map.items():
+        if pt_key in data:
+            data[std_key] = data[pt_key]
     standard_data = {
         "personal_data": {},
         "address_data": {},

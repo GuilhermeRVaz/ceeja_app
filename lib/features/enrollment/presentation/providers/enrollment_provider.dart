@@ -182,21 +182,27 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
         ),
       );
 
-  Future<void> fetchAddressByCep(String cep) async {
+  Future<AddressModel?> fetchAddressByCep(String cep) async {
     try {
       state = state.copyWith(isLoading: true, errorMessage: null);
       final address = await _cepService.fetchAddressByCep(cep);
-      state = state.copyWith(
-        addressData: state.addressData.copyWith(
-          logradouro: address?.logradouro,
-          bairro: address?.bairro,
-          nomeCidade: address?.nomeCidade,
-          ufCidade: address?.ufCidade,
-        ),
-        isLoading: false,
-      );
+      if (address != null) {
+        state = state.copyWith(
+          addressData: state.addressData.copyWith(
+            logradouro: address.logradouro,
+            bairro: address.bairro,
+            nomeCidade: address.nomeCidade,
+            ufCidade: address.ufCidade,
+          ),
+          isLoading: false,
+        );
+      } else {
+        state = state.copyWith(isLoading: false);
+      }
+      return address;
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return null;
     }
   }
 
