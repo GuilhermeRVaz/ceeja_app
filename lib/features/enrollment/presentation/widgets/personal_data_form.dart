@@ -8,6 +8,7 @@ import 'package:ceeja_app/core/widgets/custom_text_field.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/personal_data_model.dart';
 import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_provider.dart';
 import 'package:ceeja_app/features/enrollment/presentation/widgets/form_section.dart';
+import 'package:flutter/services.dart';
 
 // MUDANÇA: Converte para ConsumerStatefulWidget
 class PersonalDataForm extends ConsumerStatefulWidget {
@@ -37,6 +38,8 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
   final _profissaoController = TextEditingController();
   final _empresaController = TextEditingController();
   final _deficienciaController = TextEditingController();
+  final _nascimentoUfController = TextEditingController();
+  final _nascimentoCidadeController = TextEditingController();
 
   final List<String> _racaOptions = [
     'Não declarada',
@@ -138,6 +141,12 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
         _deficienciaController.text != (data.deficiencia ?? '')) {
       _deficienciaController.text = data.deficiencia ?? '';
     }
+    if (forceUpdate || _nascimentoUfController.text != (data.nascimentoUf ?? '')) {
+      _nascimentoUfController.text = data.nascimentoUf ?? '';
+    }
+    if (forceUpdate || _nascimentoCidadeController.text != (data.nascimentoCidade ?? '')) {
+      _nascimentoCidadeController.text = data.nascimentoCidade ?? '';
+    }
   }
 
   // Função helper para calcular a idade.
@@ -190,6 +199,8 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
     _profissaoController.dispose();
     _empresaController.dispose();
     _deficienciaController.dispose();
+    _nascimentoUfController.dispose();
+    _nascimentoCidadeController.dispose();
     super.dispose();
   }
 
@@ -467,45 +478,76 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
               ] else if (personalData.nacionalidade == 'Brasileira') ...[
                 const SizedBox(height: 16),
                 CustomTextField(
-                  controller: _rgController,
-                  labelText: 'RG',
-                  onChanged:
-                      (value) => notifier.updatePersonalData(
-                        personalData.copyWith(rg: value),
-                      ),
+                  controller: _nascimentoUfController,
+                  labelText: 'Estado de Nascimento',
+                  onChanged: (value) => notifier.updatePersonalData(
+                    personalData.copyWith(nascimentoUf: value),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  controller: _rgDigitoController,
-                  labelText: 'Dígito RG',
-                  onChanged:
-                      (value) => notifier.updatePersonalData(
-                        personalData.copyWith(rgDigito: value),
-                      ),
+                  controller: _nascimentoCidadeController,
+                  labelText: 'Cidade de Nascimento',
+                  onChanged: (value) => notifier.updatePersonalData(
+                    personalData.copyWith(nascimentoCidade: value),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: _rgUfController,
-                  labelText: 'UF do RG',
-                  onChanged:
-                      (value) => notifier.updatePersonalData(
-                        personalData.copyWith(rgUf: value),
-                      ),
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: _rgDataEmissaoController,
-                  labelText: 'Data de Emissão do RG',
-                  readOnly: true,
-                  onTap:
-                      () => _selectDate(context, _rgDataEmissaoController, (
-                        date,
-                      ) {
+                if ((personalData.nascimentoUf != null && personalData.nascimentoUf!.isNotEmpty) &&
+                    (personalData.nascimentoCidade != null && personalData.nascimentoCidade!.isNotEmpty)) ...[
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _rgController,
+                    labelText: 'RG',
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onChanged: (value) {
+                      // Separar dígito se vier junto
+                      if (value.length > 0 && value.contains(RegExp(r'-'))) {
+                        final parts = value.split('-');
                         notifier.updatePersonalData(
-                          personalData.copyWith(rgDataEmissao: date),
+                          personalData.copyWith(rg: parts[0], rgDigito: parts.length > 1 ? parts[1] : ''),
                         );
-                      }),
-                ),
+                        _rgController.text = parts[0];
+                        _rgDigitoController.text = parts.length > 1 ? parts[1] : '';
+                      } else {
+                        notifier.updatePersonalData(
+                          personalData.copyWith(rg: value),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _rgDigitoController,
+                    labelText: 'Dígito RG',
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onChanged: (value) => notifier.updatePersonalData(
+                      personalData.copyWith(rgDigito: value),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _rgUfController,
+                    labelText: 'UF do RG',
+                    onChanged: (value) => notifier.updatePersonalData(
+                      personalData.copyWith(rgUf: value),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _rgDataEmissaoController,
+                    labelText: 'Data de Emissão do RG',
+                    readOnly: true,
+                    onTap: () => _selectDate(context, _rgDataEmissaoController, (
+                      date,
+                    ) {
+                      notifier.updatePersonalData(
+                        personalData.copyWith(rgDataEmissao: date),
+                      );
+                    }),
+                  ),
+                ],
               ],
               const SizedBox(height: 16),
               CustomTextField(

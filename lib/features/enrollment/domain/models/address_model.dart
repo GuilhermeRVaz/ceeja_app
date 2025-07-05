@@ -119,13 +119,13 @@ class AddressModel {
   // Método utilitário para merge dos dados extraídos pela IA
   AddressModel mergeFromExtractedData(Map<String, dynamic> extracted) {
     return copyWith(
-      cep: extracted['cep'],
+      cep: extracted['cep'] ?? cep,
       logradouro: extracted['logradouro'],
       numero: extracted['numero'],
       complemento: extracted['complemento'],
       bairro: extracted['bairro'],
-      nomeCidade: extracted['nome_cidade'],
-      ufCidade: extracted['uf_cidade'],
+      nomeCidade: extracted['nome_cidade'] ?? nomeCidade,
+      ufCidade: extracted['uf_cidade'] ?? ufCidade,
       zona: extracted['zona'],
       temLocalizacaoDiferenciada: extracted['tem_localizacao_diferenciada'],
       localizacaoDiferenciada: extracted['localizacao_diferenciada'],

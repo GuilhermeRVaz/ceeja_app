@@ -413,15 +413,51 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
       }
       return value;
     }
+    // RG: separar dígito se vier junto
+    String? rg = json['rg'];
+    String? rgDigito = json['rg_digito'];
+    if (rg != null && rg.contains('-') && (rgDigito == null || rgDigito.isEmpty)) {
+      final parts = rg.split('-');
+      rg = parts[0];
+      rgDigito = parts.length > 1 ? parts[1] : null;
+    }
+    // Nacionalidade: deduzir se nascimento_uf e nascimento_cidade presentes
+    String? nacionalidade = json['nacionalidade'];
+    if ((nacionalidade == null || nacionalidade.isEmpty) &&
+        json['nascimento_uf'] != null &&
+        json['nascimento_cidade'] != null &&
+        (json['pais_origem'] == null || json['pais_origem'].toString().isEmpty)) {
+      nacionalidade = 'Brasileira';
+    }
+    // Escolaridade: marcar Ensino Médio
+    String? ultimaSerieConcluida = json['ultima_serie_concluida'];
+    bool ensinoMedio = false;
+    if (ultimaSerieConcluida != null && ultimaSerieConcluida.toLowerCase().contains('médio')) {
+      ensinoMedio = true;
+    }
     return {
       'nome_completo': json['nome_completo'] ?? json['nome'],
       'cpf': json['cpf'],
-      'rg': json['rg'],
+      'rg': rg,
+      'rg_digito': rgDigito,
       'sexo': normalizarSexo(json['sexo']),
       'data_nascimento': normalizarData(json['data_nascimento']),
       'rg_data_emissao': normalizarData(json['rg_data_emissao']),
       'nome_mae': json['nome_mae'],
       'nome_pai': json['nome_pai'],
+      'nacionalidade': nacionalidade,
+      'nascimento_uf': json['nascimento_uf'],
+      'nascimento_cidade': json['nascimento_cidade'],
+      'pais_origem': json['pais_origem'],
+      'nome_cidade': json['nome_cidade'],
+      'uf_cidade': json['uf_cidade'],
+      'bairro': json['bairro'],
+      'logradouro': json['logradouro'],
+      'cep': json['cep'],
+      'ultima_serie_concluida': ultimaSerieConcluida,
+      'ensino_medio': ensinoMedio,
+      'nome_escola': json['nome_escola'],
+      'tipo_escola': json['tipo_escola'],
       // Adicione outros campos conforme necessário
     };
   }

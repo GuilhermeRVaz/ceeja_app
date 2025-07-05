@@ -141,4 +141,9 @@ def standardize_extracted_data(data: dict) -> dict:
         else:
             val = parse_str(val)
         standard_data["schooling_data"][std_key] = val
+    # --- AJUSTE: mover nascimento_uf, nascimento_cidade e nacionalidade para personal_data se presentes em address_data ---
+    for campo in ["nascimento_uf", "nascimento_cidade", "nacionalidade"]:
+        valor = standard_data["address_data"].get(campo)
+        if valor:
+            standard_data["personal_data"][campo] = valor
     return standard_data 

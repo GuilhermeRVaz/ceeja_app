@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ceeja_app/core/theme/app_theme.dart';
+import 'package:flutter/services.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -15,6 +16,7 @@ class CustomTextField extends StatelessWidget {
   final bool enabled;
   final bool readOnly;
   final VoidCallback? onTap;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomTextField({
     super.key, // Correção aqui
@@ -31,6 +33,7 @@ class CustomTextField extends StatelessWidget {
     this.enabled = true,
     this.readOnly = false,
     this.onTap,
+    this.inputFormatters,
   }); // Correção aqui
 
   @override
@@ -46,6 +49,7 @@ class CustomTextField extends StatelessWidget {
       enabled: enabled,
       readOnly: readOnly,
       onTap: onTap,
+      inputFormatters: inputFormatters,
       style: const TextStyle(
         color: AppTheme.blackColor,
       ), // Cor do texto digitado

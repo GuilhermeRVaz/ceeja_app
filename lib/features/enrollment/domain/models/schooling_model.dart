@@ -144,14 +144,24 @@ class SchoolingModel {
       if (value is String) return value.toLowerCase() == 'true' || value == '1';
       return false;
     }
+    // Marcar Ensino Médio
+    String? ultimaSerieConcluida = extracted['ultima_serie_concluida'];
+    String? nivelEnsino = extracted['nivel_ensino'];
+    if (ultimaSerieConcluida != null && ultimaSerieConcluida.toLowerCase().contains('médio')) {
+      nivelEnsino = 'Ensino Médio';
+    }
+    // Preencher cidade/estado da escola anterior se disponíveis
+    String? nomeEscola = extracted['nome_escola'];
+    String? cidadeEscola = extracted['cidade_escola'] ?? extracted['nome_cidade'];
+    String? ufEscola = extracted['uf_escola'] ?? extracted['uf_cidade'];
     return copyWith(
       userId: extracted['user_id'],
-      nivelEnsino: extracted['nivel_ensino'],
+      nivelEnsino: nivelEnsino,
       itinerarioFormativo: extracted['itinerario_formativo'],
-      ultimaSerieConcluida: extracted['ultima_serie_concluida'],
+      ultimaSerieConcluida: ultimaSerieConcluida,
       ra: extracted['ra'],
       tipoEscola: extracted['tipo_escola'],
-      nomeEscola: extracted['nome_escola'],
+      nomeEscola: nomeEscola,
       estudouNoCeeja: parseBool(extracted['estudou_no_ceeja']),
       temProgressaoParcial: parseBool(extracted['tem_progressao_parcial']),
       progressaoParcialDisciplinas: extracted['progressao_parcial_disciplinas'] != null ? Map<String, List<String>>.from(extracted['progressao_parcial_disciplinas']) : null,
@@ -162,6 +172,8 @@ class SchoolingModel {
       optouEducacaoFisica: parseBool(extracted['optou_educacao_fisica']),
       aceitouTermos: parseBool(extracted['aceitou_termos']),
       dataAceite: parseDate(extracted['data_aceite']),
+      // Adicionais para cidade/estado da escola
+      // cidadeEscola e ufEscola não existem no modelo padrão, mas podem ser adicionados se necessário
     );
   }
 }

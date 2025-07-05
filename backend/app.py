@@ -1,5 +1,4 @@
 # backend/app.py
-
 import os
 import json
 from flask import Flask, request, jsonify
@@ -11,6 +10,7 @@ from PIL import Image
 import io
 from datetime import datetime
 from standardize import standardize_extracted_data
+import mimetypes # Usado para detectar o tipo do arquivo de exemplo
 
 # 1. CONFIGURAÇÃO INICIAL
 # --------------------------------
@@ -30,12 +30,155 @@ genai.configure(api_key=GEMINI_API_KEY)
 # Usamos um modelo com capacidade de visão ('pro-vision' ou 'flash' para mais rápido)
 model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
-# --------------------------------
+# 2. CARREGAMENTO DOS EXEMPLOS VISUAIS (OTIMIZADO)
+# -----------------------------------------------------------------
+def load_prompt_examples():
+    """Carrega imagens de exemplo e as prepara para a API do Gemini."""
+    example_parts = []
+    examples_dir = os.path.join(os.path.dirname(__file__), 'prompt_examples')
+    try:
+        if not os.path.isdir(examples_dir):
+            print(f"AVISO: Diretório de exemplos '{examples_dir}' não encontrado. A IA funcionará sem exemplos visuais.")
+            return []
 
+        # Adiciona uma introdução para os exemplos no prompt
+        example_parts.append("INÍCIO DOS EXEMPLOS VISUAIS PARA REFERÊNCIA:")
+
+        for filename in os.listdir(examples_dir):
+            filepath = os.path.join(examples_dir, filename)
+            if os.path.isfile(filepath):
+                # Informa no prompt qual arquivo de exemplo está sendo enviado
+                example_parts.append(f"\nExemplo de documento '{filename}':")
+                # Detecta o mimetype e lê o conteúdo do arquivo
+                mime_type, _ = mimetypes.guess_type(filepath)
+                if mime_type and (mime_type.startswith('image/') or mime_type == 'application/pdf'):
+                    with open(filepath, 'rb') as f:
+                        file_content = f.read()
+                        example_parts.append({"mime_type": mime_type, "data": file_content})
+        example_parts.append("\nFIM DOS EXEMPLOS VISUAIS. A seguir, os documentos do usuário para extração.")
+        print(f"Sucesso: {len(os.listdir(examples_dir))} arquivos de exemplo carregados.")
+        return example_parts
+    except Exception as e:
+        print(f"ERRO ao carregar arquivos de exemplo: {e}")
+        return []
+
+PROMPT_EXAMPLE_PARTS = load_prompt_examples()
+
+# 3. PROMPT PRINCIPAL PARA A IA
+# -----------------------------------------------------------------
+PROMPT_GEMINI = f"""
+Analise cuidadosamente TODOS os documentos do usuário enviados APÓS a seção de exemplos.
+Sua tarefa é extrair o máximo de informações possíveis para uma matrícula escolar, buscando cada campo em TODOS os documentos fornecidos.
+
+Exemplos visuais de documentos e localização dos campos
+RG (Carteira de Identidade):
+Veja a imagem de exemplo enviada (RG com anotações).
+O número do RG está no topo direito, seguido do dígito.
+A data de expedição/emissão está no canto superior direito.
+O estado de expedição (UF) está no topo, próximo ao título “ESTADO DE SÃO PAULO”.
+O nome completo está abaixo do título “NOME”.
+A filiação (nomes da mãe e do pai) está logo abaixo do nome.
+O CPF pode aparecer na parte inferior do RG.
+A data de nascimento está destacada ao lado do local de nascimento.
+Comprovante de Residência:
+Veja a imagem de exemplo enviada (conta de energia com anotações).
+O endereço completo, CEP (CEP é  composto de 8 dígitos podem ser xxxxx-xxx ou xxxxx-xxx ou xx.xxx) e cidade estão no topo, geralmente à esquerda.
+Ignore o nome do titular do comprovante.
+Certidão de Nascimento/Casamento:
+Veja a imagem de exemplo enviada (certidão de casamento com anotações).
+O nome completo, data de nascimento, local de nascimento, nomes dos pais, data de expedição da certidão, local de emissão, subdistrito, número da folha, número do livro e número do registro estão destacados na imagem.
+Histórico Escolar e Declaração de Escolaridade:
+Veja as imagens de exemplo enviadas (histórico escolar frente e verso).
+Procure pelo RA do aluno (Registro do Aluno), geralmente no topo ou em campos destacados.
+Identifique a última série concluída, dependências (promoção parcial) e todas as disciplinas cursadas.
+Outro RG (modelo alternativo):
+Veja a imagem de exemplo enviada (RG verde).
+Os campos seguem o mesmo padrão, mas podem estar em posições diferentes.
+
+Campos a serem extraídos
+RG: número, dígito, data de emissão/expedição, UF de expedição, nome completo, filiação (mãe e pai), CPF (se constar).
+CPF: número, nome completo.
+Certidão de nascimento/casamento: nome completo, data de nascimento, local de nascimento (cidade, estado, país), nomes completos da mãe e pai, data de expedição da certidão, local de emissão (cidade, estado), subdistrito, número da folha, número do livro, número do registro.
+Comprovante de residência: cep, logradouro completo, número, complemento, bairro, cidade, estado. Ignore o nome do titular.
+Declaração de escolaridade/matrícula/transferência: última série concluída ou série de direito à matrícula, promoção parcial, dependências.
+Atestado de eliminação: nível de ensino, disciplinas eliminadas.
+Histórico escolar: RA do aluno, última série concluída, dependências, disciplinas cursadas e notas.
+
+**INSTRUÇÕES IMPORTANTES:**
+1.  **Use os exemplos visuais** que foram fornecidos no início como referência principal para saber onde encontrar cada dado nos diferentes tipos de documento (RG, Histórico, Certidão, etc.).
+2.  **Foco nos Documentos do Usuário:** Sua extração final deve ser baseada APENAS nos documentos do usuário, não nos exemplos.
+3.  **Formato JSON Obrigatório:** Retorne o resultado em um único bloco de código JSON, exatamente com a estrutura e chaves definidas abaixo. Não adicione texto, comentários, ou aspas ```json``` ao redor da sua resposta.
+4.  **Dados Não Encontrados:** Se uma informação não for encontrada em NENHUM dos documentos, retorne `null` para o campo correspondente.
+5.  **Formato de Data:** Todas as datas DEVEM estar no formato `YYYY-MM-DD`.
+
+**ESTRUTURA JSON DE SAÍDA:**
+
+{{
+    "personal_data": {{
+        "nome_completo": "...",
+        "nome_social": "...",
+        "nome_afetivo": "...",
+        "sexo": "Masculino ou Feminino",
+        "rg": "...",
+        "rg_digito": "...",
+        "rg_uf": "...",
+        "rg_data_emissao": "YYYY-MM-DD",
+        "cpf": "...",
+        "raca_cor": "...",
+        "data_nascimento": "YYYY-MM-DD",
+        "idade": "...",
+        "nome_mae": "...",
+        "nome_pai": "...",
+        "possui_internet": true/false,
+        "possui_device": true/false,
+        "telefone": "...",
+        "email": "...",
+        "is_gemeo": true/false,
+        "nome_gemeo": "...",
+        "trabalha": true/false,
+        "profissao": "...",
+        "empresa": "...",
+        "is_pcd": true/false,
+        "deficiencia": "..."
+    }},
+    "address_data": {{
+        "cep": "...",
+        "logradouro": "...",
+        "numero": "...",
+        "complemento": "...",
+        "bairro": "...",
+        "nome_cidade": "...",
+        "uf_cidade": "...",
+        "nacionalidade": "...",
+        "pais_origem": "...",
+        "nascimento_uf": "...",
+        "nascimento_cidade": "..."
+    }},
+    "schooling_data": {{
+        "ultima_serie_concluida": "...",
+        "ra": "...",
+        "tem_progressao_parcial": true/false,
+        "dependencias": ["Disciplina 1", "Disciplina 2"],
+        "nome_escola": "...",
+        "tipo_escola": "Pública ou Privada",
+        "nivel_ensino": "...",
+        "estudou_no_ceeja": true/false,
+        "eliminou_disciplina": true/false,
+        "eliminou_disciplinas": ["Disciplina A", "Disciplina B"],
+        "itinerario_formativo": "...",
+        "optou_ensino_religioso": true/false,
+        "optou_educacao_fisica": true/false,
+        "aceitou_termos": true/false,
+        "data_aceite": "YYYY-MM-DD"
+    }}
+}}
+"""
+
+# 4. ROTAS DA API
+# --------------------------------
 @app.route('/', methods=['GET'])
 def index():
     return "Servidor de Extração IA para CEEJA está no ar!"
-
 
 @app.route('/extract-data', methods=['POST'])
 def extract_data_route():
@@ -46,176 +189,44 @@ def extract_data_route():
         return jsonify({"error": "enrollmentId não foi fornecido"}), 400
 
     print(f"--- INICIANDO EXTRAÇÃO IA PARA MATRÍCULA: {enrollment_id} ---")
-    
+
     try:
-        # 2. BUSCAR DOCUMENTOS DA MATRÍCULA
-        # --------------------------------
+        # BUSCAR DOCUMENTOS DA MATRÍCULA
         response = supabase.table('document_extractions').select('*').eq('enrollment_id', enrollment_id).execute()
         documents = response.data
         if not documents:
             return jsonify({"error": "Nenhum documento encontrado para esta matrícula"}), 404
         
-        # 3. PREPARAR DOCUMENTOS PARA A IA
-        # --------------------------------
-        # Vamos enviar múltiplos documentos para o Gemini para um contexto mais rico
-        # Ele é inteligente o suficiente para juntar as informações.
+        # PREPARAR REQUISIÇÃO PARA A IA (EXEMPLOS + PROMPT + DOCUMENTOS DO USUÁRIO)
         parts = []
-        prompt_files = [] # Para informar à IA quais arquivos estamos enviando
+        # Adiciona os exemplos visuais carregados no início
+        if PROMPT_EXAMPLE_PARTS:
+            parts.extend(PROMPT_EXAMPLE_PARTS)
+        
+        # Adiciona o prompt textual principal
+        parts.append(PROMPT_GEMINI)
 
+        # Adiciona os documentos do usuário
+        doc_count = 0
         for doc in documents:
-            # Priorizamos documentos chave como RG, CPF, etc.
             doc_type = doc.get('document_type')
-            if doc_type in ['rg_frente', 'rg_verso', 'cpf_doc', 'comprovante_residencia']:
+            # Você pode ajustar os tipos de documentos que deseja processar
+            if doc_type in ['rg_frente', 'rg_verso', 'cpf_doc', 'comprovante_residencia', 'historico_escolar', 'certidao_nascimento_casamento', 'declaracao_escolaridade']:
                 storage_path = doc['storage_path']
-                print(f"Processando e baixando: {storage_path}")
+                print(f"Processando e baixando documento do usuário: {storage_path}")
                 
                 file_content = supabase.storage.from_('documents').download(storage_path)
                 
-                # O Gemini aceita PDFs e imagens diretamente!
-                # Precisamos apenas informar o tipo do arquivo (mimetype).
                 mimetype = 'application/pdf' if storage_path.lower().endswith('.pdf') else 'image/jpeg'
                 
                 parts.append({"mime_type": mimetype, "data": file_content})
-                prompt_files.append(f"- {doc.get('file_name')} (tipo: {doc_type})")
+                doc_count += 1
+        
+        if doc_count == 0:
+            return jsonify({"error": "Nenhum documento relevante encontrado para processar nesta matrícula"}), 404
 
-        if not parts:
-            return jsonify({"error": "Nenhum documento relevante (RG, CPF, etc.) encontrado para processar"}), 404
-
-        # 4. CRIAR O PROMPT E CHAMAR A IA
-        # --------------------------------
-        # O prompt é a "pergunta" que fazemos para a IA.
-        prompt = f"""
-Analise cuidadosamente TODOS os documentos enviados (RG, CPF, comprovante de residência, histórico escolar, certidão, etc).
-
-Sua tarefa é extrair o máximo de informações possíveis para matrícula escolar, buscando cada campo em TODOS os documentos. Se não encontrar algum campo, retorne null para ele.
-
-**Retorne o resultado em JSON, exatamente com as chaves abaixo. Não adicione texto extra, apenas o JSON.**
-
-- **Dados pessoais:**
-  - nome_completo
-  - nome_social
-  - nome_afetivo
-  - sexo (apenas 'Masculino' ou 'Feminino')
-  - rg
-  - rg_digito
-  - rg_uf
-  - rg_data_emissao (formato YYYY-MM-DD)
-  - cpf
-  - raca_cor
-  - data_nascimento (formato YYYY-MM-DD)
-  - idade
-  - nome_mae
-  - nome_pai
-  - possui_internet (true/false)
-  - possui_device (true/false)
-  - telefone
-  - email
-  - is_gemeo (true/false)
-  - nome_gemeo
-  - trabalha (true/false)
-  - profissao
-  - empresa
-  - is_pcd (true/false)
-  - deficiencia
-
-- **Endereço:**
-  - cep
-  - logradouro
-  - numero
-  - complemento
-  - bairro
-  - nome_cidade
-  - uf_cidade
-  - nacionalidade
-  - pais_origem
-  - nascimento_uf
-  - nascimento_cidade
-
-- **Escolaridade:**
-  - ultima_serie_concluida
-  - ra
-  - tem_progressao_parcial (true/false)
-  - dependencias (lista de disciplinas em dependência, se houver)
-  - nome_escola
-  - tipo_escola
-  - nivel_ensino
-  - estudou_no_ceeja (true/false)
-  - eliminou_disciplina (true/false)
-  - eliminou_disciplinas (lista de disciplinas eliminadas, se houver)
-  - itinerario_formativo
-  - optou_ensino_religioso (true/false)
-  - optou_educacao_fisica (true/false)
-  - aceitou_termos (true/false)
-  - data_aceite (formato YYYY-MM-DD)
-
-**Exemplo de resposta esperada:**
-{{
-  "personal_data": {{
-    "nome_completo": "Maria da Silva",
-    "sexo": "Feminino",
-    "rg": "12.345.678-9",
-    "rg_digito": "9",
-    "rg_uf": "SP",
-    "rg_data_emissao": "2015-06-10",
-    "cpf": "123.456.789-00",
-    "raca_cor": "Branca",
-    "data_nascimento": "2000-01-15",
-    "idade": 24,
-    "nome_mae": "Joana da Silva",
-    "nome_pai": "José da Silva",
-    "possui_internet": true,
-    "possui_device": true,
-    "telefone": "11999999999",
-    "email": "maria@email.com",
-    "is_gemeo": false,
-    "nome_gemeo": null,
-    "trabalha": false,
-    "profissao": null,
-    "empresa": null,
-    "is_pcd": false,
-    "deficiencia": null
-  }},
-  "address_data": {{
-    "cep": "12345-678",
-    "logradouro": "Rua das Flores",
-    "numero": "123",
-    "complemento": "Apto 45",
-    "bairro": "Centro",
-    "nome_cidade": "São Paulo",
-    "uf_cidade": "SP",
-    "nacionalidade": "Brasileira",
-    "pais_origem": null,
-    "nascimento_uf": "SP",
-    "nascimento_cidade": "São Paulo"
-  }},
-  "schooling_data": {{
-    "ultima_serie_concluida": "3ª Série do Ensino Médio",
-    "ra": "123456789",
-    "tem_progressao_parcial": false,
-    "dependencias": [],
-    "nome_escola": "Escola Estadual ABC",
-    "tipo_escola": "Pública",
-    "nivel_ensino": "Ensino Médio",
-    "estudou_no_ceeja": false,
-    "eliminou_disciplina": false,
-    "eliminou_disciplinas": [],
-    "itinerario_formativo": null,
-    "optou_ensino_religioso": false,
-    "optou_educacao_fisica": true,
-    "aceitou_termos": true,
-    "data_aceite": "2024-02-01"
-  }}
-}}
-
-**IMPORTANTE:**  
-- Sempre busque cada campo em todos os documentos, mesmo que estejam em arquivos diferentes.
-- Se não encontrar algum campo, retorne null para ele.
-- Use sempre o formato de data YYYY-MM-DD.
-- Para sexo, retorne apenas 'Masculino' ou 'Feminino'.
-"""
-        parts.insert(0, prompt)
-
-        print("Enviando dados para o Gemini...")
+        # CHAMAR A IA
+        print(f"Enviando {len(PROMPT_EXAMPLE_PARTS)} partes de exemplo e {doc_count} documentos do usuário para o Gemini...")
         response_gemini = model.generate_content(parts)
         
         # Limpa a resposta para garantir que seja um JSON válido
@@ -226,28 +237,33 @@ Sua tarefa é extrair o máximo de informações possíveis para matrícula esco
         print(json.dumps(extracted_data, indent=2))
         print("------------------------------------------")
 
-        # === CHAMANDO A NOVA FUNÇÃO DE PADRONIZAÇÃO ===
+        # PADRONIZAR OS DADOS
         standardized_data = standardize_extracted_data(extracted_data)
 
         print("--- JSON PADRONIZADO PARA SALVAR ---")
         print(json.dumps(standardized_data, indent=2))
         print("------------------------------------------")
         
-        # 5. SALVAR OS DADOS EXTRAÍDOS NO SUPABASE
-        # --------------------------------
+        # SALVAR OS DADOS EXTRAÍDOS NO SUPABASE
         print("Salvando dados extraídos na tabela 'enrollments'...")
         supabase.table('enrollments').update({
             'extracted_personal_data': standardized_data.get('personal_data'),
             'extracted_address_data': standardized_data.get('address_data'),
             'extracted_schooling_data': standardized_data.get('schooling_data'),
-            'status': 'aguardando_revisao_aluno' # Atualiza o status da matrícula
+            'status': 'aguardando_revisao_aluno'
         }).eq('id', enrollment_id).execute()
 
         return jsonify({"status": "success", "message": "Dados extraídos e salvos com sucesso."}), 200
 
+    except json.JSONDecodeError as e:
+        print(f"ERRO DE DECODIFICAÇÃO JSON: {e}")
+        print("Resposta recebida da IA que causou o erro:")
+        if 'response_gemini' in locals():
+            print(response_gemini.text)
+        supabase.table('enrollments').update({'status': 'erro_ia'}).eq('id', enrollment_id).execute()
+        return jsonify({"error": "A resposta da IA não estava em formato JSON válido.", "details": str(e)}), 500
     except Exception as e:
         print(f"ERRO GERAL NO FLUXO DE IA: {e}")
-        # Opcional: Atualizar o status da matrícula para 'erro_ia'
         supabase.table('enrollments').update({'status': 'erro_ia'}).eq('id', enrollment_id).execute()
         return jsonify({"error": str(e)}), 500
 

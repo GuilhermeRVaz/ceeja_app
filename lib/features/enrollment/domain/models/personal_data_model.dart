@@ -260,15 +260,31 @@ class PersonalDataModel {
       if (value is String) return value.toLowerCase() == 'true' || value == '1';
       return false;
     }
+    // RG: separar dígito se vier junto
+    String? rg = extracted['rg'];
+    String? rgDigito = extracted['rg_digito'];
+    if (rg != null && rg.contains('-') && (rgDigito == null || rgDigito.isEmpty)) {
+      final parts = rg.split('-');
+      rg = parts[0];
+      rgDigito = parts.length > 1 ? parts[1] : null;
+    }
+    // Nacionalidade: deduzir se nascimento_uf e nascimento_cidade presentes
+    String? nacionalidade = extracted['nacionalidade'];
+    if ((nacionalidade == null || nacionalidade.isEmpty) &&
+        extracted['nascimento_uf'] != null &&
+        extracted['nascimento_cidade'] != null &&
+        (extracted['pais_origem'] == null || extracted['pais_origem'].toString().isEmpty)) {
+      nacionalidade = 'Brasileira';
+    }
     return copyWith(
       nomeCompleto: extracted['nome_completo'],
       temNomeSocial: parseBool(extracted['tem_nome_social']),
       nomeSocial: extracted['nome_social'],
       temNomeAfetivo: parseBool(extracted['tem_nome_afetivo']),
-      nomeAfetivo: extracted['nome_afetivo'],
+      nomeAfetivo: extracted['af_nome_afetivo'],
       sexo: extracted['sexo'],
-      rg: extracted['rg'],
-      rgDigito: extracted['rg_digito'],
+      rg: rg,
+      rgDigito: rgDigito,
       rgUf: extracted['rg_uf'],
       rgDataEmissao: parseDate(extracted['rg_data_emissao']),
       cpf: extracted['cpf'],
@@ -288,7 +304,7 @@ class PersonalDataModel {
       empresa: extracted['empresa'],
       isPCD: parseBool(extracted['is_pcd']),
       deficiencia: extracted['deficiencia'],
-      nacionalidade: extracted['nacionalidade'],
+      nacionalidade: nacionalidade,
       nascimentoUf: extracted['nascimento_uf'],
       nascimentoCidade: extracted['nascimento_cidade'],
       paisOrigem: extracted['pais_origem'],
