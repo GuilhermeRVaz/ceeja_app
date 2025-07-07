@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 
 def parse_date(value):
     if not value:
@@ -146,4 +147,22 @@ def standardize_extracted_data(data: dict) -> dict:
         valor = standard_data["address_data"].get(campo)
         if valor:
             standard_data["personal_data"][campo] = valor
+    # --- PÓS-PROCESSAMENTO: tentar extrair o CEP do logradouro ou outros campos se cep vier nulo ---
+    def extrair_cep(texto):
+        if not texto:
+            return None
+        # Padrões comuns de CEP no Brasil
+        match = re.search(r'\b\d{5}-?\d{3}\b', texto)
+        if match:
+            return match.group().replace('-', '')
+        match = re.search(r'\b\d{2}\.\d{3}-\d{3}\b', texto)
+        if match:
+            return match.group().replace('.', '').replace('-', '')
+        return None
+    if not standard_data["address_data"].get("cep"):
+        for campo in ["logradouro", "complemento", "bairro"]:
+            cep_extraido = extrair_cep(standard_data["address_data"].get(campo))
+            if cep_extraido:
+                standard_data["address_data"]["cep"] = cep_extraido
+                break
     return standard_data 

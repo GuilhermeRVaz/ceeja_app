@@ -144,23 +144,65 @@ class SchoolingModel {
       if (value is String) return value.toLowerCase() == 'true' || value == '1';
       return false;
     }
-    // Marcar Ensino Médio
+    // Mapear corretamente ultima_serie_concluida para o dropdown
     String? ultimaSerieConcluida = extracted['ultima_serie_concluida'];
     String? nivelEnsino = extracted['nivel_ensino'];
-    if (ultimaSerieConcluida != null && ultimaSerieConcluida.toLowerCase().contains('médio')) {
-      nivelEnsino = 'Ensino Médio';
+    // Mapeamento para dropdowns do app
+    final seriesFundamental = [
+      '4ª Série Ensino Fundamental',
+      '5ª Série Ensino Fundamental',
+      '6ª Série Ensino Fundamental',
+      '7ª Série Ensino Fundamental',
+      '8ª Série Ensino Fundamental',
+    ];
+    final seriesMedio = [
+      '1ª Série do Ensino Médio',
+      '2ª Série do Ensino Médio',
+      '3ª Série do Ensino Médio',
+    ];
+    // Tenta mapear texto livre para o valor do dropdown
+    String? mapSerie(String? valor) {
+      if (valor == null) return null;
+      final v = valor.toLowerCase();
+      for (final s in seriesFundamental + seriesMedio) {
+        if (v.contains(s.toLowerCase().replaceAll('ª', '').replaceAll('º', ''))) {
+          return s;
+        }
+        // Tenta mapear "3 série" para "3ª Série do Ensino Médio"
+        if (s.toLowerCase().contains('ensino médio') && v.contains('3') && v.contains('médio')) return '3ª Série do Ensino Médio';
+        if (s.toLowerCase().contains('ensino médio') && v.contains('2') && v.contains('médio')) return '2ª Série do Ensino Médio';
+        if (s.toLowerCase().contains('ensino médio') && v.contains('1') && v.contains('médio')) return '1ª Série do Ensino Médio';
+      }
+      return valor;
     }
-    // Preencher cidade/estado da escola anterior se disponíveis
+    String? serieDropdown = mapSerie(ultimaSerieConcluida);
+    // Concatenar nome da escola, cidade e estado
     String? nomeEscola = extracted['nome_escola'];
     String? cidadeEscola = extracted['cidade_escola'] ?? extracted['nome_cidade'];
     String? ufEscola = extracted['uf_escola'] ?? extracted['uf_cidade'];
+    if (nomeEscola != null && (cidadeEscola != null || ufEscola != null)) {
+      nomeEscola = nomeEscola +
+        (cidadeEscola != null ? ', ' + cidadeEscola : '') +
+        (ufEscola != null ? ' - ' + ufEscola : '');
+    }
+    // Garantir tipoEscola e nivelEnsino
+    String? tipoEscola = extracted['tipo_escola'];
+    if (tipoEscola != null) {
+      if (tipoEscola.toLowerCase().contains('pública')) tipoEscola = 'Pública';
+      if (tipoEscola.toLowerCase().contains('privada')) tipoEscola = 'Privada';
+    }
+    if (serieDropdown != null && seriesMedio.contains(serieDropdown)) {
+      nivelEnsino = 'Ensino Médio';
+    } else if (serieDropdown != null && seriesFundamental.contains(serieDropdown)) {
+      nivelEnsino = 'Ensino Fundamental';
+    }
     return copyWith(
       userId: extracted['user_id'],
       nivelEnsino: nivelEnsino,
       itinerarioFormativo: extracted['itinerario_formativo'],
-      ultimaSerieConcluida: ultimaSerieConcluida,
+      ultimaSerieConcluida: serieDropdown,
       ra: extracted['ra'],
-      tipoEscola: extracted['tipo_escola'],
+      tipoEscola: tipoEscola,
       nomeEscola: nomeEscola,
       estudouNoCeeja: parseBool(extracted['estudou_no_ceeja']),
       temProgressaoParcial: parseBool(extracted['tem_progressao_parcial']),
@@ -172,8 +214,6 @@ class SchoolingModel {
       optouEducacaoFisica: parseBool(extracted['optou_educacao_fisica']),
       aceitouTermos: parseBool(extracted['aceitou_termos']),
       dataAceite: parseDate(extracted['data_aceite']),
-      // Adicionais para cidade/estado da escola
-      // cidadeEscola e ufEscola não existem no modelo padrão, mas podem ser adicionados se necessário
     );
   }
 }

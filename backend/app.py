@@ -75,14 +75,17 @@ RG (Carteira de Identidade):
 Veja a imagem de exemplo enviada (RG com anotações).
 O número do RG está no topo direito, seguido do dígito.
 A data de expedição/emissão está no canto superior direito.
-O estado de expedição (UF) está no topo, próximo ao título “ESTADO DE SÃO PAULO”.
-O nome completo está abaixo do título “NOME”.
+O estado de expedição (UF) está no topo, próximo ao título "ESTADO DE SÃO PAULO".
+O nome completo está abaixo do título "NOME".
 A filiação (nomes da mãe e do pai) está logo abaixo do nome.
 O CPF pode aparecer na parte inferior do RG.
 A data de nascimento está destacada ao lado do local de nascimento.
 Comprovante de Residência:
 Veja a imagem de exemplo enviada (conta de energia com anotações).
-O endereço completo, CEP (CEP é  composto de 8 dígitos podem ser xxxxx-xxx ou xxxxx-xxx ou xx.xxx) e cidade estão no topo, geralmente à esquerda.
+O endereço completo, CEP (CEP é composto de 8 dígitos, pode aparecer como xxxxx-xxx, xxxxxxxx, ou xx.xxx-xxx) e cidade estão no topo, geralmente à esquerda.
+**O CEP é fundamental: sempre procure e extraia o CEP, mesmo que esteja em formato diferente ou junto ao endereço.**
+**Exemplos de CEP válidos: 17012-345, 17012345, 17.012-345.**
+**Ignore códigos de barras, números de conta, ou outros números longos que não estejam no contexto do endereço.**
 Ignore o nome do titular do comprovante.
 Certidão de Nascimento/Casamento:
 Veja a imagem de exemplo enviada (certidão de casamento com anotações).
@@ -100,6 +103,7 @@ RG: número, dígito, data de emissão/expedição, UF de expedição, nome comp
 CPF: número, nome completo.
 Certidão de nascimento/casamento: nome completo, data de nascimento, local de nascimento (cidade, estado, país), nomes completos da mãe e pai, data de expedição da certidão, local de emissão (cidade, estado), subdistrito, número da folha, número do livro, número do registro.
 Comprovante de residência: cep, logradouro completo, número, complemento, bairro, cidade, estado. Ignore o nome do titular.
+**Dê prioridade máxima para encontrar o CEP. O CEP é composto de 8 dígitos, pode estar em diferentes formatos e geralmente está próximo ao endereço.**
 Declaração de escolaridade/matrícula/transferência: última série concluída ou série de direito à matrícula, promoção parcial, dependências.
 Atestado de eliminação: nível de ensino, disciplinas eliminadas.
 Histórico escolar: RA do aluno, última série concluída, dependências, disciplinas cursadas e notas.
@@ -142,7 +146,7 @@ Histórico escolar: RA do aluno, última série concluída, dependências, disci
         "deficiencia": "..."
     }},
     "address_data": {{
-        "cep": "...",
+        "cep": "...",  # Dê prioridade máxima para encontrar o CEP. O CEP é composto de 8 dígitos, pode estar em diferentes formatos.
         "logradouro": "...",
         "numero": "...",
         "complemento": "...",

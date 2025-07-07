@@ -276,6 +276,11 @@ class PersonalDataModel {
         (extracted['pais_origem'] == null || extracted['pais_origem'].toString().isEmpty)) {
       nacionalidade = 'Brasileira';
     }
+    // Padronizar nacionalidade para o dropdown
+    if (nacionalidade != null) {
+      if (nacionalidade.toLowerCase() == 'brasileira') nacionalidade = 'Brasileira';
+      if (nacionalidade.toLowerCase() == 'estrangeira') nacionalidade = 'Estrangeira';
+    }
     return copyWith(
       nomeCompleto: extracted['nome_completo'],
       temNomeSocial: parseBool(extracted['tem_nome_social']),
