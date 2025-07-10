@@ -28,7 +28,7 @@ supabase: Client = create_client(url, key)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 # Usamos um modelo com capacidade de visão ('pro-vision' ou 'flash' para mais rápido)
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 # 2. CARREGAMENTO DOS EXEMPLOS VISUAIS (OTIMIZADO)
 # -----------------------------------------------------------------
@@ -92,8 +92,10 @@ Veja a imagem de exemplo enviada (certidão de casamento com anotações).
 O nome completo, data de nascimento, local de nascimento, nomes dos pais, data de expedição da certidão, local de emissão, subdistrito, número da folha, número do livro e número do registro estão destacados na imagem.
 Histórico Escolar e Declaração de Escolaridade:
 Veja as imagens de exemplo enviadas (histórico escolar frente e verso).
-Procure pelo RA do aluno (Registro do Aluno), geralmente no topo ou em campos destacados.
-Identifique a última série concluída, dependências (promoção parcial) e todas as disciplinas cursadas.
+Nivel de ensino: será encontrado no topo do histórico escolar. por exemplo - "Histórico Escolar Ensino Fundamental" ou "Histórico Escolar Ensino Médio"
+Procure pelo RA do aluno (Registro do Aluno), geralmente no topo ou em campos destacados. Somente quando encontrar no cabeçalho que é do Estado de São Paulo.
+Identifique a última série concluída: na frente do histórico escolar, na parte superior das colunas onde se encontram as menções , notas e ano de curso da série. 	
+dependências (promoção parcial) e todas as disciplinas cursadas:. Essa informação será encontrada no histórico escolar geralmente em observações. 	
 Outro RG (modelo alternativo):
 Veja a imagem de exemplo enviada (RG verde).
 Os campos seguem o mesmo padrão, mas podem estar em posições diferentes.
@@ -162,8 +164,10 @@ Histórico escolar: RA do aluno, última série concluída, dependências, disci
         "ultima_serie_concluida": "...",
         "ra": "...",
         "tem_progressao_parcial": true/false,
-        "dependencias": ["Disciplina 1", "Disciplina 2"],
+        "dependencias": ["Disciplina 1", "série tal", "Disciplina 2" "Série tal"],
         "nome_escola": "...",
+        "cidade_escola": "...",
+        "uf_escola": "...",
         "tipo_escola": "Pública ou Privada",
         "nivel_ensino": "...",
         "estudou_no_ceeja": true/false,
