@@ -50,10 +50,11 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
     'Quilombola',
   ];
 
+  bool _alreadyListened = false;
+
   @override
   void initState() {
     super.initState();
-    // Preenche os controllers com os dados iniciais do provider, se existirem.
     final initialData = ref.read(enrollmentProvider).personalData;
     _updateControllers(initialData, forceUpdate: true);
   }
@@ -205,19 +206,15 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
 
   @override
   Widget build(BuildContext context) {
-    // MUDANÇA: Usa ref.watch para ouvir as mudanças no estado do provider.
-    // Isso garante que, se os dados forem pré-preenchidos pela IA, a UI será atualizada.
-    ref.listen<EnrollmentState>(enrollmentProvider, (previous, next) {
-      // Se o estado dos dados pessoais mudou, atualiza os controllers,
-      // mas apenas se a mudança não foi originada pela própria digitação do usuário.
-      // A verificação `previous?.personalData != next.personalData` já ajuda,
-      // mas a lógica dentro de `_updateControllers` com `forceUpdate: false`
-      // garante que o controller só seja atualizado se o valor realmente mudou.
-      if (previous?.personalData != next.personalData) {
-        _updateControllers(next.personalData, forceUpdate: false);
-      }
-    });
-
+    // Adiciona o listener apenas uma vez
+    if (!_alreadyListened) {
+      ref.listen<EnrollmentState>(enrollmentProvider, (previous, next) {
+        if (previous?.personalData != next.personalData) {
+          _updateControllers(next.personalData, forceUpdate: true);
+        }
+      });
+      _alreadyListened = true;
+    }
     // MUDANÇA: Acessa os dados e o notifier de forma mais limpa.
     final personalData = ref.watch(enrollmentProvider).personalData;
     final notifier = ref.read(enrollmentProvider.notifier);

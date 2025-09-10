@@ -406,12 +406,93 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
         schoolingData: state.schoolingData,
       );
 
+      // 1. Criar um novo estudante e obter seu ID
+      final studentId = await _repository.createStudent();
+      print('DEBUG: studentId criado: $studentId');
+
+      // 2. Atualizar a matrícula com o ID do estudante
+      await _repository.updateEnrollment(
+        enrollmentId: enrollmentId,
+        personalData: state.personalData,
+        addressData: state.addressData,
+        schoolingData: state.schoolingData,
+      );
+      print('DEBUG: Matrícula atualizada com dados confirmados e studentId.');
+
+      // 3. Salvar os dados confirmados nas tabelas normalizadas
+      print('DEBUG: Salvando PersonalData: ${state.personalData.toJson()}');
+      await _repository.savePersonalData(state.personalData, studentId);
+
+      print('DEBUG: Salvando AddressData: ${state.addressData.toJson()}');
+      await _repository.saveAddressData(state.addressData, studentId);
+
+      print('DEBUG: Salvando SchoolingData: ${state.schoolingData.toJson()}');
+      await _repository.saveSchoolingData(state.schoolingData, studentId);
+
       // Limpa o estado para uma próxima matrícula
       state = const EnrollmentState();
       print("Matrícula finalizada e enviada com sucesso!");
     } catch (e) {
+      print('ERRO no submitEnrollment: $e');
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
       rethrow;
+    }
+  }
+
+  // === NOVO MÉTODO: Buscar dados extraídos e popular o formulário ===
+  Future<void> fetchAndFillExtractedData() async {
+    final enrollmentId = state.enrollmentId;
+    if (enrollmentId == null) {
+      state = state.copyWith(errorMessage: "Matrícula não iniciada.");
+      return;
+    }
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final data = await _repository.fetchExtractedDataByEnrollmentId(
+        enrollmentId,
+      );
+      print('DEBUG: JSON recebido do Supabase:');
+      print(data);
+      if (data == null) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: "Dados extraídos não encontrados.",
+        );
+        return;
+      }
+      // Mapeia os dados extraídos para os models
+      final personalData =
+          data['extracted_personal_data'] != null
+              ? PersonalDataModel.fromJson(
+                Map<String, dynamic>.from(data['extracted_personal_data']),
+              ).copyWith(
+                nacionalidade: data['extracted_personal_data']['nacionalidade'],
+                paisOrigem: data['extracted_personal_data']['pais_origem'],
+                nascimentoUf: data['extracted_personal_data']['nascimento_uf'],
+                nascimentoCidade:
+                    data['extracted_personal_data']['nascimento_cidade'],
+              )
+              : const PersonalDataModel();
+      final addressData =
+          data['extracted_address_data'] != null
+              ? AddressModel.fromJson(
+                Map<String, dynamic>.from(data['extracted_address_data']),
+              )
+              : const AddressModel();
+      final schoolingData =
+          data['extracted_schooling_data'] != null
+              ? SchoolingModel.fromJson(
+                Map<String, dynamic>.from(data['extracted_schooling_data']),
+              )
+              : const SchoolingModel();
+      state = state.copyWith(
+        personalData: personalData,
+        addressData: addressData,
+        schoolingData: schoolingData,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 }

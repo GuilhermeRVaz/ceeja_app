@@ -66,9 +66,9 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
       '5ª Série Ensino Fundamental',
       '6ª Série Ensino Fundamental',
       '7ª Série Ensino Fundamental',
+      '8ª Série Ensino Fundamental',
     ];
     const seriesMedio = [
-      '8ª Série Ensino Fundamental',
       '1ª Série do Ensino Médio',
       '2ª Série do Ensino Médio',
       '3ª Série do Ensino Médio',

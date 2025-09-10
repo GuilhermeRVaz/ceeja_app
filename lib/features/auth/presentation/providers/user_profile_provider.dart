@@ -41,7 +41,6 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
   void _init() {
     _supabaseClient.auth.onAuthStateChange.listen((data) {
       final AuthChangeEvent event = data.event;
-      final Session? session = data.session;
 
       if (event == AuthChangeEvent.signedIn) {
         _fetchUserProfile();

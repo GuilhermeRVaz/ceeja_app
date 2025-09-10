@@ -1,5 +1,4 @@
 class AddressModel {
-  final String? userId;
   final String? cep;
   final String? logradouro;
   final String? numero;
@@ -13,7 +12,6 @@ class AddressModel {
   localizacaoDiferenciada; // 'Área de assentamento', 'Terra indígena', 'Área quilombola'
 
   const AddressModel({
-    this.userId,
     this.cep,
     this.logradouro,
     this.numero,
@@ -27,7 +25,6 @@ class AddressModel {
   });
 
   AddressModel copyWith({
-    String? userId,
     String? cep,
     String? logradouro,
     String? numero,
@@ -40,7 +37,6 @@ class AddressModel {
     String? localizacaoDiferenciada,
   }) {
     return AddressModel(
-      userId: userId ?? this.userId,
       cep: cep ?? this.cep,
       logradouro: logradouro ?? this.logradouro,
       numero: numero ?? this.numero,
@@ -58,7 +54,6 @@ class AddressModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'user_id': userId,
       'cep': cep,
       'logradouro': logradouro,
       'numero': numero,
@@ -73,8 +68,15 @@ class AddressModel {
   }
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {
+    bool parseBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is int) return value != 0;
+      if (value is String) return value.toLowerCase() == 'true' || value == '1';
+      return false;
+    }
+
     return AddressModel(
-      userId: json['user_id'],
       cep: json['cep'],
       logradouro: json['logradouro'],
       numero: json['numero'],
@@ -83,7 +85,7 @@ class AddressModel {
       nomeCidade: json['nomeCidade'],
       ufCidade: json['ufCidade'],
       zona: json['zona'],
-      temLocalizacaoDiferenciada: json['temLocalizacaoDiferenciada'],
+      temLocalizacaoDiferenciada: parseBool(json['temLocalizacaoDiferenciada']),
       localizacaoDiferenciada: json['localizacaoDiferenciada'],
     );
   }

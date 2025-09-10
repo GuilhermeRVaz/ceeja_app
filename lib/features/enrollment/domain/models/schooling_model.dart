@@ -1,10 +1,9 @@
 class SchoolingModel {
-  final String? userId;
   // Nível de Ensino
   final String? nivelEnsino;
   final String? itinerarioFormativo;
   final String? ultimaSerieConcluida;
-  final String? ra; // Adicionado o campo RA
+  final String? ra;
   final String? tipoEscola;
   final String? nomeEscola;
 
@@ -18,7 +17,7 @@ class SchoolingModel {
   // Eliminações
   final bool? eliminouDisciplina;
   final String? eliminouDisciplinaNivel;
-  final List<String>? eliminouDisciplinas; // Alterado para Lista
+  final List<String>? eliminouDisciplinas;
 
   // Opcionais
   final bool? optouEnsinoReligioso;
@@ -29,11 +28,10 @@ class SchoolingModel {
   final DateTime? dataAceite;
 
   const SchoolingModel({
-    this.userId,
     this.nivelEnsino,
     this.itinerarioFormativo,
     this.ultimaSerieConcluida,
-    this.ra, // Adicionado o campo RA
+    this.ra,
     this.tipoEscola,
     this.nomeEscola,
     this.estudouNoCeeja,
@@ -49,11 +47,10 @@ class SchoolingModel {
   });
 
   SchoolingModel copyWith({
-    String? userId,
     String? nivelEnsino,
     String? itinerarioFormativo,
     String? ultimaSerieConcluida,
-    String? ra, // Adicionado o campo RA
+    String? ra,
     String? tipoEscola,
     String? nomeEscola,
     bool? estudouNoCeeja,
@@ -61,18 +58,17 @@ class SchoolingModel {
     Map<String, List<String>>? progressaoParcialDisciplinas,
     bool? eliminouDisciplina,
     String? eliminouDisciplinaNivel,
-    List<String>? eliminouDisciplinas, // Alterado para Lista
+    List<String>? eliminouDisciplinas,
     bool? optouEnsinoReligioso,
     bool? optouEducacaoFisica,
     bool? aceitouTermos,
     DateTime? dataAceite,
   }) {
     return SchoolingModel(
-      userId: userId ?? this.userId,
       nivelEnsino: nivelEnsino ?? this.nivelEnsino,
       itinerarioFormativo: itinerarioFormativo ?? this.itinerarioFormativo,
       ultimaSerieConcluida: ultimaSerieConcluida ?? this.ultimaSerieConcluida,
-      ra: ra ?? this.ra, // Adicionado o campo RA
+      ra: ra ?? this.ra,
       tipoEscola: tipoEscola ?? this.tipoEscola,
       nomeEscola: nomeEscola ?? this.nomeEscola,
       estudouNoCeeja: estudouNoCeeja ?? this.estudouNoCeeja,
@@ -92,11 +88,10 @@ class SchoolingModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'user_id': userId,
       'nivel_ensino': nivelEnsino,
       'itinerario_formativo': itinerarioFormativo,
       'ultima_serie_concluida': ultimaSerieConcluida,
-      'ra': ra, // Adicionado o campo RA
+      'ra': ra,
       'tipo_escola': tipoEscola,
       'nome_escola': nomeEscola,
       'estudou_no_ceeja': estudouNoCeeja,
@@ -114,11 +109,10 @@ class SchoolingModel {
 
   factory SchoolingModel.fromJson(Map<String, dynamic> json) {
     return SchoolingModel(
-      userId: json['user_id'],
       nivelEnsino: json['nivel_ensino'],
       itinerarioFormativo: json['itinerario_formativo'],
       ultimaSerieConcluida: json['ultima_serie_concluida'],
-      ra: json['ra'], // Adicionado o campo RA
+      ra: json['ra'],
       tipoEscola: json['tipo_escola'],
       nomeEscola: json['nome_escola'],
       estudouNoCeeja: json['estudou_no_ceeja'],

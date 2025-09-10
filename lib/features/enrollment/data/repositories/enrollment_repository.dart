@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/address_model.dart';
-import 'package:ceeja_app/features/enrollment/domain/models/documents_model.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/personal_data_model.dart';
 import 'package:ceeja_app/features/enrollment/domain/models/schooling_model.dart';
 
@@ -45,30 +44,32 @@ class EnrollmentRepository {
 
   // === MÉTODOS DE SALVAMENTO DE DADOS (Corrigidos para usar .upsert()) ===
 
-  Future<void> savePersonalData(PersonalDataModel data, String userId) async {
-    // Prepara os dados, garantindo que o user_id está presente.
-    final dataToSave = data.toJson()..['user_id'] = userId;
-    // Usa 'upsert' para criar ou atualizar a linha baseada na coluna 'user_id'.
+  Future<void> savePersonalData(
+    PersonalDataModel data,
+    String studentId,
+  ) async {
+    final dataToSave = data.toJson()..['student_id'] = studentId;
     await _client
         .from('personal_data')
-        .upsert(dataToSave, onConflict: 'user_id');
+        .upsert(dataToSave, onConflict: 'student_id');
   }
 
-  Future<void> saveAddressData(AddressModel data, String userId) async {
-    final dataToSave = data.toJson()..['user_id'] = userId;
-    await _client.from('addresses').upsert(dataToSave, onConflict: 'user_id');
+  Future<void> saveAddressData(AddressModel data, String studentId) async {
+    final dataToSave = data.toJson()..['student_id'] = studentId;
+    await _client
+        .from('addresses')
+        .upsert(dataToSave, onConflict: 'student_id');
   }
 
-  Future<void> saveSchoolingData(SchoolingModel data, String userId) async {
-    final dataToSave = data.toJson()..['user_id'] = userId;
-
-    // IMPORTANTE: Remove o campo 'ano_conclusao' se ele não existir na sua tabela.
-    // Se você já adicionou a coluna no Supabase, pode remover a linha abaixo.
-    dataToSave.remove('ano_conclusao');
+  Future<void> saveSchoolingData(SchoolingModel data, String studentId) async {
+    final dataToSave = data.toJson()..['student_id'] = studentId;
+    dataToSave.remove(
+      'ano_conclusao',
+    ); // Manter se 'ano_conclusao' não for uma coluna válida
 
     await _client
         .from('schooling_data')
-        .upsert(dataToSave, onConflict: 'user_id');
+        .upsert(dataToSave, onConflict: 'student_id');
   }
 
   // === NOVO MÉTODO: Inicia uma nova matrícula e retorna seu ID ===
@@ -115,5 +116,31 @@ class EnrollmentRepository {
       'storage_path': storagePath,
       'status': 'pendente',
     });
+  }
+
+  // === NOVO MÉTODO: Buscar matrícula por ID e retornar dados extraídos ===
+  Future<Map<String, dynamic>?> fetchExtractedDataByEnrollmentId(
+    String enrollmentId,
+  ) async {
+    final response =
+        await _client
+            .from('enrollments')
+            .select(
+              'extracted_personal_data, extracted_address_data, extracted_schooling_data',
+            )
+            .eq('id', enrollmentId)
+            .maybeSingle();
+    return response;
+  }
+
+  // NOVO MÉTODO: Criar um novo estudante e retornar seu ID
+  Future<String> createStudent() async {
+    final response =
+        await _client
+            .from('students')
+            .insert({}) // Insere uma linha vazia para gerar um ID
+            .select('id')
+            .single();
+    return response['id'];
   }
 }

@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ceeja_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:ceeja_app/features/enrollment/presentation/providers/enrollment_provider.dart';
 import 'package:ceeja_app/features/enrollment/presentation/widgets/documents_form.dart';
 import 'package:ceeja_app/features/enrollment/presentation/widgets/personal_data_form.dart';
@@ -82,36 +81,38 @@ class _EnrollmentStepperScreenState
                 type: StepperType.vertical,
                 currentStep: _currentStep,
                 onStepTapped: (step) => setState(() => _currentStep = step),
-                onStepContinue: () {
+                onStepContinue: () async {
                   final isLastStep = _currentStep == steps.length - 1;
 
                   if (_currentStep == 0) {
-                    // Lógica do botão "PRÓXIMO" no passo 1 (Documentos)
-                    // Chama a função para iniciar a extração de dados
-                    enrollmentNotifier.uploadAndExtractData();
+                    // Lógica do botão "PROCESSAR DOCUMENTOS" no passo 1
+                    await enrollmentNotifier.uploadAndExtractData();
+                    await enrollmentNotifier.fetchAndFillExtractedData();
+                    setState(() => _currentStep += 1);
+                    return;
                   }
 
                   if (isLastStep) {
                     // Lógica do botão "ENVIAR" no último passo
-                    enrollmentNotifier
-                        .submitEnrollment()
-                        .then((_) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Matrícula enviada com sucesso!"),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                          // Navegar para uma tela de sucesso
-                        })
-                        .catchError((error) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Erro ao enviar: $error"),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        });
+                    try {
+                      await enrollmentNotifier.submitEnrollment();
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Matrícula enviada com sucesso!"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      // Navegar para uma tela de sucesso
+                    } catch (error) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Erro ao enviar: $error"),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   } else {
                     setState(() => _currentStep += 1);
                   }
