@@ -19,6 +19,7 @@ class EnrollmentState {
   final bool isLoading;
   final String? errorMessage;
   final String? enrollmentId; // Novo campo
+  final String? requerMatriculaEm; // Novo campo para a refatoração
   const EnrollmentState({
     this.personalData = const PersonalDataModel(),
     this.addressData = const AddressModel(),
@@ -27,6 +28,7 @@ class EnrollmentState {
     this.isLoading = false,
     this.errorMessage,
     this.enrollmentId, // Novo campo
+    this.requerMatriculaEm, // Inicializar o novo campo
   });
   EnrollmentState copyWith({
     PersonalDataModel? personalData,
@@ -37,6 +39,7 @@ class EnrollmentState {
     String? errorMessage,
     bool clearError = false,
     String? enrollmentId, // Novo campo
+    String? requerMatriculaEm, // Novo campo para a refatoração
   }) {
     return EnrollmentState(
       personalData: personalData ?? this.personalData,
@@ -46,6 +49,9 @@ class EnrollmentState {
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
       enrollmentId: enrollmentId ?? this.enrollmentId, // Novo campo
+      requerMatriculaEm:
+          requerMatriculaEm ??
+          this.requerMatriculaEm, // Novo campo para a refatoração
     );
   }
 }
@@ -63,6 +69,7 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
       state = state.copyWith(addressData: data);
   void updateSchoolingData(SchoolingModel data) =>
       state = state.copyWith(schoolingData: data);
+
   void updateRgFrente({Uint8List? bytes, String? fileName}) =>
       state = state.copyWith(
         documentsData: state.documentsData.copyWith(
@@ -485,10 +492,20 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
                 Map<String, dynamic>.from(data['extracted_schooling_data']),
               )
               : const SchoolingModel();
+
+      print('DEBUG: SchoolingData após fromJson:');
+      print('  nivelEnsino: ${schoolingData.nivelEnsino}');
+      print('  ultimaSerieConcluida: ${schoolingData.ultimaSerieConcluida}');
+      print(
+        '  requerMatriculaEm: ${schoolingData.requerMatriculaEm}',
+      ); // Novo log
+
       state = state.copyWith(
         personalData: personalData,
         addressData: addressData,
         schoolingData: schoolingData,
+        requerMatriculaEm:
+            schoolingData.requerMatriculaEm, // Popular o novo campo
         isLoading: false,
       );
     } catch (e) {

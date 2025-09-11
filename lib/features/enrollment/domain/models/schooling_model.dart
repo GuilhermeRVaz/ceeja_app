@@ -1,6 +1,7 @@
 class SchoolingModel {
   // Nível de Ensino
   final String? nivelEnsino;
+  final String? requerMatriculaEm; // Novo campo
   final String? itinerarioFormativo;
   final String? ultimaSerieConcluida;
   final String? ra;
@@ -29,6 +30,7 @@ class SchoolingModel {
 
   const SchoolingModel({
     this.nivelEnsino,
+    this.requerMatriculaEm, // Novo campo
     this.itinerarioFormativo,
     this.ultimaSerieConcluida,
     this.ra,
@@ -48,6 +50,7 @@ class SchoolingModel {
 
   SchoolingModel copyWith({
     String? nivelEnsino,
+    String? requerMatriculaEm, // Novo campo
     String? itinerarioFormativo,
     String? ultimaSerieConcluida,
     String? ra,
@@ -66,6 +69,8 @@ class SchoolingModel {
   }) {
     return SchoolingModel(
       nivelEnsino: nivelEnsino ?? this.nivelEnsino,
+      requerMatriculaEm:
+          requerMatriculaEm ?? this.requerMatriculaEm, // Novo campo
       itinerarioFormativo: itinerarioFormativo ?? this.itinerarioFormativo,
       ultimaSerieConcluida: ultimaSerieConcluida ?? this.ultimaSerieConcluida,
       ra: ra ?? this.ra,
@@ -89,6 +94,7 @@ class SchoolingModel {
   Map<String, dynamic> toJson() {
     return {
       'nivel_ensino': nivelEnsino,
+      'requer_matricula_em': requerMatriculaEm, // Novo campo
       'itinerario_formativo': itinerarioFormativo,
       'ultima_serie_concluida': ultimaSerieConcluida,
       'ra': ra,
@@ -108,8 +114,22 @@ class SchoolingModel {
   }
 
   factory SchoolingModel.fromJson(Map<String, dynamic> json) {
+    String? nivelEnsinoRaw = json['nivel_ensino'];
+    String? nivelEnsinoFormatted;
+    if (nivelEnsinoRaw != null) {
+      if (nivelEnsinoRaw.toLowerCase().contains('fundamental')) {
+        nivelEnsinoFormatted = 'Ensino Fundamental';
+      } else if (nivelEnsinoRaw.toLowerCase().contains('médio') ||
+          nivelEnsinoRaw.toLowerCase().contains('medio')) {
+        nivelEnsinoFormatted = 'Ensino Médio';
+      } else {
+        nivelEnsinoFormatted = nivelEnsinoRaw; // Fallback para outros valores
+      }
+    }
+
     return SchoolingModel(
-      nivelEnsino: json['nivel_ensino'],
+      nivelEnsino: nivelEnsinoFormatted,
+      requerMatriculaEm: json['requer_matricula_em'], // Novo campo
       itinerarioFormativo: json['itinerario_formativo'],
       ultimaSerieConcluida: json['ultima_serie_concluida'],
       ra: json['ra'],

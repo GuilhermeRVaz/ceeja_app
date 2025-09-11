@@ -100,6 +100,7 @@ def standardize_extracted_data(data: dict) -> dict:
         "nascimento_cidade": ["nascimento_cidade", "cidade nascimento"]
     }
     schooling_map = {
+        "requer_matricula_em": ["requer_matricula_em", "requer matricula em", "nível de matrícula"], # Novo campo
         "ultima_serie_concluida": ["ultima serie", "ultima_serie_concluida"],
         "ra": ["ra", "registro do aluno"],
         "tem_progressao_parcial": ["tem_progressao_parcial", "progressao parcial"],
@@ -147,6 +148,42 @@ def standardize_extracted_data(data: dict) -> dict:
         else:
             val = parse_str(val)
         standard_data["schooling_data"][std_key] = val
+
+    # --- Implementar Regras de Negócio para 'requer_matricula_em' e 'ultima_serie_concluida' ---
+    ultima_serie_concluida_raw = standard_data["schooling_data"].get("ultima_serie_concluida")
+    tem_progressao_parcial = standard_data["schooling_data"].get("tem_progressao_parcial")
+
+    if ultima_serie_concluida_raw:
+        # Normaliza a string para comparação (ex: remove acentos, padroniza "ª")
+        ultima_serie_normalizada = ultima_serie_concluida_raw.lower().replace('ª', '').replace('º', '').strip()
+
+        # Regra Padrão e Regra de Borda (DP na 8ª Série)
+        if "7 serie ensino fundamental" in ultima_serie_normalizada:
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "7ª Série do Ensino Fundamental"
+        elif "8 serie ensino fundamental" in ultima_serie_normalizada and tem_progressao_parcial:
+            # Se a 8ª série é mencionada E há progressão parcial, assume-se que não foi concluída
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "7ª Série do Ensino Fundamental"
+        elif "ensino fundamental" in ultima_serie_normalizada:
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_concluida_raw # Mantém o valor original se não for 7ª ou 8ª com DP
+        elif "ensino medio" in ultima_serie_normalizada or "ensino médio" in ultima_serie_normalizada:
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Médio"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_concluida_raw
+        else:
+            # Fallback: Se não for possível inferir, use o valor extraído e tente inferir o nível
+            standard_data["schooling_data"]["requer_matricula_em"] = standard_data["schooling_data"].get("nivel_ensino") # Pode ser "Fundamental" ou "Médio"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_concluida_raw
+    else:
+        # Se ultima_serie_concluida não foi extraída, tenta usar nivel_ensino para requer_matricula_em
+        nivel_ensino_raw = standard_data["schooling_data"].get("nivel_ensino")
+        if nivel_ensino_raw:
+            if "fundamental" in nivel_ensino_raw.lower():
+                standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            elif "medio" in nivel_ensino_raw.lower() or "médio" in nivel_ensino_raw.lower():
+                standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Médio"
+
     # --- AJUSTE: mover nascimento_uf, nascimento_cidade e nacionalidade para personal_data se presentes em address_data ---
     for campo in ["nascimento_uf", "nascimento_cidade", "nacionalidade"]:
         valor = standard_data["address_data"].get(campo)

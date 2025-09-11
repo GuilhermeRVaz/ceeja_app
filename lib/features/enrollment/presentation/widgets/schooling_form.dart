@@ -112,33 +112,60 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
           FormSection(
             title: '4. Escolaridade',
             children: [
+              const Text(
+                'Requer Matrícula em:',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               RadioListTile<String>(
                 title: const Text('Ensino Fundamental'),
                 value: 'Ensino Fundamental',
-                groupValue: schoolingData.nivelEnsino,
-                onChanged:
-                    (value) => notifier.updateSchoolingData(
-                      schoolingData.copyWith(
-                        nivelEnsino: value,
-                        itinerarioFormativo: null,
-                        ultimaSerieConcluida: null,
-                      ),
+                groupValue: schoolingData.requerMatriculaEm,
+                onChanged: (value) {
+                  notifier.updateSchoolingData(
+                    schoolingData.copyWith(
+                      requerMatriculaEm: value,
+                      ultimaSerieConcluida: null, // Limpa ao mudar o nível
                     ),
+                  );
+                },
               ),
               RadioListTile<String>(
                 title: const Text('Ensino Médio'),
                 value: 'Ensino Médio',
-                groupValue: schoolingData.nivelEnsino,
-                onChanged:
-                    (value) => notifier.updateSchoolingData(
-                      schoolingData.copyWith(
-                        nivelEnsino: value,
-                        itinerarioFormativo: null,
-                        ultimaSerieConcluida: null,
-                      ),
+                groupValue: schoolingData.requerMatriculaEm,
+                onChanged: (value) {
+                  notifier.updateSchoolingData(
+                    schoolingData.copyWith(
+                      requerMatriculaEm: value,
+                      ultimaSerieConcluida: null, // Limpa ao mudar o nível
                     ),
+                  );
+                },
               ),
-              if (schoolingData.nivelEnsino == 'Ensino Médio') ...[
+              if (schoolingData.requerMatriculaEm != null) ...[
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: schoolingData.ultimaSerieConcluida,
+                  decoration: const InputDecoration(
+                    labelText: 'Última série concluída',
+                    border: OutlineInputBorder(),
+                  ),
+                  items:
+                      (schoolingData.requerMatriculaEm == 'Ensino Fundamental'
+                              ? seriesFundamental
+                              : seriesMedio)
+                          .map(
+                            (e) => DropdownMenuItem(value: e, child: Text(e)),
+                          )
+                          .toList(),
+                  onChanged: (value) {
+                    notifier.updateSchoolingData(
+                      schoolingData.copyWith(ultimaSerieConcluida: value),
+                    );
+                  },
+                ),
+              ],
+              if (schoolingData.requerMatriculaEm == 'Ensino Médio') ...[
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: schoolingData.itinerarioFormativo,
@@ -152,32 +179,11 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
                             (e) => DropdownMenuItem(value: e, child: Text(e)),
                           )
                           .toList(),
-                  onChanged:
-                      (value) => notifier.updateSchoolingData(
-                        schoolingData.copyWith(itinerarioFormativo: value),
-                      ),
-                ),
-              ],
-              if (schoolingData.nivelEnsino != null) ...[
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: schoolingData.ultimaSerieConcluida,
-                  decoration: const InputDecoration(
-                    labelText: 'Última série concluída',
-                    border: OutlineInputBorder(),
-                  ),
-                  items:
-                      (schoolingData.nivelEnsino == 'Ensino Fundamental'
-                              ? seriesFundamental
-                              : seriesMedio)
-                          .map(
-                            (e) => DropdownMenuItem(value: e, child: Text(e)),
-                          )
-                          .toList(),
-                  onChanged:
-                      (value) => notifier.updateSchoolingData(
-                        schoolingData.copyWith(ultimaSerieConcluida: value),
-                      ),
+                  onChanged: (value) {
+                    notifier.updateSchoolingData(
+                      schoolingData.copyWith(itinerarioFormativo: value),
+                    );
+                  },
                 ),
               ],
             ],
@@ -254,7 +260,10 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
               if (schoolingData.temProgressaoParcial == true)
                 _buildDisciplinePanel(
                   context: context,
-                  seriesOptions: seriesMedio,
+                  seriesOptions:
+                      schoolingData.requerMatriculaEm == 'Ensino Fundamental'
+                          ? seriesFundamental
+                          : seriesMedio,
                   disciplineOptions: disciplineOptionsMap,
                   selectedDisciplines:
                       schoolingData.progressaoParcialDisciplinas ?? {},
