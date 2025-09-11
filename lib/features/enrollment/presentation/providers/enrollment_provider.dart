@@ -480,12 +480,41 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
                     data['extracted_personal_data']['nascimento_cidade'],
               )
               : const PersonalDataModel();
-      final addressData =
+      var addressData =
           data['extracted_address_data'] != null
               ? AddressModel.fromJson(
                 Map<String, dynamic>.from(data['extracted_address_data']),
               )
               : const AddressModel();
+
+      // SUA LÓGICA ENTRA AQUI!
+      // Se a IA retornou um CEP, mas não a cidade, nós assumimos o controle.
+      if (addressData.cep != null &&
+          addressData.cep!.isNotEmpty &&
+          (addressData.nomeCidade == null ||
+              addressData.nomeCidade!.isEmpty ||
+              addressData.ufCidade == null ||
+              addressData.ufCidade!.isEmpty)) {
+        print(
+          "IA retornou CEP, mas não a cidade/UF. Buscando via CepService...",
+        );
+        try {
+          final addressFromCep = await _cepService.fetchAddressByCep(
+            addressData.cep!,
+          );
+          if (addressFromCep != null) {
+            // Atualiza o objeto com os dados do serviço de CEP
+            addressData = addressData.copyWith(
+              logradouro: addressFromCep.logradouro,
+              bairro: addressFromCep.bairro,
+              nomeCidade: addressFromCep.nomeCidade,
+              ufCidade: addressFromCep.ufCidade,
+            );
+          }
+        } catch (e) {
+          print("Erro ao buscar endereço pelo CEP da IA: $e");
+        }
+      }
       final schoolingData =
           data['extracted_schooling_data'] != null
               ? SchoolingModel.fromJson(

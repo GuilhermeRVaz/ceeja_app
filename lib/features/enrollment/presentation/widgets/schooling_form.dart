@@ -66,9 +66,9 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
       '5ª Série Ensino Fundamental',
       '6ª Série Ensino Fundamental',
       '7ª Série Ensino Fundamental',
-      '8ª Série Ensino Fundamental',
     ];
     const seriesMedio = [
+      '8ª Série Ensino Fundamental', // Permite transição correta do Fundamental para o Médio
       '1ª Série do Ensino Médio',
       '2ª Série do Ensino Médio',
       '3ª Série do Ensino Médio',
@@ -145,7 +145,13 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
               if (schoolingData.requerMatriculaEm != null) ...[
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: schoolingData.ultimaSerieConcluida,
+                  value:
+                      (schoolingData.requerMatriculaEm == 'Ensino Fundamental'
+                                  ? seriesFundamental
+                                  : seriesMedio)
+                              .contains(schoolingData.ultimaSerieConcluida)
+                          ? schoolingData.ultimaSerieConcluida
+                          : null,
                   decoration: const InputDecoration(
                     labelText: 'Última série concluída',
                     border: OutlineInputBorder(),
@@ -154,6 +160,7 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
                       (schoolingData.requerMatriculaEm == 'Ensino Fundamental'
                               ? seriesFundamental
                               : seriesMedio)
+                          .toSet()
                           .map(
                             (e) => DropdownMenuItem(value: e, child: Text(e)),
                           )

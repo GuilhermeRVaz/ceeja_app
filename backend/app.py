@@ -255,6 +255,7 @@ SERIES_MAP = {
     "6 serie": "6ª Série Ensino Fundamental",
     "7 serie": "7ª Série Ensino Fundamental",
     "8 serie": "8ª Série Ensino Fundamental",
+    "9 serie": "8ª Série Ensino Fundamental", # Mapeia 9ª série para 8ª Série Ensino Fundamental
     "1 ano": "1ª Série do Ensino Médio",
     "2 ano": "2ª Série do Ensino Médio",
     "3 ano": "3ª Série do Ensino Médio"
@@ -266,6 +267,7 @@ PROGRESSION_MAP = {
     "6ª Série Ensino Fundamental": {"requer_matricula_em": "Ensino Fundamental", "proxima_serie": "7ª Série Ensino Fundamental"},
     "7ª Série Ensino Fundamental": {"requer_matricula_em": "Ensino Fundamental", "proxima_serie": "8ª Série Ensino Fundamental"},
     "8ª Série Ensino Fundamental": {"requer_matricula_em": "Ensino Médio", "proxima_serie": "1ª Série do Ensino Médio"},
+    "9ª Série Ensino Fundamental": {"requer_matricula_em": "Ensino Médio", "proxima_serie": "1ª Série do Ensino Médio"}, # Adicionado para consistência
     "1ª Série do Ensino Médio": {"requer_matricula_em": "Ensino Médio", "proxima_serie": "2ª Série do Ensino Médio"},
     "2ª Série do Ensino Médio": {"requer_matricula_em": "Ensino Médio", "proxima_serie": "3ª Série do Ensino Médio"},
     "3ª Série do Ensino Médio": {"requer_matricula_em": "Ensino Médio", "proxima_serie": "Concluído"}, # Adicionado para completar o mapa
@@ -402,10 +404,31 @@ def standardize_and_normalize_data(raw_data: dict) -> dict:
             standard_data["schooling_data"].get("requer_matricula_em") == "Ensino Fundamental"):
             ultima_serie_concluida_raw = ultima_serie_concluida_raw.replace(" do ", " ").strip()
 
-        ultima_serie_normalizada = ultima_serie_concluida_raw.lower().replace('ª', '').replace('º', '').replace(' do ensino', '').strip()
+        # Normalização robusta para qualquer variação de "9ª Série Ensino Fundamental"
+        import unicodedata
+        def strip_accents(text):
+            return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
+
+        raw = ultima_serie_concluida_raw.strip()
+        raw_noacc = strip_accents(raw.lower().replace('º', '').replace('ª', ''))
+
+        # Se contiver "9 serie ensino fundamental" ou "9 serie do ensino fundamental" ou "9a serie ensino fundamental" etc
+        if (
+            "9 serie ensino fundamental" in raw_noacc or
+            "9 serie do ensino fundamental" in raw_noacc or
+            "9a serie ensino fundamental" in raw_noacc or
+            "9 ano ensino fundamental" in raw_noacc or
+            "9 ano do ensino fundamental" in raw_noacc or
+            "9a serie" in raw_noacc or
+            "9 serie" in raw_noacc
+        ):
+            ultima_serie_normalizada = "8 serie"
+        else:
+            ultima_serie_normalizada = raw_noacc.replace(' do ensino', '').strip()
 
         serie_concluida_padronizada = SERIES_MAP.get(ultima_serie_normalizada)
 
+        # Aplica a regra de DP da 8ª série (agora incluindo a 9ª série)
         if serie_concluida_padronizada == "8ª Série Ensino Fundamental" and tem_progressao_parcial:
             serie_concluida_padronizada = "7ª Série Ensino Fundamental"
             standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
