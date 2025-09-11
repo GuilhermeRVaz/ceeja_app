@@ -38,6 +38,27 @@ def parse_str(value):
         return None
     return str(value).strip()
 
+def convert_ano_to_serie(text: str) -> str:
+    if not text:
+        return text
+    text_lower = text.lower()
+    if "ano" in text_lower:
+        match = re.search(r'(\d+)\s*[ºª]?\s*ano', text_lower)
+        if match:
+            ano_num = int(match.group(1))
+            # Mapeamento fornecido pelo usuário:
+            # 1º ano = 1ª Série, 2º ano = 1ª Série, ..., 9º ano = 8ª Série (Ensino Fundamental para todos)
+            if ano_num == 1: return "1ª Série"
+            if ano_num == 2: return "1ª Série"
+            if ano_num == 3: return "2ª Série"
+            if ano_num == 4: return "3ª Série"
+            if ano_num == 5: return "4ª Série"
+            if ano_num == 6: return "5ª Série"
+            if ano_num == 7: return "6ª Série"
+            if ano_num == 8: return "7ª Série"
+            if ano_num == 9: return "8ª Série"
+    return text
+
 def standardize_extracted_data(data: dict) -> dict:
     # Mapeamento de seções em português para o padrão esperado
     section_map = {
@@ -154,35 +175,81 @@ def standardize_extracted_data(data: dict) -> dict:
     tem_progressao_parcial = standard_data["schooling_data"].get("tem_progressao_parcial")
 
     if ultima_serie_concluida_raw:
-        # Normaliza a string para comparação (ex: remove acentos, padroniza "ª")
-        ultima_serie_normalizada = ultima_serie_concluida_raw.lower().replace('ª', '').replace('º', '').strip()
+        # Primeiro, tenta converter "ano" para "série" usando a nova função
+        ultima_serie_convertida = convert_ano_to_serie(ultima_serie_concluida_raw)
+        
+        # Normaliza a string para comparação (remove acentos, padroniza "ª", "º")
+        import unicodedata
+        def strip_accents(text):
+            return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
 
-        # Regra Padrão e Regra de Borda (DP na 8ª Série)
-        if "7 serie ensino fundamental" in ultima_serie_normalizada:
+        ultima_serie_normalizada = strip_accents(ultima_serie_convertida.lower().replace('ª', '').replace('º', '')).strip()
+
+        # Lógica para definir 'requer_matricula_em' e 'ultima_serie_concluida'
+        # Regra de Borda (DP na 8ª Série / 9º Ano):
+        # Se a última série extraída for 8ª série/9º ano E houver progressão parcial,
+        # o aluno é considerado como tendo concluído a 7ª série do Fundamental.
+        if ("8 serie" in ultima_serie_normalizada or "9 ano" in ultima_serie_normalizada) and tem_progressao_parcial:
             standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
-            standard_data["schooling_data"]["ultima_serie_concluida"] = "7ª Série do Ensino Fundamental"
-        elif "8 serie ensino fundamental" in ultima_serie_normalizada and tem_progressao_parcial:
-            # Se a 8ª série é mencionada E há progressão parcial, assume-se que não foi concluída
-            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
-            standard_data["schooling_data"]["ultima_serie_concluida"] = "7ª Série do Ensino Fundamental"
-        elif "ensino fundamental" in ultima_serie_normalizada:
-            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
-            standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_concluida_raw # Mantém o valor original se não for 7ª ou 8ª com DP
-        elif "ensino medio" in ultima_serie_normalizada or "ensino médio" in ultima_serie_normalizada:
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "7ª Série Ensino Fundamental"
+        elif "8 serie" in ultima_serie_normalizada: # Corresponde a 9º ano (sem DP)
             standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Médio"
-            standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_concluida_raw
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "8ª Série Ensino Fundamental"
+        elif "7 serie" in ultima_serie_normalizada: # Corresponde a 8º ano
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "7ª Série Ensino Fundamental"
+        elif "6 serie" in ultima_serie_normalizada: # Corresponde a 7º ano
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "6ª Série Ensino Fundamental"
+        elif "5 serie" in ultima_serie_normalizada: # Corresponde a 6º ano
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "5ª Série Ensino Fundamental"
+        elif "4 serie" in ultima_serie_normalizada: # Corresponde a 5º ano
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "4ª Série Ensino Fundamental"
+        elif "3 serie" in ultima_serie_normalizada: # Corresponde a 4º ano
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "3ª Série Ensino Fundamental"
+        elif "2 serie" in ultima_serie_normalizada: # Corresponde a 3º ano
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "2ª Série Ensino Fundamental"
+        elif "1 serie" in ultima_serie_normalizada: # Corresponde a 1º ou 2º ano
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = "1ª Série Ensino Fundamental"
+        elif "fundamental" in ultima_serie_normalizada or "ensino fundamental" in ultima_serie_convertida.lower():
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+            standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_convertida.replace(" do ", " ").replace(" do", " ").strip() + " Ensino Fundamental"
+        elif "medio" in ultima_serie_normalizada or "médio" in ultima_serie_normalizada or "ensino medio" in ultima_serie_convertida.lower() or "ensino médio" in ultima_serie_convertida.lower():
+            standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Médio"
+            if " do " not in ultima_serie_convertida.lower() and "ensino médio" not in ultima_serie_convertida.lower():
+                standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_convertida.strip() + " do Ensino Médio"
+            else:
+                standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_convertida
         else:
-            # Fallback: Se não for possível inferir, use o valor extraído e tente inferir o nível
-            standard_data["schooling_data"]["requer_matricula_em"] = standard_data["schooling_data"].get("nivel_ensino") # Pode ser "Fundamental" ou "Médio"
-            standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_concluida_raw
+            # Fallback: Se não for possível inferir, usa o valor extraído e tenta inferir o nível
+            nivel_ensino_raw = standard_data["schooling_data"].get("nivel_ensino")
+            if nivel_ensino_raw and "fundamental" in nivel_ensino_raw.lower():
+                standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+                standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_convertida.replace(" do ", " ").replace(" do", " ").strip() + " Ensino Fundamental"
+            elif nivel_ensino_raw and ("medio" in nivel_ensino_raw.lower() or "médio" in nivel_ensino_raw.lower()):
+                standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Médio"
+                if " do " not in ultima_serie_convertida.lower():
+                    standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_convertida.strip() + " do Ensino Médio"
+                else:
+                    standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_convertida
+            else:
+                standard_data["schooling_data"]["requer_matricula_em"] = standard_data["schooling_data"].get("nivel_ensino")
+                standard_data["schooling_data"]["ultima_serie_concluida"] = ultima_serie_convertida
     else:
         # Se ultima_serie_concluida não foi extraída, tenta usar nivel_ensino para requer_matricula_em
         nivel_ensino_raw = standard_data["schooling_data"].get("nivel_ensino")
         if nivel_ensino_raw:
             if "fundamental" in nivel_ensino_raw.lower():
                 standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Fundamental"
+                standard_data["schooling_data"]["ultima_serie_concluida"] = "7ª Série Ensino Fundamental" # Valor padrão se não tiver série
             elif "medio" in nivel_ensino_raw.lower() or "médio" in nivel_ensino_raw.lower():
                 standard_data["schooling_data"]["requer_matricula_em"] = "Ensino Médio"
+                standard_data["schooling_data"]["ultima_serie_concluida"] = "1ª Série do Ensino Médio" # Valor padrão se não tiver série
 
     # --- AJUSTE: mover nascimento_uf, nascimento_cidade e nacionalidade para personal_data se presentes em address_data ---
     for campo in ["nascimento_uf", "nascimento_cidade", "nacionalidade"]:

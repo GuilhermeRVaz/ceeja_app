@@ -66,6 +66,7 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
       '5ª Série Ensino Fundamental',
       '6ª Série Ensino Fundamental',
       '7ª Série Ensino Fundamental',
+      '8ª Série Ensino Fundamental', // Adicionado para permitir seleção de DP
     ];
     const seriesMedio = [
       '8ª Série Ensino Fundamental', // Permite transição correta do Fundamental para o Médio
@@ -98,7 +99,12 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
       'Educação Física',
     ];
     final disciplineOptionsMap = {
-      '8ª Série Ensino Fundamental': disciplinasFundamental,
+      '4ª Série Ensino Fundamental': disciplinasFundamental,
+      '5ª Série Ensino Fundamental': disciplinasFundamental,
+      '6ª Série Ensino Fundamental': disciplinasFundamental,
+      '7ª Série Ensino Fundamental': disciplinasFundamental,
+      '8ª Série Ensino Fundamental':
+          disciplinasFundamental, // 8ª série é fundamental para DP
       '1ª Série do Ensino Médio': disciplinasMedio,
       '2ª Série do Ensino Médio': disciplinasMedio,
       '3ª Série do Ensino Médio': disciplinasMedio,
