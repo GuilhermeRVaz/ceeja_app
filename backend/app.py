@@ -2,6 +2,7 @@
 import os
 import json
 from flask import Flask, request, jsonify  # type: ignore
+import requests
 from flask_cors import CORS
 from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -294,6 +295,49 @@ def extract_data_route():
     except Exception as e:
         print(f"ERRO GERAL NO FLUXO DE IA: {e}")
         supabase.table('enrollments').update({'status': 'erro_ia'}).eq('id', enrollment_id).execute()
+        return jsonify({"error": str(e)}), 500
+
+def call_edge_function(enrollment_id):
+    """Função auxiliar que chama a Edge Function de forma assíncrona."""
+    edge_function_url = f"{url}/functions/v1/process-enrollment"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {key}"
+    }
+    payload = {"enrollment_id": enrollment_id}
+    try:
+        # Usamos timeout para não bloquear o servidor Flask
+        requests.post(edge_function_url, headers=headers, json=payload, timeout=5)
+        print(f"--- Chamada para Edge Function enviada com sucesso para ID: {enrollment_id} ---")
+    except requests.exceptions.RequestException as e:
+        print(f"--- ERRO ao chamar Edge Function: {e} ---")
+
+@app.route('/finalize-enrollment', methods=['POST'])
+def finalize_enrollment_route():
+    data = request.get_json()
+    enrollment_id = data.get('enrollmentId')
+    
+    if not enrollment_id:
+        return jsonify({"error": "enrollmentId não foi fornecido"}), 400
+
+    print(f"--- FINALIZANDO MATRÍCULA E ACIONANDO EDGE FUNCTION PARA: {enrollment_id} ---")
+
+    try:
+        # 1. Salva os dados confirmados pelo aluno no Flutter
+        supabase.table('enrollments').update({
+            'confirmed_personal_data': data.get('personalData'),
+            'confirmed_address_data': data.get('addressData'),
+            'confirmed_schooling_data': data.get('schoolingData'),
+            'status': 'concluida'
+        }).eq('id', enrollment_id).execute()
+
+        # 2. Chama a Edge Function para criar os prontuários e as ligações
+        call_edge_function(enrollment_id)
+        
+        return jsonify({"status": "success", "message": "Matrícula finalizada e processamento iniciado."}), 200
+
+    except Exception as e:
+        print(f"ERRO GERAL AO FINALIZAR: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

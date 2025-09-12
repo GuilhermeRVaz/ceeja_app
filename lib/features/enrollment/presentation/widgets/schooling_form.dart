@@ -66,7 +66,7 @@ class _SchoolingFormState extends ConsumerState<SchoolingForm> {
       '5ª Série Ensino Fundamental',
       '6ª Série Ensino Fundamental',
       '7ª Série Ensino Fundamental',
-      '8ª Série Ensino Fundamental', // Adicionado para permitir seleção de DP
+      '8ª Série Ensino Fundamental', // Adicionado para permitir seleção de DP no Ensino Fundamental
     ];
     const seriesMedio = [
       '8ª Série Ensino Fundamental', // Permite transição correta do Fundamental para o Médio

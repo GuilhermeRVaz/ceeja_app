@@ -394,7 +394,7 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
     }
   }
 
-  // === MÉTODO MODIFICADO: submitEnrollment agora atualiza a matrícula existente ===
+  // === MÉTODO CORRIGIDO: submitEnrollment agora aciona o backend para finalizar a matrícula ===
   Future<void> submitEnrollment() async {
     final enrollmentId = state.enrollmentId;
     if (enrollmentId == null) {
@@ -405,44 +405,45 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
     }
 
     state = state.copyWith(isLoading: true, errorMessage: null);
+
     try {
-      await _repository.updateEnrollment(
-        enrollmentId: enrollmentId,
-        personalData: state.personalData,
-        addressData: state.addressData,
-        schoolingData: state.schoolingData,
+      // O endereço do seu backend Python
+      final url = Uri.parse('http://127.0.0.1:5000/finalize-enrollment');
+
+      print('--- CHAMANDO ROTA DE FINALIZAÇÃO NO BACKEND ---');
+      print('URL: $url');
+      print('Enviando enrollmentId: $enrollmentId');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'enrollmentId': enrollmentId,
+          'personalData': state.personalData.toJson(),
+          'addressData': state.addressData.toJson(),
+          'schoolingData': state.schoolingData.toJson(),
+        }),
       );
 
-      // 1. Criar um novo estudante e obter seu ID
-      final studentId = await _repository.createStudent();
-      print('DEBUG: studentId criado: $studentId');
-
-      // 2. Atualizar a matrícula com o ID do estudante
-      await _repository.updateEnrollment(
-        enrollmentId: enrollmentId,
-        personalData: state.personalData,
-        addressData: state.addressData,
-        schoolingData: state.schoolingData,
-      );
-      print('DEBUG: Matrícula atualizada com dados confirmados e studentId.');
-
-      // 3. Salvar os dados confirmados nas tabelas normalizadas
-      print('DEBUG: Salvando PersonalData: ${state.personalData.toJson()}');
-      await _repository.savePersonalData(state.personalData, studentId);
-
-      print('DEBUG: Salvando AddressData: ${state.addressData.toJson()}');
-      await _repository.saveAddressData(state.addressData, studentId);
-
-      print('DEBUG: Salvando SchoolingData: ${state.schoolingData.toJson()}');
-      await _repository.saveSchoolingData(state.schoolingData, studentId);
-
-      // Limpa o estado para uma próxima matrícula
-      state = const EnrollmentState();
-      print("Matrícula finalizada e enviada com sucesso!");
+      if (response.statusCode == 200) {
+        print('--- SUCESSO: Matrícula finalizada e enviada ao backend! ---');
+        print('Resposta do Backend: ${response.body}');
+        // Limpa o estado para uma próxima matrícula
+        state = const EnrollmentState();
+      } else {
+        print('--- ERRO ao finalizar matrícula ---');
+        print('Status Code: ${response.statusCode}');
+        print('Resposta do Backend: ${response.body}');
+        // Tenta decodificar o erro do backend para dar uma mensagem mais clara
+        final errorBody = json.decode(response.body);
+        final errorMessage =
+            errorBody['error'] ?? 'Erro desconhecido do servidor.';
+        throw Exception('Falha ao finalizar matrícula. Motivo: $errorMessage');
+      }
     } catch (e) {
-      print('ERRO no submitEnrollment: $e');
+      print('--- EXCEÇÃO no submitEnrollment: $e ---');
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
-      rethrow;
+      rethrow; // Propaga o erro para a UI poder reagir (ex: mostrar um SnackBar)
     }
   }
 
