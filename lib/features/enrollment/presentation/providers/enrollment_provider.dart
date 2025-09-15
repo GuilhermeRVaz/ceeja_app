@@ -259,7 +259,7 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
                 )
                 .then((storagePath) {
                   // Após CADA upload bem-sucedido, criamos a entrada no banco de dados.
-                  print("Sucesso no upload de $name. Criando entrada na DB...");
+                  // print("Sucesso no upload de $name. Criando entrada na DB...");
                   return _repository.createExtractionEntry(
                     enrollmentId: enrollmentId,
                     documentType: docType,

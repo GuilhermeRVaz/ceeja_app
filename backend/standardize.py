@@ -276,4 +276,10 @@ def standardize_extracted_data(data: dict) -> dict:
             if cep_extraido:
                 standard_data["address_data"]["cep"] = cep_extraido
                 break
+    
+    # Garante a capitalização correta da nacionalidade
+    if 'nacionalidade' in standard_data["personal_data"] and standard_data["personal_data"]['nacionalidade']:
+        standard_data["personal_data"]['nacionalidade'] = standard_data["personal_data"]['nacionalidade'].capitalize()
+        print(f"INFO: Nacionalidade padronizada para: {standard_data['personal_data']['nacionalidade']}")
+
     return standard_data

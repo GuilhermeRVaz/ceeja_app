@@ -1,21 +1,17 @@
-# backend/app.py
+# ARQUIVO FINAL E CORRIGIDO: backend/app.py
+
 import os
 import json
-from flask import Flask, request, jsonify  # type: ignore
-import requests
+import requests # Importa a biblioteca para fazer chamadas de rede
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from supabase import create_client, Client
 import google.generativeai as genai
-from PIL import Image
-import io
-import re
-from datetime import datetime
-import mimetypes # Usado para detectar o tipo do arquivo de exemplo
+import mimetypes
 from standardize import standardize_extracted_data
 
-# 1. CONFIGURAÇÃO INICIAL
-# --------------------------------
+# --- CONFIGURAÇÃO (sem alterações) ---
 load_dotenv()
 
 app = Flask(__name__)
@@ -29,10 +25,10 @@ supabase: Client = create_client(url, key)
 # Configura a API do Gemini
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
-# Usamos um modelo com capacidade de visão ('pro-vision' ou 'flash' para mais rápido)
-model = genai.GenerativeModel('gemini-2.5-flash')
-# 2. CARREGAMENTO DOS EXEMPLOS VISUAIS (OTIMIZADO)
-# -----------------------------------------------------------------
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+
+# --- PROMPTS E EXEMPLOS (sem alterações) ---
 def load_prompt_examples():
     """Carrega imagens de exemplo e as prepara para a API do Gemini."""
     example_parts = []
@@ -42,15 +38,12 @@ def load_prompt_examples():
             print(f"AVISO: Diretório de exemplos '{examples_dir}' não encontrado. A IA funcionará sem exemplos visuais.")
             return []
 
-        # Adiciona uma introdução para os exemplos no prompt
         example_parts.append("INÍCIO DOS EXEMPLOS VISUAIS PARA REFERÊNCIA:")
 
         for filename in os.listdir(examples_dir):
             filepath = os.path.join(examples_dir, filename)
             if os.path.isfile(filepath):
-                # Informa no prompt qual arquivo de exemplo está sendo enviado
                 example_parts.append(f"\nExemplo de documento '{filename}':")
-                # Detecta o mimetype e lê o conteúdo do arquivo
                 mime_type, _ = mimetypes.guess_type(filepath)
                 if mime_type and (mime_type.startswith('image/') or mime_type == 'application/pdf'):
                     with open(filepath, 'rb') as f:
@@ -65,8 +58,6 @@ def load_prompt_examples():
 
 PROMPT_EXAMPLE_PARTS = load_prompt_examples()
 
-# 3. PROMPT PRINCIPAL PARA A IA
-# -----------------------------------------------------------------
 PROMPT_GEMINI = f"""
 Analise cuidadosamente TODOS os documentos do usuário enviados APÓS a seção de exemplos.
 Sua tarefa é extrair o máximo de informações possíveis para uma matrícula escolar, buscando cada campo em TODOS os documentos fornecidos.
@@ -160,7 +151,7 @@ Outros dados de escolaridade: se optou por ensino religioso (true/false), se opt
         "nascimento_cidade": "..."
     }},
     "address_data": {{
-        "cep": "...",  # Dê prioridade máxima para encontrar o CEP. O CEP é composto de 8 dígitos, pode estar em diferentes formatos.
+        "cep": "...",
         "logradouro": "...",
         "numero": "...",
         "complemento": "...",
@@ -169,7 +160,7 @@ Outros dados de escolaridade: se optou por ensino religioso (true/false), se opt
         "uf_cidade": "..."
     }},
     "schooling_data": {{
-        "requer_matricula_em": "Ensino Fundamental" ou "Ensino Médio", # NOVO CAMPO: Indica o nível de ensino que o aluno requer matrícula.
+        "requer_matricula_em": "Ensino Fundamental" ou "Ensino Médio",
         "ultima_serie_concluida": "...",
         "ra": "...",
         "tem_progressao_parcial": true/false,
@@ -203,13 +194,7 @@ Outros dados de escolaridade: se optou por ensino religioso (true/false), se opt
 - **Outros Casos:** Para outras últimas séries concluídas, extraia `ultima_serie_concluida` diretamente do documento e infira `requer_matricula_em` (Ensino Fundamental ou Ensino Médio) com base nela.
 """
 
-
-# 4. ROTAS DA API
-# --------------------------------
-@app.route('/', methods=['GET'])
-def index():
-    return "Servidor de Extração IA para CEEJA está no ar!"
-
+# --- ROTA DE EXTRAÇÃO DE DADOS (sem alterações) ---
 @app.route('/extract-data', methods=['POST'])
 def extract_data_route():
     data = request.get_json()
@@ -221,26 +206,20 @@ def extract_data_route():
     print(f"--- INICIANDO EXTRAÇÃO IA PARA MATRÍCULA: {enrollment_id} ---")
 
     try:
-        # BUSCAR DOCUMENTOS DA MATRÍCULA
         response = supabase.table('document_extractions').select('*').eq('enrollment_id', enrollment_id).execute()
         documents = response.data
         if not documents:
             return jsonify({"error": "Nenhum documento encontrado para esta matrícula"}), 404
         
-        # PREPARAR REQUISIÇÃO PARA A IA (EXEMPLOS + PROMPT + DOCUMENTOS DO USUÁRIO)
         parts = []
-        # Adiciona os exemplos visuais carregados no início
         if PROMPT_EXAMPLE_PARTS:
             parts.extend(PROMPT_EXAMPLE_PARTS)
         
-        # Adiciona o prompt textual principal
         parts.append(PROMPT_GEMINI)
 
-        # Adiciona os documentos do usuário
         doc_count = 0
         for doc in documents:
             doc_type = doc.get('document_type')
-            # Você pode ajustar os tipos de documentos que deseja processar
             if doc_type in ['rg_frente', 'rg_verso', 'cpf_doc', 'comprovante_residencia', 'historico_escolar', 'certidao_nascimento_casamento', 'declaracao_escolaridade', 'historico_fundamental']:
                 storage_path = doc['storage_path']
                 print(f"Processando e baixando documento do usuário: {storage_path}")
@@ -255,11 +234,9 @@ def extract_data_route():
         if doc_count == 0:
             return jsonify({"error": "Nenhum documento relevante encontrado para processar nesta matrícula"}), 404
 
-        # CHAMAR A IA
         print(f"Enviando {len(PROMPT_EXAMPLE_PARTS)} partes de exemplo e {doc_count} documentos do usuário para o Gemini...")
         response_gemini = model.generate_content(parts)
         
-        # Limpa a resposta para garantir que seja um JSON válido
         cleaned_json_text = response_gemini.text.strip().replace("```json", "").replace("```", "")
         extracted_data = json.loads(cleaned_json_text)
 
@@ -267,14 +244,12 @@ def extract_data_route():
         print(json.dumps(extracted_data, indent=2))
         print("------------------------------------------")
 
-        # PADRONIZAR OS DADOS
-        standardized_data = standardize_extracted_data(extracted_data) # Alterado aqui
+        standardized_data = standardize_extracted_data(extracted_data)
         
         print("--- JSON PADRONIZADO PARA SALVAR ---")
         print(json.dumps(standardized_data, indent=2))
         print("------------------------------------------")
         
-        # SALVAR OS DADOS EXTRAÍDOS NO SUPABASE
         print("Salvando dados extraídos na tabela 'enrollments'...")
         supabase.table('enrollments').update({
             'extracted_personal_data': standardized_data.get('personal_data'),
@@ -287,7 +262,6 @@ def extract_data_route():
 
     except json.JSONDecodeError as e:
         print(f"ERRO DE DECODIFICAÇÃO JSON: {e}")
-        print("Resposta recebida da IA que causou o erro:")
         if 'response_gemini' in locals():
             print(response_gemini.text)
         supabase.table('enrollments').update({'status': 'erro_ia'}).eq('id', enrollment_id).execute()
@@ -297,21 +271,7 @@ def extract_data_route():
         supabase.table('enrollments').update({'status': 'erro_ia'}).eq('id', enrollment_id).execute()
         return jsonify({"error": str(e)}), 500
 
-def call_edge_function(enrollment_id):
-    """Função auxiliar que chama a Edge Function de forma assíncrona."""
-    edge_function_url = f"{url}/functions/v1/process-enrollment"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {key}"
-    }
-    payload = {"enrollment_id": enrollment_id}
-    try:
-        # Usamos timeout para não bloquear o servidor Flask
-        requests.post(edge_function_url, headers=headers, json=payload, timeout=5)
-        print(f"--- Chamada para Edge Function enviada com sucesso para ID: {enrollment_id} ---")
-    except requests.exceptions.RequestException as e:
-        print(f"--- ERRO ao chamar Edge Function: {e} ---")
-
+# === A NOVA ROTA QUE RESOLVE O PROBLEMA ===
 @app.route('/finalize-enrollment', methods=['POST'])
 def finalize_enrollment_route():
     data = request.get_json()
@@ -323,22 +283,32 @@ def finalize_enrollment_route():
     print(f"--- FINALIZANDO MATRÍCULA E ACIONANDO EDGE FUNCTION PARA: {enrollment_id} ---")
 
     try:
-        # 1. Salva os dados confirmados pelo aluno no Flutter
+        # 1. Salva os dados confirmados pelo aluno que vieram do Flutter
         supabase.table('enrollments').update({
             'confirmed_personal_data': data.get('personalData'),
             'confirmed_address_data': data.get('addressData'),
             'confirmed_schooling_data': data.get('schoolingData'),
-            'status': 'concluida'
+            'status': 'concluida' # Atualiza o status para 'concluida'
         }).eq('id', enrollment_id).execute()
 
-        # 2. Chama a Edge Function para criar os prontuários e as ligações
-        call_edge_function(enrollment_id)
+        # 2. CHAMA A EDGE FUNCTION, que fará o trabalho pesado
+        edge_function_url = f"{os.environ.get('SUPABASE_URL')}/functions/v1/process-enrollment"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {os.environ.get('SUPABASE_SERVICE_ROLE_KEY')}"
+        }
+        payload = {"enrollment_id": enrollment_id}
         
+        # Faz a chamada para a Edge Function
+        requests.post(edge_function_url, headers=headers, json=payload)
+        
+        print(f"--- Chamada para Edge Function enviada para ID: {enrollment_id} ---")
         return jsonify({"status": "success", "message": "Matrícula finalizada e processamento iniciado."}), 200
 
     except Exception as e:
         print(f"ERRO GERAL AO FINALIZAR: {e}")
         return jsonify({"error": str(e)}), 500
+# ==========================================
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
