@@ -195,9 +195,12 @@ const FormHandler = {
             // Verifica se a resposta indica sucesso (status 2xx e/ou propriedade success: true)
             if (!response.ok || (responseData && responseData.success === false)) {
                 console.error("Erro na resposta do servidor:", responseData);
-                // Tenta extrair uma mensagem de erro mais útil
-                const errorMessage = responseData.message || (typeof responseData === 'string' ? responseData : `Erro ${response.status} ao enviar dados.`);
-                throw new Error(errorMessage);
+                // Lança um objeto de erro estruturado que inclui a resposta completa.
+                // Isso evita que bibliotecas de formulário tentem acessar `error.response.data` em um `Error` simples.
+                const error = new Error(responseData.message || `Erro ${response.status} ao enviar dados.`);
+                error.response = response; // Anexa a resposta completa
+                error.data = responseData; // Anexa os dados da resposta
+                throw error;
             }
             
             // Se chegou aqui, o envio foi bem-sucedido

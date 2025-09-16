@@ -469,18 +469,20 @@ class EnrollmentNotifier extends StateNotifier<EnrollmentState> {
         return;
       }
       // Mapeia os dados extraídos para os models
-      final personalData =
+      var personalData =
           data['extracted_personal_data'] != null
               ? PersonalDataModel.fromJson(
                 Map<String, dynamic>.from(data['extracted_personal_data']),
-              ).copyWith(
-                nacionalidade: data['extracted_personal_data']['nacionalidade'],
-                paisOrigem: data['extracted_personal_data']['pais_origem'],
-                nascimentoUf: data['extracted_personal_data']['nascimento_uf'],
-                nascimentoCidade:
-                    data['extracted_personal_data']['nascimento_cidade'],
               )
               : const PersonalDataModel();
+
+      // Normaliza o campo 'sexo' para minúsculas ANTES de atualizar o estado.
+      if (personalData.sexo != null) {
+        personalData = personalData.copyWith(
+          sexo: personalData.sexo!.toLowerCase(),
+        );
+      }
+
       var addressData =
           data['extracted_address_data'] != null
               ? AddressModel.fromJson(

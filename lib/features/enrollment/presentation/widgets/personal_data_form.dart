@@ -354,16 +354,16 @@ class _PersonalDataFormState extends ConsumerState<PersonalDataForm> {
                   border: OutlineInputBorder(),
                 ),
                 items:
-                    <String>[
-                      'Masculino',
-                      'Feminino',
-                      'Não Binário',
-                      'Outro',
-                      'Prefiro não informar',
-                    ].map<DropdownMenuItem<String>>((String value) {
+                    const {
+                      'masculino': 'Masculino',
+                      'feminino': 'Feminino',
+                      'nao_binario': 'Não Binário',
+                      'outro': 'Outro',
+                      'prefiro_nao_informar': 'Prefiro não informar',
+                    }.entries.map<DropdownMenuItem<String>>((entry) {
                       return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
+                        value: entry.key,
+                        child: Text(entry.value),
                       );
                     }).toList(),
                 onChanged: (String? newValue) {

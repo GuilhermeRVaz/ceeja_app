@@ -206,7 +206,7 @@ class PersonalDataModel {
       nomeSocial: json['nome_social'],
       temNomeAfetivo: parseBool(json['tem_nome_afetivo']),
       nomeAfetivo: json['nome_afetivo'],
-      sexo: json['sexo'],
+      sexo: json['sexo']?.toString().toLowerCase(),
       rg: json['rg'],
       rgDigito: json['rg_digito'],
       rgUf: json['rg_uf'],
